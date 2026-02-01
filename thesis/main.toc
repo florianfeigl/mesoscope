@@ -1,0 +1,6 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {chapter}{Abstract}{I}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Einleitung}{1}{chapter.1}%
+\contentsline {chapter}{\numberline {A}Anhang}{2}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Hinweis zur Bindung}{2}{section.A.1}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 
