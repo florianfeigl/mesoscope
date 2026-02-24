@@ -1,8 +1,13 @@
 # CELLAIR: CELL Analysis with Intelligent Recognition
 
-## Working title for device: helena
+## Working title: helena
 
-### Issues
+## Roadmap
+### Portierung OpenFlexure
+[ ] Softwareliste erstellen für OpenFlexure Suite
+[ ] Ansible Playbook/Rolle erstellen
+
+## Notes
 
 + Autofokus bei AI Cam [eventuell mit OpenFlexure gelöst]
 + Inkubator: 37°C [Recheneinheit sollte außerhalb platziert werden, Kamera muss aber unter Umständen im Innenraum behalten werden]
