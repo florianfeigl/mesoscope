@@ -1,0 +1,25 @@
+---
+- name: Enable PCIe Gen 3 for AI HAT (if RPi5)
+  lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: '^dtparam=pciex1_gen='
+    line: 'dtparam=pciex1_gen=3'
+  notify: reboot_pi
+
+- name: Install dependencies for AI Camera and HAT
+  apt:
+    name:
+      - rpicam-apps
+      - python3-picamera2
+      - python3-libcamera
+      - python3-opencv
+      - python3-numpy
+      - hailo-all
+    state: present
+
+- name: Ensure camera interface is enabled
+  lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: '^camera_auto_detect='
+    line: 'camera_auto_detect=1'
+  notify: reboot_pi

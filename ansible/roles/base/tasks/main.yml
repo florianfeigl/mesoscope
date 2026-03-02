@@ -1,0 +1,57 @@
+---
+- name: Update apt cache and upgrade packages
+  apt:
+    update_cache: yes
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Set hostname
+  hostname:
+    name: "{{ hostname }}"
+
+- name: Set timezone
+  timezone:
+    name: "{{ timezone }}"
+
+- name: Install common utilities
+  apt:
+    name:
+      - git
+      - curl
+      - wget
+      - vim
+      - htop
+      - build-essential
+      - python3-pip
+      - python3-venv
+      - i2c-tools
+      - util-linux-extra
+    state: present
+
+- name: Ensure I2C is enabled for RTC and AI HAT
+  lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: '^dtparam=i2c_arm='
+    line: 'dtparam=i2c_arm=on'
+  notify: reboot_pi
+
+- name: Configure RTC module (DS3231 example)
+  block:
+    - name: Add RTC dtoverlay to config.txt
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: '^dtoverlay=i2c-rtc,ds3231'
+        line: 'dtoverlay=i2c-rtc,ds3231'
+      notify: reboot_pi
+
+    - name: Remove fake-hwclock to prevent conflicts
+      apt:
+        name: fake-hwclock
+        state: absent
+        purge: yes
+
+    - name: Enable hwclock sync script (if needed, systemd usually handles this with correct dtoverlay)
+      systemd:
+        name: systemd-timesyncd
+        state: started
+        enabled: yes

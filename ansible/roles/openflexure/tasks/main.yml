@@ -1,0 +1,48 @@
+---
+- name: Install OpenFlexure dependencies
+  apt:
+    name:
+      - python3-pip
+      - python3-venv
+      - python3-scipy
+      - python3-matplotlib
+      - python3-yaml
+      - git
+      - libjpeg-dev
+      - zlib1g-dev
+      - libcap-dev
+    state: present
+
+- name: Create OpenFlexure directory
+  file:
+    path: /opt/openflexure
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Clone OpenFlexure Server repository (v3 branch)
+  git:
+    repo: 'https://gitlab.com/openflexure/openflexure-microscope-server.git'
+    dest: /opt/openflexure/server
+    version: v3
+    update: yes
+    force: yes
+
+- name: Set up Python virtual environment for OpenFlexure
+  command: python3 -m venv /opt/openflexure/venv
+  args:
+    creates: /opt/openflexure/venv
+
+- name: Install OpenFlexure Server package
+  pip:
+    name: ".[pi]"
+    chdir: /opt/openflexure/server
+    virtualenv: /opt/openflexure/venv
+
+- name: Create systemd service for OpenFlexure
+  template:
+    src: openflexure.service.j2
+    dest: /etc/systemd/system/openflexure.service
+    mode: '0644'
+  notify: restart_openflexure
