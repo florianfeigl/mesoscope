@@ -1,6 +1,5 @@
 ---
 # Global variables
 timezone: "Europe/Berlin"
-hostname: "helena"
-ansible_user: "admin"
-app_user: "admin"
+hostname: "mesoscope"
+app_user: "lab"

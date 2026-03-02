@@ -40,6 +40,28 @@
     chdir: /opt/openflexure/server
     virtualenv: /opt/openflexure/venv
 
+- name: Create OpenFlexure data directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+  loop:
+    - /var/openflexure
+    - /var/openflexure/settings
+    - /var/openflexure/logs
+    - /var/openflexure/scans
+
+- name: Deploy OpenFlexure configuration
+  template:
+    src: ofm_config.json.j2
+    dest: /var/openflexure/settings/ofm_config.json
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+  notify: restart_openflexure
+
 - name: Create systemd service for OpenFlexure
   template:
     src: openflexure.service.j2
