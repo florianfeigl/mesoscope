@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenFlexure Microscope Server
+After=network.target
+
+[Service]
+User={{ app_user }}
+Group={{ app_user }}
+WorkingDirectory=/opt/openflexure/server
+ExecStart=/opt/openflexure/venv/bin/openflexure-microscope-server
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

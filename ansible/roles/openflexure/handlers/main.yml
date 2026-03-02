@@ -1,0 +1,8 @@
+---
+- name: Restart OpenFlexure service
+  listen: restart_openflexure
+  systemd:
+    name: openflexure
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
