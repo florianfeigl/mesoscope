@@ -26,6 +26,7 @@
       - python3-venv
       - i2c-tools
       - util-linux-extra
+      - dkms
     state: present
 
 - name: Ensure I2C is enabled for RTC and AI HAT

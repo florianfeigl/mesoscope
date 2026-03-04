@@ -15,7 +15,68 @@
       - python3-opencv
       - python3-numpy
       - hailo-all
+      - imx500-all
     state: present
+
+- name: Get Hailo PCIe driver version
+  command: dpkg -s hailort-pcie-driver
+  register: hailo_pkg
+  changed_when: false
+
+- name: Set Hailo driver version fact
+  set_fact:
+    hailo_driver_version: "{{ hailo_pkg.stdout | regex_search('Version: (.+)', '\\1') | first }}"
+
+- name: Create DKMS source directory for Hailo driver
+  file:
+    path: "/usr/src/hailo_pci-{{ hailo_driver_version }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy Hailo driver source to DKMS directory
+  copy:
+    src: /usr/src/hailort-pcie-driver/
+    dest: "/usr/src/hailo_pci-{{ hailo_driver_version }}/"
+    remote_src: yes
+    force: no
+
+- name: Generate DKMS config from template
+  shell: >
+    sed "s/@PCIE_DRIVER_VERSION@/{{ hailo_driver_version }}/"
+    /usr/src/hailo_pci-{{ hailo_driver_version }}/linux/pcie/dkms.conf.in
+    > /usr/src/hailo_pci-{{ hailo_driver_version }}/dkms.conf
+  args:
+    creates: "/usr/src/hailo_pci-{{ hailo_driver_version }}/dkms.conf"
+
+- name: Check if Hailo DKMS module is registered
+  command: dkms status hailo_pci/{{ hailo_driver_version }}
+  register: dkms_status
+  changed_when: false
+  failed_when: false
+
+- name: Add Hailo driver to DKMS
+  command: dkms add hailo_pci/{{ hailo_driver_version }}
+  when: "'hailo_pci' not in dkms_status.stdout"
+
+- name: Build Hailo driver with DKMS
+  command: dkms build hailo_pci/{{ hailo_driver_version }}
+  when: "'installed' not in dkms_status.stdout"
+
+- name: Install Hailo driver with DKMS
+  command: dkms install hailo_pci/{{ hailo_driver_version }} --force
+  when: "'installed' not in dkms_status.stdout"
+
+- name: Load Hailo PCIe kernel module
+  modprobe:
+    name: hailo_pci
+    state: present
+
+- name: Ensure Hailo module loads on boot
+  lineinfile:
+    path: /etc/modules-load.d/hailo.conf
+    line: 'hailo_pci'
+    create: yes
+    mode: '0644'
 
 - name: Ensure camera interface is enabled
   lineinfile:
