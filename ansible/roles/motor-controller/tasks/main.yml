@@ -1,0 +1,83 @@
+---
+- name: Install Arduino CLI dependencies
+  apt:
+    name:
+      - curl
+      - python3-serial
+    state: present
+
+- name: Check if Arduino CLI is installed
+  stat:
+    path: /usr/local/bin/arduino-cli
+  register: arduino_cli
+
+- name: Download Arduino CLI
+  get_url:
+    url: "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_ARM64.tar.gz"
+    dest: /tmp/arduino-cli.tar.gz
+    mode: '0644'
+  when: not arduino_cli.stat.exists
+
+- name: Install Arduino CLI
+  unarchive:
+    src: /tmp/arduino-cli.tar.gz
+    dest: /usr/local/bin/
+    remote_src: yes
+    extra_opts: ['--wildcards', 'arduino-cli']
+  when: not arduino_cli.stat.exists
+
+- name: Clean up Arduino CLI archive
+  file:
+    path: /tmp/arduino-cli.tar.gz
+    state: absent
+
+- name: Update Arduino core index
+  command: arduino-cli core update-index
+  changed_when: false
+
+- name: Install Arduino AVR core
+  command: arduino-cli core install arduino:avr
+  register: avr_install
+  changed_when: "'already installed' not in avr_install.stderr"
+
+- name: Create Sangaboard firmware directory
+  file:
+    path: /opt/sangaboard
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Clone Sangaboard firmware repository
+  git:
+    repo: 'https://gitlab.com/bath_open_instrumentation_group/sangaboard.git'
+    dest: /opt/sangaboard/repo
+    version: master
+    update: yes
+    force: yes
+
+- name: Install pysangaboard Python library
+  command: /opt/openflexure/venv/bin/pip install sangaboard
+
+- name: Add user to dialout group for serial access
+  user:
+    name: "{{ app_user }}"
+    groups: dialout
+    append: yes
+
+- name: Create udev rule for Arduino Nano (Sangaboard DIY)
+  copy:
+    content: |
+      # Sangaboard-compatible Arduino Nano motor controller
+      SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="sangaboard", MODE="0666"
+      # Arduino Leonardo / Sangaboard v0.3
+      SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8036", SYMLINK+="sangaboard", MODE="0666"
+    dest: /etc/udev/rules.d/99-sangaboard.rules
+    mode: '0644'
+  notify: reload_udev
+
+- name: Deploy firmware flash script
+  copy:
+    src: flash-sangaboard.sh
+    dest: /opt/sangaboard/flash.sh
+    mode: '0755'

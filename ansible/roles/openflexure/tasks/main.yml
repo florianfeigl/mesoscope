@@ -29,16 +29,62 @@
     update: yes
     force: yes
 
+- name: Check if venv has system-site-packages enabled
+  stat:
+    path: /opt/openflexure/venv/lib/python3.13/no-global-site-packages.txt
+  register: no_system_packages
+
+- name: Remove venv if system-site-packages is not enabled
+  file:
+    path: /opt/openflexure/venv
+    state: absent
+  when: no_system_packages.stat.exists
+
 - name: Set up Python virtual environment for OpenFlexure
-  command: python3 -m venv /opt/openflexure/venv
+  command: python3 -m venv --system-site-packages /opt/openflexure/venv
   args:
     creates: /opt/openflexure/venv
 
-- name: Install OpenFlexure Server package
-  pip:
-    name: ".[pi]"
+- name: Check if web app static files exist
+  stat:
+    path: /opt/openflexure/server/src/openflexure_microscope_server/static
+  register: static_dir
+
+- name: Download web app build artifacts from GitLab CI
+  get_url:
+    url: "https://gitlab.com/api/v4/projects/9238334/jobs/artifacts/v3/download?job=build"
+    dest: /tmp/openflexure-webapp.zip
+    mode: '0644'
+  when: not static_dir.stat.exists
+
+- name: Extract web app static files
+  unarchive:
+    src: /tmp/openflexure-webapp.zip
+    dest: /opt/openflexure/server
+    remote_src: yes
+  when: not static_dir.stat.exists
+
+- name: Clean up web app archive
+  file:
+    path: /tmp/openflexure-webapp.zip
+    state: absent
+
+- name: Install OpenFlexure Server package (editable)
+  command: /opt/openflexure/venv/bin/pip install -e ".[pi]"
+  args:
     chdir: /opt/openflexure/server
-    virtualenv: /opt/openflexure/venv
+
+- name: Ensure fallback template exists
+  copy:
+    content: |
+      <html><head><title>OpenFlexure - Error</title></head>
+      <body><h1>OpenFlexure Microscope Server</h1>
+      <p>The server encountered an error during startup:</p>
+      <pre>{{ "{{ error }}" }}</pre>
+      </body></html>
+    dest: /opt/openflexure/venv/lib/python3.13/site-packages/openflexure_microscope_server/server/fallback.html.jinja
+    mode: '0644'
+    force: no
 
 - name: Create OpenFlexure data directories
   file:
@@ -52,6 +98,15 @@
     - /var/openflexure/settings
     - /var/openflexure/logs
     - /var/openflexure/scans
+
+- name: Deploy IMX500 camera Thing class
+  copy:
+    src: imx500_camera.py
+    dest: /opt/openflexure/server/src/openflexure_microscope_server/things/camera/imx500.py
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+  notify: restart_openflexure
 
 - name: Deploy OpenFlexure configuration
   template:

@@ -1,9 +1,9 @@
 {
     "things": {
         "camera": {
-            "class": "openflexure_microscope_server.things.camera.picamera:StreamingPiCamera2",
+            "class": "openflexure_microscope_server.things.camera.imx500:IMX500Camera",
             "kwargs": {
-                "camera_board": "picamera_v2"
+                "model_path": "/usr/share/imx500-models/imx500_network_mobilenet_v2.rpk"
             }
         },
         "stage": "openflexure_microscope_server.things.stage.dummy:DummyStage",
