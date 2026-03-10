@@ -139,11 +139,51 @@
 - [ ] **Incubator Setup (37C)**
     - [ ] Design separation of computing unit (outside) and camera (inside)
     - [ ] Inverted geometry: objective below, sample on top (OpenFlexure default)
+    - [ ] Mount IMX500 AI Camera as incubator monitoring camera (see below)
 - [ ] **Experiments**
     - [ ] Acquire PFA-fixed chip preparations
     - [ ] Analyze significant movement pattern changes in cells during calcification
     - [ ] Investigate influence of pressure changes on calcification [in progress]
     - [ ] Test series: Test different medium flow rates [in progress]
+
+## Dual Camera Architecture
+
+The system uses two cameras with distinct roles:
+
+```
+Inside incubator (37C):
+  [IMX500 AI Camera]          --> macro/watchdog: chip overview, anomaly detection
+  [HQ Camera + 20x objective] --> microscopy: cell-level imaging (OpenFlexure)
+
+Outside incubator:
+  [RPi5 + Hailo-8 NPU]       --> processes both feeds
+```
+
+### IMX500 AI Camera -- Incubator Monitor
+The IMX500 is not suitable for cell-level microscopy (M12 lens, ~0.1-0.5mm resolution
+at working distance). However, its on-sensor NPU (15 inf/s, 4.5ms latency) makes it
+ideal as an autonomous incubator monitoring camera:
+
+- **Media monitoring**: Detect color changes, turbidity, contamination
+- **Chip positioning**: Verify sample alignment before microscopy sessions
+- **Anomaly detection**: Flag condensation on optics, media spills, unexpected movement
+- **Colony counting**: Bacterial colonies on agar plates (1-5mm features)
+- **Organism-level tracking**: Zebrafish larvae, Drosophila, C. elegans locomotion
+
+The on-sensor NPU handles lightweight classification/detection per frame without
+consuming CPU or the Hailo-8 NPU, which remains available for heavy microscopy
+inference tasks.
+
+### HQ Camera (IMX477) -- Microscopy
+The HQ Camera with C-mount and RMS objectives provides cell-level resolution:
+
+| Objective | Resolution | Use Case |
+|-----------|-----------|----------|
+| 20x / 0.40 NA | ~0.7 um | Cell tracking, movement patterns |
+| 40x / 0.65 NA | ~0.4 um | Subcellular detail, calcification |
+
+This camera feeds into the OpenFlexure server with full calibration support
+(flat-field correction, lens shading, autofocus via motorised stage).
 
 ## Post-Deployment Verification
 
@@ -313,8 +353,6 @@ Captured Frame ──> Hailo-8 NPU (PCIe, 27 TOPS) ──> Output tensors
 ```
 
 ## Notes
-- **Branding:** "Mesoscopy"? (Dr. Lepperdinger's suggestion)
-- **Repository Strategy:** "AG Lepperdinger" uses GitLab (self-hosted, CS dept, ITS, or personal). GitHub is unlikely.
 - **Meetings:** Jour fixe is usually Tuesday 10:00 AM.
 
 ### Suppliers
