@@ -74,6 +74,11 @@
   args:
     chdir: /opt/openflexure/server
 
+- name: Find installed openflexure_microscope_server package path
+  command: /opt/openflexure/venv/bin/python3 -c "import openflexure_microscope_server, os; print(os.path.dirname(openflexure_microscope_server.__file__))"
+  register: ofm_package_path
+  changed_when: false
+
 - name: Ensure fallback template exists
   copy:
     content: |
@@ -82,7 +87,7 @@
       <p>The server encountered an error during startup:</p>
       <pre>{{ "{{ error }}" }}</pre>
       </body></html>
-    dest: /opt/openflexure/venv/lib/python3.13/site-packages/openflexure_microscope_server/server/fallback.html.jinja
+    dest: "{{ ofm_package_path.stdout }}/server/fallback.html.jinja"
     mode: '0644'
     force: no
 
