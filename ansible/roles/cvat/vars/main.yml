@@ -1,0 +1,17 @@
+---
+# CVAT deployment defaults
+cvat_install_dir: /opt/cvat
+cvat_user: cvat
+cvat_version: master
+cvat_port: 8080
+
+# Security: These should be overridden in group_vars or inventory
+cvat_admin_password: "ChangeMe123!"
+cvat_db_password: "SecureDbPass456!"
+cvat_redis_password: "SecureRedisPass789!"
+
+# Optional
+cvat_host: localhost
+cvat_admin_email: admin@localhost
+cvat_db_name: cvat
+cvat_db_user: root

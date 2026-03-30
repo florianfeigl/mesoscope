@@ -1,0 +1,169 @@
+---
+- name: Install Docker prerequisites
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - curl
+    state: present
+
+- name: Add Docker GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Install Docker and Docker Compose
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker service is running
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Install Caddy
+  apt:
+    name:
+      - debian-keyring
+      - debian-archive-keyring
+      - apt-transport-https
+    state: present
+
+- name: Add Caddy GPG key
+  apt_key:
+    url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+    state: present
+
+- name: Add Caddy repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb any main"
+    state: present
+
+- name: Install Caddy package
+  apt:
+    name: caddy
+    state: present
+    update_cache: yes
+
+- name: Ensure Caddy service is running
+  systemd:
+    name: caddy
+    state: started
+    enabled: yes
+
+- name: Create CVAT application user
+  user:
+    name: "{{ cvat_user | default('cvat') }}"
+    groups: docker
+    append: yes
+    create_home: yes
+    system: yes
+
+- name: Create CVAT installation directory
+  file:
+    path: "{{ cvat_install_dir }}"
+    state: directory
+    owner: "{{ cvat_user | default('cvat') }}"
+    group: "{{ cvat_user | default('cvat') }}"
+    mode: "0755"
+
+- name: Clone CVAT repository
+  git:
+    repo: https://github.com/opencv/cvat.git
+    dest: "{{ cvat_install_dir }}/cvat"
+    version: "{{ cvat_version | default('master') }}"
+    force: yes
+  become: yes
+  become_user: "{{ cvat_user | default('cvat') }}"
+
+- name: Create CVAT environment configuration
+  template:
+    src: cvat.env.j2
+    dest: "{{ cvat_install_dir }}/cvat/docker-compose/cvat.env"
+    owner: "{{ cvat_user | default('cvat') }}"
+    group: "{{ cvat_user | default('cvat') }}"
+    mode: "0600"
+
+- name: Create Docker Compose override for production
+  template:
+    src: docker-compose.override.yml.j2
+    dest: "{{ cvat_install_dir }}/cvat/docker-compose/docker-compose.override.yml"
+    owner: "{{ cvat_user | default('cvat') }}"
+    group: "{{ cvat_user | default('cvat') }}"
+    mode: "0644"
+
+- name: Create Caddy configuration directory
+  file:
+    path: /etc/caddy/conf.d
+    state: directory
+    mode: "0755"
+
+- name: Deploy Caddy config for CVAT
+  template:
+    src: conf.d/cvat.j2
+    dest: /etc/caddy/conf.d/cvat
+    mode: "0644"
+  notify: reload caddy
+
+- name: Create Caddy log directory
+  file:
+    path: /var/log/caddy
+    state: directory
+    mode: "0755"
+
+- name: Start CVAT with Docker Compose
+  command: docker compose up -d
+  args:
+    chdir: "{{ cvat_install_dir }}/cvat/docker-compose"
+  become: yes
+  become_user: "{{ cvat_user | default('cvat') }}"
+
+- name: Wait for CVAT to be ready
+  uri:
+    url: "http://localhost:{{ cvat_port | default(8080) }}"
+    status_code: 200,301,302
+    timeout: 5
+  register: cvat_health
+  retries: 30
+  delay: 10
+  until: cvat_health is succeeded
+  ignore_errors: yes
+
+- name: Ensure Caddy imports conf.d directory
+  lineinfile:
+    path: /etc/caddy/Caddyfile
+    line: 'import conf.d/*'
+    create: yes
+    mode: "0644"
+  notify: reload caddy
+
+- name: Display CVAT access information
+  debug:
+    msg: |
+      CVAT deployment complete!
+      
+      Access CVAT at: https://{{ cvat_host }}
+      
+      Default admin credentials:
+        Username: admin
+        Password: {{ cvat_admin_password }}
+      
+      IMPORTANT: Change the admin password after first login!
+      Caddy will automatically provision HTTPS certificates.
+      
+      Caddy config: /etc/caddy/conf.d/cvat
+      Other services: add configs to /etc/caddy/conf.d/

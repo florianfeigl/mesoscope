@@ -1,0 +1,8 @@
+---
+- name: Setup users and SSH keys on VPS
+  hosts: vps
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - users

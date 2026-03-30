@@ -1,0 +1,9 @@
+---
+- name: Setup CVAT infrastructure
+  hosts: vps
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - users    # Create cvat user with SSH key
+    - cvat     # Deploy CVAT + Caddy
