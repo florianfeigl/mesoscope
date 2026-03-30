@@ -8,11 +8,11 @@
 \usetheme{default}
 \usecolortheme{default}
 
-% Colors — University of Salzburg palette (neutral, adjustable)
-\definecolor{unisalz}{RGB}{0, 62, 115}       % dark blue (primary)
-\definecolor{unisalzlight}{RGB}{200, 216, 232} % light blue (accents)
-\definecolor{unisalzgray}{RGB}{90, 90, 90}     % text gray
-\definecolor{alertred}{RGB}{180, 40, 40}       % alert/warning
+% Colors — University of Salzburg corporate design
+\definecolor{unisalz}{RGB}{17, 87, 64}         % Grün PANTONE 343 C
+\definecolor{unisalzgray}{RGB}{156, 156, 156}   % Grau PANTONE Cool Grey 9
+\definecolor{unisalzlight}{RGB}{214, 232, 226}  % light green tint (accents)
+\definecolor{alertred}{RGB}{180, 40, 40}        % alert/warning
 
 \setbeamercolor{structure}{fg=unisalz}
 \setbeamercolor{frametitle}{fg=unisalz, bg=white}
@@ -25,17 +25,43 @@
 \setbeamercolor{block title}{fg=white, bg=unisalz}
 \setbeamercolor{block body}{bg=unisalzlight}
 \setbeamercolor{alerted text}{fg=alertred}
+\setbeamercolor{headlinecolor}{fg=unisalzgray, bg=white}
+\setbeamercolor{footlinecolor}{fg=unisalzgray, bg=white}
 
 % Remove navigation symbols
 \setbeamertemplate{navigation symbols}{}
 
-% Slide number in footer
+% ============================================================
+% Header: logo + "University of Salzburg" left | author + date right
+% ============================================================
+\setbeamertemplate{headline}{%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.55cm, dp=0.2cm]{headlinecolor}%
+    \hspace{0.4em}%
+    \includegraphics[height=0.42cm]{img/unisbgacat.png}%
+    \hspace{0.3em}%
+    {\footnotesize\color{unisalzgray} University of Salzburg}%
+    \hfill%
+    {\footnotesize\color{unisalzgray}\insertshortauthor\quad\insertshortdate}%
+    \hspace{0.6em}%
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.4pt]{structure}%
+  \end{beamercolorbox}%
+}
+
+% ============================================================
+% Footer: page x/y left | frame subtitle center-right
+% ============================================================
 \setbeamertemplate{footline}{%
-  \hfill%
-  \usebeamercolor[fg]{page number in head/foot}%
-  \usebeamerfont{page number in head/foot}%
-  \insertframenumber\,/\,\inserttotalframenumber%
-  \kern1em\vskip4pt%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.4pt]{structure}%
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.45cm, dp=0.2cm]{footlinecolor}%
+    \hspace{0.6em}%
+    {\footnotesize\color{unisalzgray}%
+      \insertframenumber\,/\,\inserttotalframenumber}%
+    \hfill%
+    {\footnotesize\color{unisalzgray}\usebeamertemplate{frame subtitle}}%
+    \hspace{0.6em}%
+  \end{beamercolorbox}%
 }
 
 % ============================================================
@@ -74,12 +100,12 @@
 % ============================================================
 \title{CELLAIR}
 \subtitle{CELL Analysis with Intelligent Recognition}
-\author{[Your Name]}
+\author[F.~Feigl]{Florian Feigl}
 \institute{%
   \unilogo\\[0.3em]
   University of Salzburg%
 }
-\date{\today}
+\date[\today]{\today}
 
 % ============================================================
 % Document

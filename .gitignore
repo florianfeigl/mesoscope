@@ -1,4 +1,6 @@
+# compiled PDFs — except tracked presentation outputs
 *.pdf
+!presentations/**/*.pdf
 *.aux
 *.log
 *.out
