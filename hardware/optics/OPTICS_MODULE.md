@@ -103,7 +103,7 @@ meaning only the central ~25% of the image area is used.
 | **150 mm** | **0.515** | **19.0 mm** | **~95%** | **Available — good fit** |
 | 200 mm | 0.586 | 16.7 mm | overfill | FN slightly below 17 mm minimum |
 
-Calculation for each row: `M = f / (f − |p|)` where `|p| = 141.5 mm`.
+Calculation for each row: `M = f / (f + |p|)` where `|p| = 141.5 mm`.
 
 **Buy:** 125 mm or 150 mm achromatic doublet, 12.7 mm diameter.
 Ordered via Taulab / distributor. Exact choice depends on scraped objective
