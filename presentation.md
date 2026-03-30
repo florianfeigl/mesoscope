@@ -78,8 +78,8 @@
 |---|---|---|---|
 | Camera | Pi Camera v2 (IMX219) | HQ Camera (IMX477, C-mount) | C-mount adds ~22 mm to sensor position |
 | Sensor diagonal | 4.6 mm | **9.79 mm** (2.1× larger) | Standard tube lens underfills sensor |
-| Tube lens focal length | **50 mm** (encoded in STL) | **~135 mm needed** | Must modify printed geometry |
-| Lens-to-sensor distance (q) | ~37 mm | ~69 mm | Tube ~32 mm longer |
+| Tube lens focal length | **50 mm** (encoded in STL) | **125-150 mm needed** | Must modify printed geometry |
+| Lens-to-sensor distance (q) | ~37 mm | 66-73 mm | Tube 29-36 mm longer |
 | Effective field number | 17.6 mm | 37.5 mm (too large) | Only ~25% of sensor used |
 
 ### The STL encodes optical parameters
@@ -93,10 +93,10 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 ### Required modifications
 
-1. **Tube lens focal length:** 50 mm → 135 mm achromatic doublet
-2. **Tube length (q):** 37 mm → 69 mm (+32 mm)
+1. **Tube lens focal length:** 50 mm → 125-150 mm achromatic doublet
+2. **Tube length (q):** 37 mm → 66-73 mm (+29-36 mm)
 3. **C-mount offset:** +20–25 mm (flange FFD + body depth)
-4. **Total optics module length:** ~38 mm → ~91–95 mm
+4. **Total optics module length:** ~38 mm → ~88–95 mm
 
 ---
 
@@ -106,8 +106,8 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 | Component | Standard OpenFlexure | Our Setup | Action |
 |---|---|---|---|
-| **Tube lens** | 50 mm achromat (ThorLabs AC127-050-A) | 135 mm achromat (ThorLabs AC127-135-A) | **Buy new** |
-| **Optics module STL** | `optics_picamera_2_rms_f50d13.stl` | Custom `optics_hq_camera_rms_f135d13.stl` | **Compile from OpenSCAD** |
+| **Tube lens** | 50 mm achromat (ThorLabs AC127-050-A) | 125-150 mm achromat (ThorLabs AC127-125-A or AC127-150-A) | **Buy new** |
+| **Optics module STL** | `optics_picamera_2_rms_f50d13.stl` | Custom `optics_hq_camera_rms.stl` | **Compile from OpenSCAD** |
 | **Objective** | 40x RMS (purchased) | ≤10x scraped from existing microscopes | **Source** (no purchase) |
 | **Camera ribbon cable** | 200 mm (may suffice) | 200 mm | **Verify length** — tube is ~54 mm longer, likely OK |
 
@@ -124,36 +124,34 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 ## Slide 5b: Solution — Custom Optics Module from OpenSCAD
 
-**Source:** https://gitlab.com/openflexure/openflexure-microscope
+> **Note:** This slide shows the original estimate. See Slide 5c for the confirmed workflow from the OpenFlexure team.
+
+**Source:** https://gitlab.com/openflexure/openflexure-microscope (`hq_camera` branch)
 
 ### Parameters to modify
 
 ```openscad
-// In microscope_parameters.scad
-TUBE_LENS_FOCAL_LENGTH = 135;    // Standard: 50 mm
-CAMERA = "c_mount";              // Standard: "picamera_2"  
-OPTICS_MODULE_CAM_TUBE_H = 91;   // Standard: ~38 mm
-CAMERA_Z_OFFSET = 22;            // Standard: 0 mm (C-mount depth)
+// In rms_optics_module.scad
+CAMERA = "arducam_b0196";        // Pi HQ Camera (IMX477, C-mount)
+
+// In optics_configurations.scad — function rms_f50d13_config:
+tube_lens_f = 125;               // or 150, depending on purchased lens
+tube_lens_ffd = <from datasheet>; // back focal distance (slightly < f)
 ```
 
-### Build command (example)
+### Build command
 
 ```bash
-openscad \
-  -D 'TUBE_LENS_FOCAL_LENGTH=135' \
-  -D 'CAMERA="c_mount"' \
-  -D 'OPTICS_MODULE_CAM_TUBE_H=91' \
-  -o optics_hq_camera_rms_f135d13.stl \
-  openscad/rms_optics_module.scad
+openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
 ```
 
 ### Prerequisites verified
 - [x] OpenSCAD installed
-- [ ] Verify C-mount camera definition exists in `cameras/` directory
-- [ ] Order 135 mm achromatic doublet (ThorLabs AC127-135-A or AliExpress ~15 EUR)
+- [x] HQ Camera mount exists as `arducam_b0196` in `hq_camera` branch (confirmed by OpenFlexure team)
+- [ ] Order 125 or 150 mm achromatic doublet (ThorLabs AC127-125-A or AC127-150-A)
 
 ### Risk: C-mount camera definition
-If `c_mount` camera not defined in v7, need to write custom camera module (~1–2 hr additional work).
+~~Risk eliminated~~ — `arducam_b0196` mount confirmed present in `hq_camera` branch.
 
 ---
 
@@ -202,6 +200,35 @@ defined — only the tube lens optics need adjusting.
 
 ---
 
+## Slide 5e: CAD Format — OpenSCAD vs Commercial CAD `[priority: lowest]`
+
+| Aspect | OpenSCAD (current) | SOLIDWORKS / AutoCAD / FreeCAD |
+|---|---|---|
+| Version control | Git-native (text-based CSG) | Binary files, poor diffing |
+| Open source | Yes | No (SW/AC) / Yes (FreeCAD) |
+| Collaboration | GitLab merge requests, open review | Proprietary formats, license required |
+| Conversion | One-way STL export only | Would require full rebuild from STL |
+| Maintenance burden | None — upstream OpenFlexure uses OpenSCAD | Permanent fork, manual sync with upstream |
+
+### Assessment `[priority: lowest]`
+
+**A port to commercial CAD is not recommended.**
+
+- OpenFlexure upstream uses OpenSCAD exclusively — confirmed by maintainers
+  ([forum thread](https://openflexure.discourse.group/t/alternative-file-options-other-than-stl-for-block-delta-stages/1438))
+- CSG (constructive solid geometry) cannot be losslessly converted to B-rep
+  (boundary representation) used by SOLIDWORKS/FreeCAD
+- Our modifications are minimal (2 parameters in config files) — no ongoing CAD
+  development that would benefit from commercial tooling
+- Porting would create a maintenance fork permanently disconnected from upstream updates
+- OpenSCAD is code: fits naturally into our Git + Ansible workflow
+
+> **If commercial CAD is required** for institutional reasons, the only viable
+> path is importing the generated STL as a mesh body. This loses all parametric
+> editability and is strictly worse than working in OpenSCAD directly.
+
+---
+
 ## Slide 5d: Optical Equations — Calculating the New Tube
 
 ### Given parameters
@@ -228,31 +255,35 @@ $$f_t = \frac{M}{M - 1} \times p$$
 
 $$f_t = \frac{0.490}{0.490 - 1} \times (-141.5) = 0.961 \times 141.5 = \mathbf{136 \text{ mm}}$$
 
-→ Use **135 mm** achromatic doublet (available from ThorLabs, AliExpress)
+→ Calculated optimum: **136 mm**. Available options: **125 mm or 150 mm** achromatic doublet.
 
-### Step 3: Actual magnification with 135 mm lens
+### Step 3: Actual magnification — both available options
 
-$$M_{actual} = \frac{f_t}{f_t - p} = \frac{135}{135 - (-141.5)} = \frac{135}{276.5} = \mathbf{0.488}$$
+| Tube lens | $M_{actual} = f_t / (f_t + |p|)$ | $FN_{eff} = D_{sensor} / M$ | In range? |
+|---|---|---|---|
+| 125 mm | 125 / 266.5 = **0.469** | 9.79 / 0.469 = **20.9 mm** | ✓ |
+| 150 mm | 150 / 291.5 = **0.515** | 9.79 / 0.515 = **19.0 mm** | ✓ |
 
-Effective field number:
-
-$$FN_{eff} = \frac{D_{sensor}}{M_{actual}} = \frac{9.79}{0.488} = \mathbf{20.1 \text{ mm}}$$
-
-→ Within standard eyepiece range (17–26 mm) ✓
+Both within standard eyepiece range (17–26 mm).
 
 ### Step 4: Lens-to-sensor distance (q)
 
-$$q = \frac{f_t \times p}{p - f_t} = \frac{135 \times (-141.5)}{-141.5 - 135} = \frac{-19102.5}{-276.5} = \mathbf{69.1 \text{ mm}}$$
+$$q = \frac{f_t \times p}{p - f_t}$$
+
+| Tube lens | q |
+|---|---|
+| 125 mm | 125 × (−141.5) / (−141.5 − 125) = **66.4 mm** |
+| 150 mm | 150 × (−141.5) / (−141.5 − 150) = **72.8 mm** |
 
 ### Step 5: Total optics module length
 
-| Component | Length |
-|---|---|
-| Lens-to-sensor (q) | 69.1 mm |
-| C-mount offset (flange FFD + body) | ~22 mm |
-| **Total tube length** | **~91 mm** |
+| Component | 125 mm lens | 150 mm lens |
+|---|---|---|
+| Lens-to-sensor (q) | 66.4 mm | 72.8 mm |
+| C-mount offset (flange FFD + body) | ~22 mm | ~22 mm |
+| **Total tube length** | **~88 mm** | **~95 mm** |
 
-Standard OpenFlexure: 37 mm → Ours: ~91 mm (+54 mm)
+Standard OpenFlexure: 37 mm → Ours: ~88–95 mm (+51–58 mm)
 
 ---
 
@@ -281,7 +312,7 @@ Standard OpenFlexure: 37 mm → Ours: ~91 mm (+54 mm)
 |---|---|---|
 | Computing + AI (RPi 5, AI HAT, RTC, GPIO header) | ~165 EUR | — |
 | HQ Camera (IMX477) | ~35 EUR | — |
-| Tube lens (135 mm achromat) | — | 15–30 EUR (AliExpress) or ~80 EUR (ThorLabs) |
+| Tube lens (125-150 mm achromat) | — | 15–30 EUR (AliExpress) or ~80 EUR (ThorLabs) |
 | Sangaboard v0.5 | — | ~30–40 EUR |
 | 28BYJ-48 stepper motors | ~5 EUR | — |
 | 3D printing (filament) | — | ~10 EUR |
@@ -346,10 +377,10 @@ Target magnification:
 Required tube lens focal length:
   f_t = M / (M - 1) × p
       = 0.490 / (0.490 - 1) × (-141.5)
-      = 0.961 × 141.5 = 136 mm → use 135 mm
+      = 0.961 × 141.5 = 136 mm → use 125 mm or 150 mm (available options)
 
 Sensor-to-lens distance (q):
   q = f_t × p / (p - f_t)
-    = 135 × (-141.5) / (-141.5 - 135)
-    = 69.1 mm
+    = 125 × (-141.5) / (-141.5 - 125) = 66.4 mm  (125 mm lens)
+    = 150 × (-141.5) / (-141.5 - 150) = 72.8 mm  (150 mm lens)
 ```
