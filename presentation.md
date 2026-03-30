@@ -5,9 +5,15 @@
 **CELLAIR: CELL Analysis with Intelligent Recognition**
 
 - Portable, open-source microscopy system with real-time AI analysis
-- Target application: live-cell imaging in bioreactor environment (37°C incubator)
-- Key constraint: conventional microscopes cannot monitor samples inside incubator continuously
-- Solution: OpenFlexure-based motorised stage with custom optics for high-resolution imaging
+- **Research goal:** Study interaction between osteoblasts and epithelial cells in a custom bioreactor
+- **Bioreactor setup:** Two compartments separated by a perforated membrane
+  - Compartment A: Sponge matrix + **hFOB 1.19** osteoblasts (human fetal osteoblast cell line)
+  - Compartment B: **hMEC 1** endothelial cells (human microvascular endothelial cell line)
+  - Goal: Observe how osteoblasts influence epithelial cell behavior through the membrane
+- **What to monitor:** Cell migration, morphological changes, response to osteoblast signaling, **calcium deposition (mineralization)**
+- **Why live-cell imaging:** Processes occur over hours to days; fixed endpoints miss dynamic behavior
+- **Biological significance:** Osteoblasts build calcium phosphate (hydroxyapatite) — key for bone formation and implant osseointegration. Understanding how epithelial cells respond to osteoblast activity via soluble factors through membranes provides insights for regenerative medicine and implant design.
+- Solution: OpenFlexure-based motorised stage with custom optics for high-resolution imaging inside incubator (37°C)
 
 ---
 
@@ -18,20 +24,31 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Inside incubator (37°C)                                        │
-│  ┌───────────────────────────────────┐                          │
-│  │ HQ Camera (IMX477) + ≤10x obj     │                          │
-│  │ (OpenFlexure motorised stage)     │                          │
-│  └───────────────┬───────────────────┘                          │
-│                  │                                              │
+│                                                                  │
+│    ┌─────────────────────────────────────────┐                  │
+│    │         Bioreactor (custom)              │                  │
+│    │  ┌───────────────┐  ┌───────────────┐   │                  │
+│    │  │  Osteoblasts │◄─►│  Epithelial   │   │                  │
+│    │  │   (sponge)   │membrane│   cells    │   │                  │
+│    │  └───────────────┘  └───────────────┘   │                  │
+│    │        Compartment A    Compartment B    │                  │
+│    └───────────────────┬─────────────────────┘                  │
+│                        │                                         │
+│                        ▼ (imaging from below)                  │
+│    ┌───────────────────────────────────────────┐                 │
+│    │  HQ Camera (IMX477) + ≤10x objective    │                 │
+│    │     OpenFlexure motorised stage          │                 │
+│    └───────────────────────────────────────────┘                 │
+│                                                                  │
 └──────────────────┼──────────────────────────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  Outside incubator                                              │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (27 TOPS)               ││
-│  │ • OpenFlexure Server (stage control, camera)                ││
-│  │ • AI inference: YOLOv8 segmentation, pose estimation        ││
+│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (27 TOPS)              ││
+│  │ • OpenFlexure Server (stage control, camera)              ││
+│  │ • AI inference: YOLOv8 segmentation, cell tracking         ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -83,7 +100,29 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 ---
 
-## Slide 5: Solution — Custom Optics Module from OpenSCAD
+## Slide 5: Solution — What Parts Need to Change
+
+### Parts that change
+
+| Component | Standard OpenFlexure | Our Setup | Action |
+|---|---|---|---|
+| **Tube lens** | 50 mm achromat (ThorLabs AC127-050-A) | 135 mm achromat (ThorLabs AC127-135-A) | **Buy new** |
+| **Optics module STL** | `optics_picamera_2_rms_f50d13.stl` | Custom `optics_hq_camera_rms_f135d13.stl` | **Compile from OpenSCAD** |
+| **Objective** | 40x RMS (purchased) | ≤10x scraped from existing microscopes | **Source** (no purchase) |
+| **Camera ribbon cable** | 200 mm (may suffice) | 200 mm | **Verify length** — tube is ~54 mm longer, likely OK |
+
+### Parts that stay the same
+
+| Component | Why |
+|---|---|
+| Illumination (condenser lens) | Lower NA (≤10x vs 40x) = less demanding, standard PMMA lens works |
+| Stage mechanics (gears, motors) | No change |
+| Sample clips, stand | No change |
+| Raspberry Pi 5, HQ Camera mount | C-mount adapter is part of camera |
+
+---
+
+## Slide 5b: Solution — Custom Optics Module from OpenSCAD
 
 **Source:** https://gitlab.com/openflexure/openflexure-microscope
 
@@ -115,6 +154,105 @@ openscad \
 
 ### Risk: C-mount camera definition
 If `c_mount` camera not defined in v7, need to write custom camera module (~1–2 hr additional work).
+
+---
+
+## Slide 5c: Update — OpenFlexure Team Confirmation (March 2026)
+
+> Confirmed by William (OpenFlexure support) via email, March 2026.
+> Previous slides assumed we'd need to write a custom camera mount — **we don't**.
+
+### What changed
+
+| Before (our assumption) | After (confirmed by OpenFlexure) |
+|---|---|
+| Use `main` branch, write custom C-mount module | Use **`hq_camera` branch** — mount already exists |
+| Set 4 parameters manually (focal length, tube height, camera offset, camera type) | Set **2 parameters** — tube height computed automatically |
+| Risk of ~2 hr custom CAD work | **Minimal changes** to existing config |
+
+### Confirmed workflow
+
+```bash
+# 1. Clone and checkout the correct branch
+git clone https://gitlab.com/openflexure/openflexure-microscope.git
+git checkout hq_camera
+
+# 2. Set camera type in rms_optics_module.scad
+CAMERA = "arducam_b0196";    # Pi HQ Camera (IMX477, same C-mount)
+
+# 3. In optics_configurations.scad, find rms_f50d13_config and change:
+#    tube_lens_f = 125 or 150   (depending on purchased lens)
+#    tube_lens_ffd = <from datasheet>  (back focal distance, slightly < f)
+
+# 4. Build
+openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
+```
+
+### Key insight
+
+The `arducam_b0196` camera type uses the same IMX477 sensor + C-mount as the
+Pi HQ Camera. The mount geometry (C-mount FFD, sensor position) is already
+defined — only the tube lens optics need adjusting.
+
+### References
+
+- [CAD pipeline](https://openflexure.discourse.group/t/alternative-file-options-other-than-stl-for-block-delta-stages/1438)
+- [Arducam B0196 / HQ Camera mount](https://openflexure.discourse.group/t/arducam-b0196-on-high-resolution-v7-microscope/2393/3)
+- [Source: `hq_camera` branch](https://gitlab.com/openflexure/openflexure-microscope/-/tree/hq_camera)
+
+---
+
+## Slide 5d: Optical Equations — Calculating the New Tube
+
+### Given parameters
+
+| Symbol | Value | Meaning |
+|---|---|---|
+| `D_sensor` | 9.79 mm | IMX477 sensor diagonal |
+| `FN_target` | 20 mm | Target field number (standard eyepiece range: 17–26 mm) |
+| `L_tube` | 160 mm | Objective tube length (finite conjugate) |
+| `d_parfocal` | 45 mm | Parfocal distance (DIN standard) |
+| `p` | 8.5 − 150 = **−141.5 mm** | Distance from tube lens to objective's primary image plane |
+
+### Step 1: Target magnification
+
+The tube lens must demagnify the intermediate image to match the sensor to a standard eyepiece field of view:
+
+$$M = \frac{D_{sensor}}{FN_{target}} = \frac{9.79}{20} = \mathbf{0.490}$$
+
+### Step 2: Required tube lens focal length
+
+From the thin lens equation, rearranged for the tube lens:
+
+$$f_t = \frac{M}{M - 1} \times p$$
+
+$$f_t = \frac{0.490}{0.490 - 1} \times (-141.5) = 0.961 \times 141.5 = \mathbf{136 \text{ mm}}$$
+
+→ Use **135 mm** achromatic doublet (available from ThorLabs, AliExpress)
+
+### Step 3: Actual magnification with 135 mm lens
+
+$$M_{actual} = \frac{f_t}{f_t - p} = \frac{135}{135 - (-141.5)} = \frac{135}{276.5} = \mathbf{0.488}$$
+
+Effective field number:
+
+$$FN_{eff} = \frac{D_{sensor}}{M_{actual}} = \frac{9.79}{0.488} = \mathbf{20.1 \text{ mm}}$$
+
+→ Within standard eyepiece range (17–26 mm) ✓
+
+### Step 4: Lens-to-sensor distance (q)
+
+$$q = \frac{f_t \times p}{p - f_t} = \frac{135 \times (-141.5)}{-141.5 - 135} = \frac{-19102.5}{-276.5} = \mathbf{69.1 \text{ mm}}$$
+
+### Step 5: Total optics module length
+
+| Component | Length |
+|---|---|
+| Lens-to-sensor (q) | 69.1 mm |
+| C-mount offset (flange FFD + body) | ~22 mm |
+| **Total tube length** | **~91 mm** |
+
+Standard OpenFlexure: 37 mm → Ours: ~91 mm (+54 mm)
 
 ---
 
