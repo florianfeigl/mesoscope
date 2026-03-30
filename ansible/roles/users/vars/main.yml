@@ -1,0 +1,8 @@
+---
+# User definitions for SSH key distribution
+# Add/modify users here
+
+users:
+  - name: cvat
+    groups: docker
+    ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID/GCHljR1oH1gcPlvAJMkpJj0tN0XR5thCcXsc84XnD"

@@ -1,0 +1,20 @@
+---
+- name: Restart CVAT
+  command: docker compose restart
+  args:
+    chdir: "{{ cvat_install_dir }}/cvat/docker-compose"
+  become: yes
+  become_user: "{{ cvat_user | default('cvat') }}"
+
+- name: Rebuild CVAT
+  command: docker compose up -d --build
+  args:
+    chdir: "{{ cvat_install_dir }}/cvat/docker-compose"
+  become: yes
+  become_user: "{{ cvat_user | default('cvat') }}"
+
+- name: Reload Caddy
+  systemd:
+    name: caddy
+    state: reloaded
+  ignore_errors: yes  # Caddy may not be installed yet

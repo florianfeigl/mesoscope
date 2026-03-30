@@ -1,0 +1,27 @@
+---
+- name: Create application users
+  user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups | default(omit) }}"
+    append: yes
+    create_home: yes
+    shell: /bin/bash
+    state: present
+  loop: "{{ users }}"
+
+- name: Set up SSH authorized keys for users
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_key }}"
+    state: present
+  loop: "{{ users }}"
+  when: item.ssh_key is defined
+
+- name: Ensure sudo group has passwordless sudo access
+  lineinfile:
+    path: /etc/sudoers.d/99-ansible-users
+    line: '%sudo ALL=(ALL) NOPASSWD:ALL'
+    create: yes
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  when: users | selectattr('groups', 'defined') | selectattr('groups', 'search', 'sudo') | list | length > 0

@@ -73,16 +73,24 @@
 | Swap | 0 B used |
 
 ### Phase 5: OpenFlexure Microscope Build
+
+> **Optics design:** See [`hardware/optics/OPTICS_MODULE.md`](hardware/optics/OPTICS_MODULE.md)
+> for the full optical calculation — tube lens selection, sensor-to-lens distance,
+> C-mount offset, and printed module dimensions for the IMX477 + scraped ≤10x objective.
+
 - [ ] **Hardware Procurement**
-    - [ ] Pi HQ Camera (IMX477, C-mount)
-    - [ ] 20x RMS Plan Achromat objective (0.40 NA, ~0.7 µm resolution) -- cell tracking, movement patterns
-    - [ ] 40x RMS Plan Achromat objective (0.65 NA) -- subcellular detail, calcification analysis (optional, add later if needed)
-    - [ ] Stepper motors for motorised stage
-    - [ ] Sangaboard motor controller (or Arduino alternative)
+    - [x] Pi HQ Camera (IMX477, C-mount) -- acquired, currently mounted on conventional microscope
+    - [ ] Scraped objective ≤10x (finite conjugate 160 mm) -- sourced from existing microscopes
+    - [ ] Tube lens ~135 mm achromatic doublet (e.g. ThorLabs AC127-135-A) -- replaces standard 50 mm
+    - [ ] Sangaboard v0.5 motor controller
+    - [ ] 3x 28BYJ-48 stepper motors -- acquired
 - [ ] **3D Printing**
-    - [ ] Print OpenFlexure microscope body, stage, and optics module
+    - [ ] Verify objective type (160 mm finite vs. infinity) and parfocal distance before printing
+    - [ ] Generate custom optics module STL: `optics_module_cam_tube_h ≈ 91–95 mm` (C-mount + 135 mm tube lens)
+    - [ ] Print OpenFlexure microscope body and stage
+    - [ ] Print custom optics module (HQ Camera C-mount variant)
 - [ ] **Assembly & Calibration**
-    - [ ] Assemble OpenFlexure with HQ Camera + 20x objective
+    - [ ] Assemble OpenFlexure with HQ Camera + scraped objective
     - [ ] Integrate with Ansible-deployed software stack
     - [ ] Calibrate flat-field correction and lens shading
     - [ ] Test motorised stage control via OpenFlexure web UI
