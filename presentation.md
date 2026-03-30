@@ -22,16 +22,16 @@
 │  │ HQ Camera (IMX477) + ≤10x obj     │                          │
 │  │ (OpenFlexure motorised stage)     │                          │
 │  └───────────────┬───────────────────┘                          │
-│                  │                                               │
-└──────────────────┼───────────────────────────────────────────────┘
+│                  │                                              │
+└──────────────────┼──────────────────────────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  Outside incubator                                              │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (27 TOPS)              ││
-│  │ • OpenFlexure Server (stage control, camera)               ││
-│  │ • AI inference: YOLOv8 segmentation, pose estimation       ││
+│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (27 TOPS)               ││
+│  │ • OpenFlexure Server (stage control, camera)                ││
+│  │ • AI inference: YOLOv8 segmentation, pose estimation        ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -46,7 +46,6 @@
 |---|---|---|
 | Computing (RPi 5, AI HAT, RTC, GPIO header) | ✅ Acquired | OpenFlexure server running |
 | HQ Camera (IMX477, C-mount) | ✅ Acquired | Currently mounted on conventional microscope for testing |
-
 | Motor controller | ⏳ Pending | Sangaboard v0.5 preferred |
 | Objective | ⏳ Sourced | Scraped from existing microscopes; ≤10x finite conjugate |
 | Optics module | ⚠️ **Custom development needed** | Standard STL incompatible with HQ Camera + longer tube lens |
@@ -159,7 +158,7 @@ If `c_mount` camera not defined in v7, need to write custom camera module (~1–
 | Aspect | Details |
 |---|---|
 | **What it is** | Raspberry Pi AI Camera with on-sensor NPU (Sony IMX500) |
-| **What was tried** | Incubator watchdog camera for macro monitoring (chip position, media quality, anomaly detection) |
+| **What was tried** | Designing a two NPU level process for image evaluation |
 | **Why it was dropped** | No clear use case for current experiment scope; adds complexity without benefit |
 | **Status** | Hardware acquired, software-compatible (tested), but not in final product design |
 | **Potential future use** | Could be repurposed for autonomous cell culture monitoring (contamination, confluence) — separate project |
@@ -168,7 +167,7 @@ If `c_mount` camera not defined in v7, need to write custom camera module (~1–
 
 - **Raspberry Pi 5 + AI HAT:** Seamless integration, PCIe detection, Hailo firmware loads automatically
 - **OpenFlexure v3 migration:** Successfully ported from legacy Flask to FastAPI, compatible with Python 3.13
-- **Picamera2 integration:** HQ Camera and IMX500 both stream via standard libcamera stack
+- **Camera integration:** HQ Camera and IMX500 both stream via standard libcamera stack
 - **Ansible automation:** Full deployment from scratch in <10 minutes
 
 ---
