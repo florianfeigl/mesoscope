@@ -36,14 +36,13 @@
 % ============================================================
 \setbeamertemplate{headline}{%
   \begin{beamercolorbox}[wd=\paperwidth, ht=0.55cm, dp=0.2cm]{headlinecolor}%
-    \hspace{0.6em}%
-    \raisebox{0.05cm}{\includegraphics[height=0.38cm]{img/Siegel-300x300-corpgrey.png}}%
-    \hspace{0.25em}%
-    \raisebox{0.12cm}{{\small\color{unisalzgray} universit\"{a}t}%
-    {\small\color{unisalz}\bfseries\rmfamily salzburg}}%
-    \hfill%
-    \makebox[3.5cm][r]{{\small\color{unisalzgray}AG Lepperdinger}}%
-    \hspace{0.6em}%
+    \begin{tabular*}{\paperwidth}{@{\hspace{0.6em}}l@{\hfill}r@{\hspace{0.6em}}}
+      \raisebox{0.05cm}{\includegraphics[height=0.38cm]{img/Siegel-300x300-corpgrey.png}}%
+      \hspace{0.25em}%
+      \raisebox{0.12cm}{{\small\color{unisalzgray} universit\"{a}t}%
+      {\small\color{unisalz}\bfseries\rmfamily salzburg}} &
+      {\small\color{unisalzgray}AG Lepperdinger}
+    \end{tabular*}
   \end{beamercolorbox}%
   \begin{beamercolorbox}[wd=\paperwidth, ht=0.4pt]{structure}%
   \end{beamercolorbox}%
