@@ -36,10 +36,8 @@
 % ============================================================
 \setbeamertemplate{headline}{%
   \begin{beamercolorbox}[wd=\paperwidth, ht=0.55cm, dp=0.2cm]{headlinecolor}%
-    \hspace{0.4em}%
-    \includegraphics[height=0.42cm]{img/unisbgacat.png}%
-    \hspace{0.3em}%
-    {\footnotesize\color{unisalzgray} University of Salzburg}%
+    \hspace{0.6em}%
+    {\footnotesize\uniwordmark}%
     \hfill%
     {\footnotesize\color{unisalzgray}\insertshortauthor\quad\insertshortdate}%
     \hspace{0.6em}%
@@ -77,22 +75,21 @@
 \usepackage{siunitx}
 \usepackage{tikz}
 \usepackage{hyperref}
+\usepackage[useregional=false,datesep=-]{datetime2}
 
 \sisetup{per-mode=symbol}
 
 % ============================================================
-% University logo placeholder
+% University wordmark — corporate design
+% "universität" in grey, "salzburg" in grey bold
 % ============================================================
-% Place your university logo as img/logo.png (or .pdf)
-% Recommended size: ~2cm height, transparent background
-%
-% If the file does not exist, a placeholder box is shown.
-\newcommand{\unilogo}{%
-  \IfFileExists{img/logo.png}{%
-    \includegraphics[height=1.2cm]{img/logo.png}%
-  }{%
-    \fbox{\parbox[c][1.2cm][c]{2.5cm}{\centering\footnotesize\sffamily University\\Logo}}%
-  }%
+\newcommand{\uniwordmark}{%
+  {\color{unisalzgray}\rmfamily universit\"{a}t}%
+  {\color{unisalzgray}\bfseries\rmfamily salzburg}%
+}
+\newcommand{\uniwordmarklarge}{%
+  {\large\color{unisalzgray}\rmfamily universit\"{a}t}%
+  {\large\color{unisalzgray}\bfseries\rmfamily salzburg}%
 }
 
 % ============================================================
@@ -100,12 +97,9 @@
 % ============================================================
 \title{CELLAIR Mesoscope}
 \subtitle{CELL Analysis with Intelligent Recognition}
-\author[F.~Feigl]{Florian Feigl}
-\institute{%
-  \unilogo\\[0.3em]
-  University of Salzburg%
-}
-\date[\today]{\today}
+\author[Florian Feigl]{Florian Feigl}
+\institute{\uniwordmarklarge}
+\date[\DTMtoday]{\DTMtoday}
 
 % ============================================================
 % Document
@@ -574,13 +568,9 @@
   \vfill
   {\Large\color{unisalz} Thank you}
 
-  \vspace{1em}
+  \vspace{1.5em}
 
-  \unilogo
-
-  \vspace{0.5em}
-
-  \small University of Salzburg
+  \uniwordmarklarge
 
   \vspace{1em}
 
