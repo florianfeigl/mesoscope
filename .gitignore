@@ -1,6 +1,8 @@
 # compiled PDFs — except tracked presentation outputs
 *.pdf
 !presentations/**/*.pdf
+
+# LaTeX build artifacts
 *.aux
 *.log
 *.out
@@ -12,4 +14,8 @@
 *.nav
 *.snm
 *.vrb
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
 build/
