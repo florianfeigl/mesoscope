@@ -7,7 +7,7 @@ This directory contains the Ansible inventory for CELLAIR infrastructure.
 ### `rpi5` - Raspberry Pi 5 (Microscope)
 - **Hostname:** `mesoscope.local` (or static IP)
 - **User:** `lab`
-- **Purpose:** OpenFlexure server, IMX500 camera, Hailo-8 inference
+- **Purpose:** OpenFlexure server, HQ Camera (IMX477), Hailo-8 inference
 
 ### `vps` - VPS (CVAT Annotation Server)
 - **Hostname:** Your VPS IP or domain

@@ -5,9 +5,7 @@
 - [ ] OFMv7 Illumination Kit × 1
 - [ ] OFMv7 Bag of Bits × 1
 - [ ] Geared Stepper Motor 28BYJ-48 × 3
-
-## Optical — Need your distributor network
-- [ ] **Tube lens:** Achromatic doublet, 12.7mm diameter, **125mm or 150mm focal length** (NOT 50mm)
+- [ ] Tube lens: Achromatic doublet, 12.7mm diameter, 125mm or 150mm focal length
 - [ ] Condenser lens: PMMA, 13mm, ~5mm focal
 
 ## Electronics
@@ -17,4 +15,4 @@
 
 ---
 
-**Critical:** The tube lens must be 125-150mm. The standard 50mm will not work with our camera (IMX477 sensor is too large).
+**Critical:** The tube lens must be 125-150mm. The standard 50mm will not work with our camera (IMX477 sensor is too large). See `hardware/optics/OPTICS_MODULE.md` for the full calculation.

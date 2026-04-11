@@ -19,3 +19,20 @@
 *.synctex.gz
 
 build/
+
+# Ansible Vault (unencrypted secrets must not be committed)
+ansible/group_vars/vault.yml
+!ansible/group_vars/vault.yml.enc
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Model artifacts (large files)
+model/models/trained/*.pt
+model/models/compiled/*.hef
+model/data/raw/
+model/data/processed/
+model/data/annotations/

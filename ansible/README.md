@@ -34,11 +34,11 @@ Automated deployment for the CELLAIR microscopy project.
 │  Raspberry Pi 5 (mesoscope.local)                  │
 │  ┌─────────────────────────────────────────────┐   │
 │  │  OpenFlexure Server (port 5000)            │   │
-│  │  ├─ IMX500 Camera Thing                    │   │
+│  │  ├─ HQ Camera (IMX477) Thing              │   │
 │  │  └─ Web UI for microscope control          │   │
 │  └─────────────────────────────────────────────┘   │
 │                                                      │
-│  Hardware: Hailo-8 NPU, IMX500, IMX477             │
+│  Hardware: Hailo-8 NPU, IMX477 HQ Camera            │
 └─────────────────────────────────────────────────────┘
 ```
 

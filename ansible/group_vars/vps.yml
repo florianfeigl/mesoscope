@@ -9,18 +9,20 @@ cvat_host: cvat.feigl.dev
 # Port (default: 8080)
 cvat_port: 8080
 
-# Admin credentials - CHANGE THESE!
-# Generate secure passwords with: openssl rand -base64 32
-cvat_admin_password: "ChangeMeInProduction123!"  # TODO: Generate secure password
+# Admin credentials - Use Ansible Vault in production!
+# Generate with: ansible-vault encrypt_string 'your_password' --name 'cvat_admin_password'
+# Then replace the value below with the vault-encrypted string.
+# Development only -- replace before deployment:
+cvat_admin_password: "{{ vault_cvat_admin_password }}"
 cvat_admin_email: admin@feigl.dev
 
 # Database credentials
-cvat_db_password: "SecureDbPass456!"  # TODO: Generate secure password
+cvat_db_password: "{{ vault_cvat_db_password }}"
 cvat_db_name: cvat
 cvat_db_user: root
 
 # Redis credentials
-cvat_redis_password: "SecureRedisPass789!"  # TODO: Generate secure password
+cvat_redis_password: "{{ vault_cvat_redis_password }}"
 
 # Installation directory on VPS
 cvat_install_dir: /opt/cvat

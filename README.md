@@ -8,7 +8,7 @@
 - [x] **Hardware Setup (Raspberry Pi 5)**
     - [x] Install Raspberry Pi OS (Trixie, Python 3.13)
     - [x] Configure AI HAT (27 TOPS) drivers and dependencies
-    - [x] Configure AI Camera (IMX500) integration
+    - [x] Configure Pi HQ Camera (IMX477) integration
     - [ ] Configure RTC Module (DS3231) -- hardware not yet connected
 - [x] **Ansible Configuration**
     - [x] Create Ansible Playbook/Role for base system setup
@@ -19,48 +19,46 @@
 - [x] Port OpenFlexure Server (v3, 3.0.0-alpha4) to RPi5/Trixie (Python 3.13)
     - [x] Switch from legacy `master` branch (Python 3.7/Flask) to `v3` branch (Python >= 3.11/FastAPI)
     - [x] Resolve build dependencies (`libcap-dev`, `rpicam-apps` replacing `libcamera-apps`)
-    - [x] Deploy configuration (`ofm_config.json`) with SimulatedCamera and DummyStage
+    - [x] Deploy configuration (`ofm_config.json`) with HQ Camera and DummyStage
     - [x] Download and integrate web app frontend from GitLab CI artifacts
     - [x] Verify server starts, web UI accessible on port 5000
 - [ ] Create software list for OpenFlexure Suite
-- [ ] Validate Autofocus with AI Cam (investigate OpenFlexure compatibility)
+- [ ] Validate Autofocus with motorised stage
 
-### Phase 3: IMX500 Camera Integration
-> **Finding:** OpenFlexure v3 only supports IMX219 (Pi Camera v2) and IMX477 (Pi HQ Camera).
-> The IMX500 (AI Camera) is not supported. A custom `IMX500Camera` Thing class was written
-> to bridge the IMX500 into OpenFlexure's camera interface, bypassing the tuning file system entirely.
+### Phase 3: HQ Camera (IMX477) Integration
+> **Note:** The primary microscope camera is the Pi HQ Camera (IMX477, C-mount).
+> OpenFlexure v3 supports the IMX477 natively via picamera2. A custom optics module
+> with a 125-150mm tube lens is required to properly fill the larger IMX477 sensor
+> (see `hardware/optics/OPTICS_MODULE.md`).
 
-- [x] Write custom `IMX500Camera` Thing class for OpenFlexure (`ansible/roles/openflexure/files/imx500_camera.py`)
-- [x] Bypass tuning file system (IMX500 uses auto-exposure/auto-white-balance natively)
-- [x] Deploy and verify server starts with IMX500 camera
+- [x] Deploy OpenFlexure with HQ Camera (IMX477) configuration
 - [x] Test live preview via OpenFlexure web UI
-- [x] Verify IMX500 on-sensor inference (see test results below)
 - [x] Verify Hailo-8 NPU inference (see test results below)
-- [ ] Validate autofocus with IMX500
+- [ ] Design and 3D-print custom optics module for IMX477 + 125-150mm tube lens
+- [ ] Validate autofocus with motorised stage
 
 ### Phase 4: Integration Testing
 - [x] **Hardware Verification**
     - [x] Hailo-8 AI Processor detected on PCIe (`lspci`)
-    - [x] AI Camera (IMX500) detected: 4056x3040 @10fps / 2028x1520 @30fps
+    - [x] Pi HQ Camera (IMX477) detected: 4056x3040 @10fps / 2028x1520 @30fps
     - [x] I2C buses operational (bus 1, 6, 10, 13, 14)
     - [x] Hostname, timezone, NTP synchronization confirmed
 - [x] **OpenFlexure Server**
     - [x] Server starts and responds on HTTP (port 5000)
     - [x] Web UI accessible
-    - [x] IMX500 camera initialised and streaming
+    - [x] HQ Camera (IMX477) initialised and streaming
     - [ ] Test stage control via sangaboard (if connected)
     - [ ] Verify smart scan and autofocus functionality
-- [x] **AI Inference (dual NPU)**
+- [x] **AI Inference (Hailo-8 NPU)**
     - [x] Hailo-8 NPU firmware verified: v4.23.0, Hailo-8 architecture
     - [x] DKMS driver build automated in Ansible (`hailo_pci` kernel module)
-    - [x] IMX500 on-sensor inference verified (MobileNet V2, 15.1 inf/s, 4.5ms DNN latency)
     - [x] Hailo-8 NPU inference verified (YOLOv8s Pose, 91.5 inf/s, 10.9ms latency)
     - [x] Benchmark complete (see Inference Test Results section)
 - [x] **System Stability (post-reboot verification 2026-03-04)**
     - [x] RTC (DS3231) keeps time across reboots (`hwclock -r` confirmed)
     - [x] Hailo PCIe driver loads automatically on boot (`hailo_pci` module, `/dev/hailo0`)
     - [x] OpenFlexure service starts on boot, camera streaming active
-    - [x] IMX500 camera detected after reboot
+    - [x] HQ Camera (IMX477) detected after reboot
     - [x] Resource usage under load (see below)
 
 #### Resource Profile (idle with camera streaming)
@@ -102,8 +100,7 @@
 | Component | Description | Est. Price | Status |
 |-----------|-------------|-----------|--------|
 | Raspberry Pi 5 (8GB) | Main computing unit | ~80 EUR | Acquired |
-| AI HAT (Hailo-8, 27 TOPS) | PCIe NPU for heavy inference | ~70 EUR | Acquired |
-| AI Camera (IMX500) | On-sensor NPU, 12.3 MP | ~70 EUR | Acquired |
+| AI HAT+ (Hailo-8, 27 TOPS) | PCIe NPU for heavy inference (segmentation, YOLOv8) | ~70 EUR | Acquired |
 | DS3231 RTC Module | Battery-backed real-time clock | ~5 EUR | Acquired |
 | GPIO Stacking Header | Pass-through for RTC under AI HAT | ~3 EUR | Acquired |
 | MicroSD Card (32GB+) | OS and software storage | ~10 EUR | Acquired |
@@ -112,7 +109,7 @@
 ### Optics & Microscopy
 | Component | Description | Est. Price | Status |
 |-----------|-------------|-----------|--------|
-| Pi HQ Camera (IMX477) | C-mount, 12.3 MP sensor | ~35 EUR | Acquired |
+| Pi HQ Camera (IMX477) | C-mount, 12.3 MP sensor -- **primary microscopy camera** | ~35 EUR | Acquired |
 | Scraped ≤10x objective | Finite conjugate 160 mm, sourced from existing microscopes | ~0 EUR | Acquired |
 | Tube lens (125-150 mm) | Achromatic doublet, 12.7 mm dia (e.g. ThorLabs AC127-125-A or AC127-150-A) | ~15-80 EUR | Pending |
 | 20x RMS Plan Achromat (0.40 NA) | Cell tracking, movement patterns (~0.7 µm resolution) | ~25-80 EUR | Pending |
@@ -150,51 +147,46 @@
 - [ ] **Incubator Setup (37C)**
     - [ ] Design separation of computing unit (outside) and camera (inside)
     - [ ] Inverted geometry: objective below, sample on top (OpenFlexure default)
-    - [ ] Mount IMX500 AI Camera as incubator monitoring camera (see below)
 - [ ] **Experiments**
     - [ ] Acquire PFA-fixed chip preparations
     - [ ] Analyze significant movement pattern changes in cells during calcification
     - [ ] Investigate influence of pressure changes on calcification [in progress]
     - [ ] Test series: Test different medium flow rates [in progress]
 
-## Dual Camera Architecture
-
-The system uses two cameras with distinct roles:
+## Camera Architecture
 
 ```
-Inside incubator (37C):
-  [IMX500 AI Camera]          --> macro/watchdog: chip overview, anomaly detection
-  [HQ Camera + 20x objective] --> microscopy: cell-level imaging (OpenFlexure)
-
-Outside incubator:
-  [RPi5 + Hailo-8 NPU]       --> processes both feeds
+RPi5 + Hailo-8 NPU (outside incubator)
+  |
+  +-- [HQ Camera (IMX477) + RMS objective + 125-150mm tube lens]
+  |     --> Microscopy: cell-level imaging (OpenFlexure)
+  |     --> Full sensor utilization (~85-95% with custom tube lens)
+  |
+  +-- [Hailo-8 AI HAT (27 TOPS)]
+        --> Heavy inference: YOLOv8-seg cell segmentation, tracking (HEF)
 ```
-
-### IMX500 AI Camera -- Incubator Monitor
-The IMX500 is not suitable for cell-level microscopy (M12 lens, ~0.1-0.5mm resolution
-at working distance). However, its on-sensor NPU (15 inf/s, 4.5ms latency) makes it
-ideal as an autonomous incubator monitoring camera:
-
-- **Media monitoring**: Detect color changes, turbidity, contamination
-- **Chip positioning**: Verify sample alignment before microscopy sessions
-- **Anomaly detection**: Flag condensation on optics, media spills, unexpected movement
-- **Colony counting**: Bacterial colonies on agar plates (1-5mm features)
-- **Organism-level tracking**: Zebrafish larvae, Drosophila, C. elegans locomotion
-
-The on-sensor NPU handles lightweight classification/detection per frame without
-consuming CPU or the Hailo-8 NPU, which remains available for heavy microscopy
-inference tasks.
 
 ### HQ Camera (IMX477) -- Microscopy
-The HQ Camera with C-mount and RMS objectives provides cell-level resolution:
+
+The Pi HQ Camera with C-mount and RMS objectives provides cell-level resolution:
 
 | Objective | Resolution | Use Case |
 |-----------|-----------|----------|
-| 20x / 0.40 NA | ~0.7 um | Cell tracking, movement patterns |
-| 40x / 0.65 NA | ~0.4 um | Subcellular detail, calcification |
+| ≤10x / ≤0.25 NA | ~1.3 µm | Overview, colony counting |
+| 20x / 0.40 NA | ~0.7 µm | Cell tracking, movement patterns |
+| 40x / 0.65 NA | ~0.4 µm | Subcellular detail, calcification |
 
-This camera feeds into the OpenFlexure server with full calibration support
-(flat-field correction, lens shading, autofocus via motorised stage).
+The custom 125-150mm tube lens (vs. standard 50mm) fills the larger IMX477 sensor
+(7.86×5.89 mm vs. 3.68×2.76 mm for Pi Camera v2), achieving ~85-95% sensor utilization.
+See [`hardware/optics/OPTICS_MODULE.md`](hardware/optics/OPTICS_MODULE.md) for details.
+
+### Hailo-8 NPU -- Inference
+
+The Hailo-8 AI HAT runs compiled HEF models for real-time cell segmentation at the microscope:
+
+- **YOLOv8s-seg**: Cell segmentation (osteoblast, epithelial, calcium classes)
+- **ByteTrack**: Cell tracking for migration velocity and calcium proximity analysis
+- **Throughput**: 91.5 inf/s at 10.9ms latency (YOLOv8s Pose benchmark)
 
 ## Post-Deployment Verification
 
@@ -215,7 +207,7 @@ lsmod | grep hailo
 ls /dev/hailo*
 hailortcli fw-control identify
 
-# Camera
+# Camera (HQ Camera IMX477)
 rpicam-hello --list-cameras
 
 # OpenFlexure
@@ -234,7 +226,7 @@ curl -s http://localhost:5000/ | head -5
 | I2C bus 1 | `UU` at address `0x68` (DS3231) |
 | Hailo module | `hailo_pci` loaded, `/dev/hailo0` present |
 | Hailo firmware | v4.23.0, Hailo-8 architecture |
-| Camera | `imx500` detected, 4056x3040 / 2028x1520 |
+| Camera | `imx477` detected, 4056x3040 / 2028x1520 |
 | OpenFlexure | `active (running)`, enabled on boot |
 | HTTP | HTML response on port 5000 |
 
@@ -253,7 +245,7 @@ curl -s http://localhost:5000/ | head -5
 | Provision User  | `lab`                                |
 | OS              | Raspberry Pi OS (Trixie)             |
 | Python          | 3.13                                 |
-| Hardware        | RPi5, AI HAT 27 TOPS, AI Cam IMX500 |
+| Hardware        | RPi5, AI HAT 27 TOPS, HQ Camera IMX477 |
 
 ### Step 1: Flash the SD Card
 1. Download and install [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
@@ -289,36 +281,12 @@ To use different credentials, update the following files:
 - `ansible/group_vars/all.yml` -- hostname and application user
 - `ansible/ansible.cfg` -- default remote user
 
-## IMX500 AI Models
+## AI Models
 
-The following pre-installed models are available at `/usr/share/imx500-models/` (installed via `imx500-all`).
-The active model is configured in `ofm_config.json` via the `model_path` kwarg.
+### Hailo-8 NPU Models
 
-| Model | Task | File |
-|-------|------|------|
-| MobileNet V2 | Classification | `imx500_network_mobilenet_v2.rpk` |
-| EfficientNet-Lite0 | Classification | `imx500_network_efficientnet_lite0.rpk` |
-| EfficientNet B0 | Classification | `imx500_network_efficientnet_bo.rpk` |
-| EfficientNetV2 B0/B1/B2 | Classification | `imx500_network_efficientnetv2_b{0,1,2}.rpk` |
-| ResNet-18 | Classification | `imx500_network_resnet18.rpk` |
-| MobileViT XS/XXS | Classification | `imx500_network_mobilevit_{xs,xxs}.rpk` |
-| MNASNet 1.0 | Classification | `imx500_network_mnasnet1.0.rpk` |
-| ShuffleNet V2 x1.5 | Classification | `imx500_network_shufflenet_v2_x1_5.rpk` |
-| SqueezeNet 1.0 | Classification | `imx500_network_squeezenet1.0.rpk` |
-| RegNetX/Y | Classification | `imx500_network_regnet{x,y}_00{2,4}.rpk` |
-| SSD MobileNetV2 FPNLite | Object Detection | `imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk` |
-| EfficientDet-Lite0 | Object Detection | `imx500_network_efficientdet_lite0_pp.rpk` |
-| NanoDet Plus 416x416 | Object Detection | `imx500_network_nanodet_plus_416x416{,_pp}.rpk` |
-| DeepLabV3+ | Segmentation | `imx500_network_deeplabv3plus.rpk` |
-| HigherHRNet COCO | Pose Estimation | `imx500_network_higherhrnet_coco.rpk` |
-| PoseNet | Pose Estimation | `imx500_network_posenet.rpk` |
-
-> **Current default:** `imx500_network_mobilenet_v2.rpk` (lightweight, good for testing)
-
-## Hailo-8 AI Models
-
-Pre-installed HEF models are available at `/usr/share/hailo-models/` (installed via `hailo-models`).
-These run on the Hailo-8 NPU (AI HAT, 27 TOPS) via PCIe, separate from the IMX500 on-sensor NPU.
+Pre-installed HEF models at `/usr/share/hailo-models/` (installed via `hailo-models`).
+These run on the Hailo-8 NPU (AI HAT, 27 TOPS) via PCIe for real-time cell analysis.
 
 | Model | Task | File |
 |-------|------|------|
@@ -328,18 +296,10 @@ These run on the Hailo-8 NPU (AI HAT, 27 TOPS) via PCIe, separate from the IMX50
 | SCRFD 2.5G | Face Detection | `scrfd_2.5g_h8l.hef` |
 
 > See `ls /usr/share/hailo-models/` for the full list (18 models).
+> The custom cellseg model (YOLOv8s-seg fine-tuned on osteoblast/epithelial/calcium classes)
+> will be compiled to HEF and deployed at `model/models/compiled/cellseg.hef`.
 
 ## Inference Test Results
-
-### IMX500 On-Sensor NPU (tested 2026-03-03)
-```
-Model: MobileNet V2 (imx500_network_mobilenet_v2.rpk)
-Input size: 224x224
-Output: Tensor 0: shape=(1, 1000)
-Throughput: 15.1 inferences/sec
-DNN latency: 4.5ms avg
-DSP latency: 3.8ms avg
-```
 
 ### Hailo-8 NPU via PCIe (tested 2026-03-03)
 ```
@@ -354,15 +314,11 @@ Latency: 10.9ms avg
 
 ### Architecture
 ```
-IMX500 Sensor ──> Image pixels ──> ISP ──> picamera2 streams (OpenFlexure UI)
-     |
-     └──> On-sensor NPU ──> Output tensors (per-frame metadata)
-                              Lightweight: classification, simple detection
-
-Captured Frame ──> Hailo-8 NPU (PCIe, 27 TOPS) ──> Output tensors
-                              Heavy: segmentation, pose estimation, custom models
-```
-
+HQ Camera (IMX477) --> picamera2 streams (OpenFlexure UI)
+                         |
+                         v
+Captured Frame --> Hailo-8 NPU (PCIe, 27 TOPS) --> Output tensors
+                    Heavy: segmentation, pose estimation, custom HEF models
 ## Notes
 - **Meetings:** Jour fixe is usually Tuesday 10:00 AM.
 

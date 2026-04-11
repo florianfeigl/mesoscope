@@ -6,8 +6,7 @@
 |-----------|---------------|--------|
 | Raspberry Pi 5 | 8GB RAM | Required |
 | Hailo-8 AI HAT | 27 TOPS | Required |
-| IMX500 AI Camera | On-sensor NPU | Required |
-| IMX477 HQ Camera | For high-res capture | Optional |
+| HQ Camera (IMX477) | C-mount, 12.3 MP | Required |
 
 ## Directory Structure
 
@@ -215,15 +214,17 @@ sudo cp best.hef /usr/share/hailo-models/
 
 ### 6.2 Update OpenFlexure Config
 
-Edit `ansible/roles/openflexure/templates/ofm_config.json.j2`:
+The HQ Camera (IMX477) is configured via `StreamingPiCamera2` with `camera_board: "picamera_hq"`.
+
+The config is deployed via Ansible: `ansible/roles/openflexure/templates/ofm_config.json.j2`
 
 ```json
 {
     "things": {
         "camera": {
-            "class": "openflexure_microscope_server.things.camera.imx500:IMX500Camera",
+            "class": "openflexure_microscope_server.things.camera.picamera:StreamingPiCamera2",
             "kwargs": {
-                "model_path": "/usr/share/hailo-models/cellseg.hef"
+                "camera_board": "picamera_hq"
             }
         }
     }
