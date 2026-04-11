@@ -62,8 +62,8 @@
 ### M6: Integration
 **Target**: May 2026 (2 weeks)
 
-- [ ] Update OpenFlexure IMX500Camera class
-- [ ] Add model loading to Hailo-8
+- [ ] Configure OpenFlexure for HQ Camera (IMX477) with custom tube lens
+- [ ] Add cellseg model loading to Hailo-8
 - [ ] Implement inference API endpoint
 - [ ] Performance testing (FPS, latency)
 - [ ] **Deliverable**: Integrated cellseg on mesoscope

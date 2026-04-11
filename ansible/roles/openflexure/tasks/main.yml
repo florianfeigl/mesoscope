@@ -102,16 +102,7 @@
     - /var/openflexure
     - /var/openflexure/settings
     - /var/openflexure/logs
-    - /var/openflexure/scans
-
-- name: Deploy IMX500 camera Thing class
-  copy:
-    src: imx500_camera.py
-    dest: /opt/openflexure/server/src/openflexure_microscope_server/things/camera/imx500.py
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
-  notify: restart_openflexure
+    - /var/openflexure/data
 
 - name: Deploy OpenFlexure configuration
   template:

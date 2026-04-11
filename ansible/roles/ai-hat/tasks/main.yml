@@ -6,7 +6,7 @@
     line: 'dtparam=pciex1_gen=3'
   notify: reboot_pi
 
-- name: Install dependencies for AI Camera and HAT
+- name: Install dependencies for AI HAT and camera
   apt:
     name:
       - rpicam-apps
@@ -15,7 +15,6 @@
       - python3-opencv
       - python3-numpy
       - hailo-all
-      - imx500-all
     state: present
 
 - name: Get Hailo PCIe driver version

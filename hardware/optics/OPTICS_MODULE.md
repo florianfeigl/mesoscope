@@ -106,7 +106,7 @@ meaning only the central ~25% of the image area is used.
 Calculation for each row: `M = f / (f + |p|)` where `|p| = 141.5 mm`.
 
 **Buy:** 125 mm or 150 mm achromatic doublet, 12.7 mm diameter.
-Ordered via Taulab / distributor. Exact choice depends on scraped objective
+Available from taulab or optics distributors. Exact choice depends on scraped objective
 magnification — 150 mm preferred for ≤10x, 125 mm for lower magnification (≤4x).
 
 ---
@@ -171,9 +171,9 @@ The printed optics module tube (from tube lens seat to camera face) needs to be
 ## Step 6 — OpenFlexure source customisation
 
 > **Confirmed by OpenFlexure team (William, March 2026):**
-> The Pi HQ Camera (IMX477) mount already exists in the `hq_camera` branch.
-> The camera type `"arducam_b0196"` (same IMX477 + C-mount) provides the
-> correct mount geometry. Only the tube lens parameters need changing.
+> The Pi HQ Camera mount exists in the `hq_camera` branch.
+> Set `CAMERA = "picamera_hq"` in OpenSCAD (not `"arducam_b0196"`).
+> Only the tube lens parameters need changing.
 
 ### Repository and branch
 
@@ -190,8 +190,12 @@ Two files need editing:
 
 **1. `openscad/rms_optics_module.scad`** — set camera type:
 ```openscad
-CAMERA = "arducam_b0196";    // Pi HQ Camera / IMX477 C-mount
+CAMERA = "picamera_hq";         // Pi HQ Camera (IMX477, C-mount)
 ```
+
+> **Note:** William (OpenFlexure support, 2026-03-30) confirmed the correct camera
+> type is `"picamera_hq"`, not `"arducam_b0196"`. The `arducam_b0196` is a different
+> camera module that happens to use the same IMX477 sensor but has a different mount.
 
 **2. `openscad/optics_configurations.scad`** — in the function `rms_f50d13_config`,
 change the tube lens parameters:

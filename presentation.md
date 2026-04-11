@@ -53,7 +53,7 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **Note:** IMX500 was tested during development but dropped from final design — see Slide 8.
+> **Note:** The system uses a single-camera design with the HQ Camera (IMX477).
 
 ---
 
@@ -106,7 +106,7 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 | Component | Standard OpenFlexure | Our Setup | Action |
 |---|---|---|---|
-| **Tube lens** | 50 mm achromat (ThorLabs AC127-050-A) | 125-150 mm achromat (ThorLabs AC127-125-A or AC127-150-A) | **Buy new** |
+| **Tube lens** | 50 mm achromat | 125-150 mm achromat (from taulab) | **Buy** |
 | **Optics module STL** | `optics_picamera_2_rms_f50d13.stl` | Custom `optics_hq_camera_rms.stl` | **Compile from OpenSCAD** |
 | **Objective** | 40x RMS (purchased) | ≤10x scraped from existing microscopes | **Source** (no purchase) |
 | **Camera ribbon cable** | 200 mm (may suffice) | 200 mm | **Verify length** — tube is ~54 mm longer, likely OK |
@@ -132,7 +132,7 @@ Filename: `optics_picamera_2_rms_f50d13.stl`
 
 ```openscad
 // In rms_optics_module.scad
-CAMERA = "arducam_b0196";        // Pi HQ Camera (IMX477, C-mount)
+CAMERA = "picamera_hq";            // Pi HQ Camera (IMX477, C-mount)
 
 // In optics_configurations.scad — function rms_f50d13_config:
 tube_lens_f = 125;               // or 150, depending on purchased lens
@@ -312,7 +312,7 @@ Standard OpenFlexure: 37 mm → Ours: ~88–95 mm (+51–58 mm)
 |---|---|---|
 | Computing + AI (RPi 5, AI HAT, RTC, GPIO header) | ~165 EUR | — |
 | HQ Camera (IMX477) | ~35 EUR | — |
-| Tube lens (125-150 mm achromat) | — | 15–30 EUR (AliExpress) or ~80 EUR (ThorLabs) |
+| Tube lens (125-150 mm achromat) | — | 15-80 EUR (from taulab) |
 | Sangaboard v0.5 | — | ~30–40 EUR |
 | 28BYJ-48 stepper motors | ~5 EUR | — |
 | 3D printing (filament) | — | ~10 EUR |
@@ -322,21 +322,20 @@ Standard OpenFlexure: 37 mm → Ours: ~88–95 mm (+51–58 mm)
 
 ## Slide 8: What Was Found Along the Road
 
-### IMX500 AI Camera — Development dead end
+### IMX500 AI Camera — Not in final design
 
 | Aspect | Details |
 |---|---|
 | **What it is** | Raspberry Pi AI Camera with on-sensor NPU (Sony IMX500) |
-| **What was tried** | Designing a two NPU level process for image evaluation |
-| **Why it was dropped** | No clear use case for current experiment scope; adds complexity without benefit |
-| **Status** | Hardware acquired, software-compatible (tested), but not in final product design |
-| **Potential future use** | Could be repurposed for autonomous cell culture monitoring (contamination, confluence) — separate project |
+| **Why it was dropped** | M12 lens unsuitable for cell microscopy (~0.1-0.5mm resolution); adds complexity without benefit for current scope |
+| **Status** | Hardware acquired but not in use |
+| **Single-camera design** | HQ Camera (IMX477) with C-mount + RMS objective provides cell-level resolution (0.7µm at 20x) |
 
 ### What worked
 
 - **Raspberry Pi 5 + AI HAT:** Seamless integration, PCIe detection, Hailo firmware loads automatically
 - **OpenFlexure v3 migration:** Successfully ported from legacy Flask to FastAPI, compatible with Python 3.13
-- **Camera integration:** HQ Camera and IMX500 both stream via standard libcamera stack
+- **Camera integration:** HQ Camera (IMX477) streams via picamera2 with full OpenFlexure support
 - **Ansible automation:** Full deployment from scratch in <10 minutes
 
 ---

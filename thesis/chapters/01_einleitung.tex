@@ -1,2 +1,41 @@
 \chapter{Einleitung}
-Text \dots
+
+Die Erforschung von Zell-Zell-Interaktionen in Bioreaktorsystemen erfordert
+wiederholbare, quantifizierende Beobachtung über Stunden bis Tage. Manuelle
+mikroskopische Untersuchung ist zeitaufwendig, subjektiv und schlecht
+reproduzierbar. Insbesondere die Kalzifizierung von Osteoblasten
+(hFOB\,1.19) und deren Wechselwirkung mit endothelialen Zellen (hMEC\,1)
+auf HAP-X-Chips stellt hohe Anforderungen an zeitliche Auflösung und
+Konstanz der Beobachtungsbedingungen.
+
+\section{Motivation}
+
+Die biologische Fragestellung erfordert:
+\begin{itemize}
+    \item Langzeitbeobachtung (24--72\,h) bei 37\,\textdegree C
+    \item Auflösung im Sub-Mikrometer-Bereich (Zellmorphologie, Kalziumablagerungen)
+    \item Automatisierte, reproduzierbare Bildaufnahme
+    \item Echtzeit-KI-Inferenz zur Zellerkennung und -verfolgung
+\end{itemize}
+
+\section{Zielsetzung}
+
+Ziel dieser Arbeit ist die Entwicklung eines kostengünstigen, vollständig
+automatisierten Mikroskopiesystems, das:
+\begin{enumerate}
+    \item Open-Source-Hardware (OpenFlexure-Mikroskop) und -Software einsetzt,
+    \item eine angepasste Optik für die Pi HQ Camera (IMX477) mit 125--150\,mm
+          Tubusobjektiv nutzt,
+    \item segmentierte KI-Inferenz (YOLOv8s-seg) auf dem Hailo-8-NPU in Echtzeit
+          ausführt,
+    \item Zellverfolgung (ByteTrack) und morphologische Analyse ermöglicht, und
+    \item über Ansible reproduzierbar bereitgestellt wird.
+\end{enumerate}
+
+\section{Aufbau der Arbeit}
+
+Kapitel~\ref{chap:grundlagen} gibt einen Überblick über die biologischen und
+technischen Grundlagen. Kapitel~\ref{chap:methoden} beschreibt den Aufbau des
+Systems. Kapitel~\ref{chap:ergebnisse} präsentiert die experimentellen
+Ergebnisse. Kapitel~\ref{chap:diskussion} diskutiert die Befunde und
+Kapitel~\ref{chap:zusammenfassung} fasst die Arbeit zusammen.

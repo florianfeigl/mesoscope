@@ -1,9 +1,9 @@
 {
     "things": {
         "camera": {
-            "class": "openflexure_microscope_server.things.camera.imx500:IMX500Camera",
+            "class": "openflexure_microscope_server.things.camera.picamera:StreamingPiCamera2",
             "kwargs": {
-                "model_path": "/usr/share/imx500-models/imx500_network_mobilenet_v2.rpk"
+                "camera_board": "picamera_hq"
             }
         },
         "stage": "openflexure_microscope_server.things.stage.dummy:DummyStage",
@@ -13,7 +13,6 @@
         "smart_scan": {
             "class": "openflexure_microscope_server.things.smart_scan:SmartScanThing",
             "kwargs": {
-                "scans_folder": "/var/openflexure/scans/",
                 "default_workflow": "histo_scan_workflow"
             }
         },
@@ -24,5 +23,8 @@
         "bg_channel_deviations_luv": "openflexure_microscope_server.things.background_detect:ChannelDeviationLUV"
     },
     "settings_folder": "/var/openflexure/settings/",
-    "log_folder": "/var/openflexure/logs/"
+    "application_config": {
+        "log_folder": "/var/openflexure/logs/",
+        "data_folder": "/var/openflexure/data/"
+    }
 }
