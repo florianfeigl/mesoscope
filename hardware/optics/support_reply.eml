@@ -1,0 +1,1232 @@
+Received: from VI2P193MB2887.EURP193.PROD.OUTLOOK.COM (2603:10a6:800:29f::21)
+ by GVXP193MB2525.EURP193.PROD.OUTLOOK.COM with HTTPS; Mon, 30 Mar 2026
+ 20:19:05 +0000
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=w7p82i4gQkVGORYXd4iYkytx1PzHCU3hXPp2FTrKLt15a+/k+sK+3Aki2xL0jiUeaEHr3QaMi0So/RHKXqdeeWXAXHzVCCxtkjF6fORKNon4Dg5TFTQdv49h3EO/B63Y5Ee+lxPYZ2nC5zNgl+Ow+5kHi5MXcFb1wYuxSA5TZpVGyX9caVXoUj70v3dBfkmZj4vXrcwq8hzkLAryA9cbj4GqToZmDugYtEwggnaxG7uphPJszCl1gsJfiw7Xjdydo0aogNyN2ELqzGZ8+KKRJlo8Vp+zozfL3PBFQSsJRJ1uUbEm5ySQhhAevtCm9BOBmi95JYPl1GfcaGDhNUKxzg==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IZ1iQyRqgQU8VQlPgx2T85swisYjDzBNpOLB7tn8C+M=;
+ b=GCQE7ZL+j0vJ5a8uzoqhLc6MqaPouYHJG0GfIzO1+7525vl2UM/qDXxFChsGHh5Dar03zgCPD3szCf8pGdM2Ki185TOD6HV9FI3q6i9K4DvNyxgGyRqnR8ewE+l2TAG1XlHSCAPcdEOWXRBHmYmptKZUhN2psNbgKq5sbpEJNqoL4u3Q+SXR5lTMx/eWemB8YNcrp/AZYZnLCBy0xVvS7O/nn9NG9lq22Noeba0cYefD7xaeE6Yu6mM4vBhKSgj9FdJADlgUGa+D/UqXnp+Vg8HDF//cAXX3iAVl1koHeRgNRXeMBswCMWASiEmp770jeP0YKR/r2wsuvV0eKBhVDQ==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
+ 2a01:111:f403:c205::3) smtp.rcpttodomain=stud.plus.ac.at
+ smtp.mailfrom=bath.ac.uk; dmarc=pass (p=reject sp=reject pct=100) action=none
+ header.from=bath.ac.uk; dkim=pass (signature was verified)
+ header.d=bath.ac.uk; arc=pass (0 oda=1 ltdi=1
+ spf=[1,1,smtp.mailfrom=bath.ac.uk] dkim=[1,1,header.d=bath.ac.uk]
+ dmarc=[1,1,header.from=bath.ac.uk])
+Received: from DUZPR01CA0109.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:4bb::28) by VI2P193MB2887.EURP193.PROD.OUTLOOK.COM
+ (2603:10a6:800:29f::21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.28; Mon, 30 Mar
+ 2026 20:19:00 +0000
+Received: from DB5PEPF00014B89.eurprd02.prod.outlook.com
+ (2603:10a6:10:4bb:cafe::d2) by DUZPR01CA0109.outlook.office365.com
+ (2603:10a6:10:4bb::28) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9745.28 via Frontend Transport; Mon,
+ 30 Mar 2026 20:19:00 +0000
+Authentication-Results: spf=pass (sender IP is 2a01:111:f403:c205::3)
+ smtp.mailfrom=bath.ac.uk; dkim=pass (signature was verified)
+ header.d=bath.ac.uk;dmarc=pass action=none
+ header.from=bath.ac.uk;compauth=pass reason=100
+Received-SPF: Pass (protection.outlook.com: domain of bath.ac.uk designates
+ 2a01:111:f403:c205::3 as permitted sender) receiver=protection.outlook.com;
+ client-ip=2a01:111:f403:c205::3;
+ helo=LO2P265CU024.outbound.protection.outlook.com; pr=C
+Received: from LO2P265CU024.outbound.protection.outlook.com
+ (2a01:111:f403:c205::3) by DB5PEPF00014B89.mail.protection.outlook.com
+ (2603:10a6:18:3::305) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9745.21 via Frontend Transport; Mon,
+ 30 Mar 2026 20:19:00 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=gJ7zey9NbB7bPHsq5fK9NfoWYxMWRrOpTIy7JlzN5xvU9b7K8CQfwD+qPyv3hGCLA866c+9kDvvAktTLXZzqvH0hP1ZD9rOBZGXziDNOSz+gpNQ18IqzFMa6O5KZFQqIcWISqn3hEFMUFhASuEJeZZ4CYrHVbryAakieYOtGwLH0ynE/CVxwEIpTD5KAdJTT15uyjVzr++10pDA5+YzQp5SXbwJ+lX39ieG8OUda5HFzKsXHZoQGIo0KOeuhVZgY1T53vgtihvZ7+Ffrp5EGgepnI+0Ur99AhthQodgxDm5aLyS7C+tBvem9E6ZLcCFBS85Vs/K60IAqoMw7yENgxQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IZ1iQyRqgQU8VQlPgx2T85swisYjDzBNpOLB7tn8C+M=;
+ b=Dg1itb4d28mmUoWWDU/Y9hTLhngOF4OXEeOPkS6WpoK8cZJFdPZSORdGnOa05wgaqP9C+TpFc05gjsLLEq0zVqwNBOy3VnM7vlBAYwf4Mfc3rKqSqdIOz+tZdGQo2rJCDQlGtt1wNgEgExNJJwrRl7oO3zYynhO+OrKnfn33YF49FtsBG3asVHKJ1+c2xjni6gNOXeyUcl+NDJtDm3x8lIUWTWAiC16t/3OhJSn6Hf4PVvmpqfMEnpUeWVVK5eJrlkKd7+tncNnLpiz8viNoZRQ6ToqGbBOfuLnpOha3zw3MmwTnFE3/cbFgGH1Y1h04/u2RJL9C9ixLEsvRmcgb3Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=bath.ac.uk; dmarc=pass action=none header.from=bath.ac.uk;
+ dkim=pass header.d=bath.ac.uk; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bath.ac.uk;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IZ1iQyRqgQU8VQlPgx2T85swisYjDzBNpOLB7tn8C+M=;
+ b=EpL51+4rFdKMHwE7CGtzQDgJq2MLswtnCE7/CIXPEWPhdtwOor+jNicPkv2I172HcjfI+0+z6UzPRzjVKSJDGzkq8ud/ib0gzXLUStT11j0oMZZuZ78HWqLGF0LOFg0qvs+BEir0ZoYfiycFMITa0ssg7KfOActwcK4fi7RJ/dd7eYh0cSU/gruLRhPfg3j2eB5pMtVJzXKEGZXJppiRr/IP3GO2td6ZY2wLraRdPXGYIlRrQeXFPIHOfgU8X1rLpt2T+cU/4rOfQM28ZwJUMeOb9/RAeHa6wA5RRI/iHzOuuHcfyQTj8HIgm7dLiGgRdwmlafB5GxRDuPt6Z0Bq/g==
+Received: from CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM (2603:10a6:400:224::8)
+ by CW1P302MB2324.GBRP302.PROD.OUTLOOK.COM (2603:10a6:400:25e::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.28; Mon, 30 Mar
+ 2026 20:18:58 +0000
+Received: from CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM
+ ([fe80::79e9:37e3:e398:f213]) by CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM
+ ([fe80::79e9:37e3:e398:f213%5]) with mapi id 15.20.9745.027; Mon, 30 Mar 2026
+ 20:18:58 +0000
+From: William Wadsworth <pyswjw@bath.ac.uk>
+To: Feigl Florian Helmut Joseph <florian.feigl@stud.plus.ac.at>,
+	"contact@openflexure.org" <contact@openflexure.org>
+Subject: RE: Request for DWG Files
+Thread-Topic: Request for DWG Files
+Thread-Index: AQHcsKBnbbU3pk0nl02JxdZyfpdxbbWn5NyAgAAJIouAH6YYwoAACMvwgAAGVuA=
+Date: Mon, 30 Mar 2026 20:18:58 +0000
+Message-ID: <CWLP302MB01016BA6D7C6565F0EA00C54E952A@CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM>
+References: <GVXP193MB25254786D6ADD65B03419EF4F146A@GVXP193MB2525.EURP193.PROD.OUTLOOK.COM>
+ <d554748d-8cab-43cc-9009-72b8d30d0a74@julianstirling.co.uk>
+ <GVXP193MB25257808088640DA50A590C0F146A@GVXP193MB2525.EURP193.PROD.OUTLOOK.COM>
+ <GVXP193MB25254B5B264C81F9A5A0E9DEF152A@GVXP193MB2525.EURP193.PROD.OUTLOOK.COM>
+ <CWLP302MB0101162F0B0BAD216D3384C3E952A@CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM>
+In-Reply-To: <CWLP302MB0101162F0B0BAD216D3384C3E952A@CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM>
+Accept-Language: en-GB, en-US
+Content-Language: en-GB
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=bath.ac.uk;
+x-ms-traffictypediagnostic: CWLP302MB0101:EE_|CW1P302MB2324:EE_|DB5PEPF00014B89:EE_|VI2P193MB2887:EE_|GVXP193MB2525:EE_
+X-MS-Office365-Filtering-Correlation-Id: bd24a22d-75f8-4fb2-1042-08de8e999468
+uob-a2b: true
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;ARA:13230040|1800799024|786006|376014|366016|56012099003|18002099003|22082099003|38070700021|13003099007|8096899003;
+X-Microsoft-Antispam-Message-Info-Original: i6zVoX0Jgs1zaxFG7rptoi32gl223kkiVWb0OeYSgR+hmQaEtfAgj7zI0s4SNWaHuVUWWVexvNMfJrlKczwOch1Ll2mI0zGd42OWSK9d8rj8nuxMx+rxnTzjqpyZemYi2VCOt0uU0JoNrKbOzZe0RNW0eUAy1UtiLyFpJLH5iEabjXRgrJSzNX1cMUkVUGzBtQj/lSaS3Um2fkVS5UyQw8IOEm0RbF6gw48YYzmJjGMXRfwwWz28ejQQ8/ugEy9u2YPxJT5dNtu0SdE4PijqyhelZOMF9nCMPmz8LvEaVoL69/T1UlO+c8G0GM8g50iSHl5CUxdhOUM0MCQgbUgjiHMf7r+ToA5JPC8RaJWMZ2exLlmTkw0nlH0+gJgRWlDuvQVV7srXcrJFyiuZcMRi1UEkn6QJRKB/LwpH+nGhU6G60/sQMFFb8NfWzdD/rfx4KQeHy50dekbcSusIhhlLK2kFqklmI6u0m6JF2TmNO3zOkxZgQrujBUj4XUlFeOCU78Rcwm0FgvO7cd9tyq4Zc0X7TSuaT9JpocvE//J4zIEA3eJ9sZStjCd9xIsd4QQpPjnxGkFgTleK3kowKSP0GzzWsgFD/isr824vGJdpP/n8aSAhXRvAkxLCgMeILKlLTUpGuHuNVKzxNwmS9OTGJbFONARbSaYOFXkH6vuMprzlHKuBL5MOZFYqbF93iQbSe94FmeLqzSFvc0jvmBf3vj+Ia50YHKyln9k2vT72yMI=
+X-Forefront-Antispam-Report-Untrusted: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWLP302MB0101.GBRP302.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(786006)(376014)(366016)(56012099003)(18002099003)(22082099003)(38070700021)(13003099007)(8096899003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-Original-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-Original-0: =?us-ascii?Q?Et5eWRpNQR2V8LEMJTarDrXTIhraTgmkmnXJMMhtFNpmPHnLrqyQp+yDguIT?=
+ =?us-ascii?Q?TqfEJ2uhr/D4p2h3RfQlabXvePQyaA7IeEk2PY+aoIzVRnkpadDlsGLDX0lx?=
+ =?us-ascii?Q?8u0f2LUA4GMJ/uultTibJxMo7qzSGjuSoT0m5JeYJtTq3qUar3UPmRzwCoqo?=
+ =?us-ascii?Q?C1ri5tM4eQ1XymZaH9qbMBajyvk3de13/hCNafDkjwlrKSefzg6U211Iz0xM?=
+ =?us-ascii?Q?JX/5XcfU+W6BIbzD56IYCeg+9ctnNildLLJ1sbeqNh5uBG1dQiJ7T6/bytrk?=
+ =?us-ascii?Q?XIQUPLt68ECXTqKqQM7r//mvHITGv2I+paA79XIFZKmf2593lUlHBlp07aBI?=
+ =?us-ascii?Q?Z+5VDEr3ZBzwuXSCruKPk+70scfiLHI27QtSp8TIroQP1zLaEIGayZ/Cvewm?=
+ =?us-ascii?Q?Lp8PTHQwwHLTgpqAU+1cm+so8eSkboIm1ZNUFKyCCZR1rmwGDQSf5/DKJFsM?=
+ =?us-ascii?Q?aJc+5mpxsthct8C3sUFYNxLe5Sw9RqLWq2PsnVYDz1+S/Vibfj++8JSS9p/c?=
+ =?us-ascii?Q?enurp6ocE+0B3fnHaieD3N0H1T8i8tiweT9fu6GHu1ascNRpFSsuCJSi8f32?=
+ =?us-ascii?Q?wpmhOd01jx+e2Lgk7YjYmgKZFMcH5lI4BmUI/fQmPz7b/30JQFHOBpa1c4nh?=
+ =?us-ascii?Q?mUqmwVj0vMdPPUZG+evGbG8SevVYPztOVXVmswe3E/ja8Apv3G2/L0ndobek?=
+ =?us-ascii?Q?7oF1ecnu2/nh2NSZYxIGPjAnL+q8WfewzR0LSfKdKZXU5i5v3nk59UJz6Jou?=
+ =?us-ascii?Q?bMimi0pHJ4SNaOTETRqgVAdmMpi+ERKMnFH37oHBHVX0P3DkHA10T3X2NbX2?=
+ =?us-ascii?Q?FQUltVuJmFiMYrUSqJR+TsF/2kkuezinP+B1jnkb0B3icJX/Y4cR4siBh+H/?=
+ =?us-ascii?Q?ni5+3Wqm2jid2v1xaUkLfyIfMlqNCDvKXri6TCTuzEj9K4rHLKkZmEoSapOv?=
+ =?us-ascii?Q?GXv/ZcbrG0BKvLjNN0HVWxoKO6N7LBWIdSAOxFfCAPANIX3NKwq+3VPt9EAb?=
+ =?us-ascii?Q?1lwxX5twMBMKPlXC8qonvd9iNeKWt7k8tG65hyGPmFMO59e1v/AIGtWPt1D3?=
+ =?us-ascii?Q?nTeXXKN+tNIaWNM5v2058bSc0WKWxmDqkj4gHnUIqDH4g4tmD4BD6s9dxLhk?=
+ =?us-ascii?Q?bIDLKg1twMynGZssduvqHvr5MsILuEYjMb9emizwPIs4H/vbpHhGXk78cJpX?=
+ =?us-ascii?Q?N28B5lQjB/U3d8INDSTU+qXvClcF3hdQlZkVpL9fUjbdTvb5HjXY1tlPZ/Z9?=
+ =?us-ascii?Q?K19+G7ZM4svOJObn0qJR8K4SuG5XJrdUjTV3oujpJCLFmx1rVLYN8ftpbDwI?=
+ =?us-ascii?Q?tilXDFYhk+288lxb01O3A8J2d6tV2+3DL9nx3EL+2apISBEDODmBYfIuyFzh?=
+ =?us-ascii?Q?ju31eyh8x+5Sw35lRvgs8FEiQ8HS7j/Sd2ucAIjP0N1G/uAJfBYvLttqruI8?=
+ =?us-ascii?Q?0Yz5If/MoQj3jkt6f9v2NxiOs9aJHwUFys1HHJOhbYjPhdA0OZukH82fCmLS?=
+ =?us-ascii?Q?yZbYOu+SCPcxttgVuf+UwlB/U0X3iRti/rc6hiHRwEG7QgFo0juYNibvRfM8?=
+ =?us-ascii?Q?CKp4Xxkc7LJwTGoBUM28OXEW9JqBT+yHvp09Em5PJcZ/QUXJcOXiyectuiDC?=
+ =?us-ascii?Q?9yjBzDi5Vdf5z0p+ee002HvF3Hen2kv3T55QKYMk5QKIVKy/Sy2j+aCJbMRS?=
+ =?us-ascii?Q?Mj9HaA7lvVoi/aMhavkTRn60xoymcYOO/6E0Kvao8vx75mjB?=
+Content-Type: multipart/alternative;
+	boundary="_000_CWLP302MB01016BA6D7C6565F0EA00C54E952ACWLP302MB0101GBRP_"
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CW1P302MB2324
+Return-Path: pyswjw@bath.ac.uk
+X-MS-Exchange-Organization-ExpirationStartTime: 30 Mar 2026 20:19:00.4177
+ (UTC)
+X-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit
+X-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000
+X-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit
+X-MS-Exchange-Organization-Network-Message-Id: bd24a22d-75f8-4fb2-1042-08de8e999468
+X-EOPAttributedMessage: 0
+X-EOPTenantAttributedMessage: 158a941a-576e-4e87-993d-b2eab8526e50:0
+X-MS-Exchange-Organization-MessageDirectionality: Incoming
+X-MS-Exchange-Transport-CrossTenantHeadersStripped: DB5PEPF00014B89.eurprd02.prod.outlook.com
+X-MS-Exchange-Transport-CrossTenantHeadersPromoted: DB5PEPF00014B89.eurprd02.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Exchange-Organization-AuthSource: DB5PEPF00014B89.eurprd02.prod.outlook.com
+X-MS-Exchange-Organization-AuthAs: Anonymous
+X-MS-Office365-Filtering-Correlation-Id-Prvs: b76587fe-ecac-47f3-a479-08de8e999331
+X-MS-Exchange-AtpMessageProperties: SA|SL
+X-MS-Exchange-Organization-SCL: 1
+X-Microsoft-Antispam: BCL:0;ARA:13230040|35042699022|13003099007|56012099003|22082099003|19002099003|18002099003|16102099003|8096899003|55112099003;
+X-Forefront-Antispam-Report: CIP:2a01:111:f403:c205::3;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LO2P265CU024.outbound.protection.outlook.com;PTR:mail-uksouthazlp170110003.outbound.protection.outlook.com;CAT:NONE;SFTY:9.25;SFS:(13230040)(35042699022)(13003099007)(56012099003)(22082099003)(19002099003)(18002099003)(16102099003)(8096899003)(55112099003);DIR:INB;SFTY:9.25;
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2026 20:19:00.3379
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: bd24a22d-75f8-4fb2-1042-08de8e999468
+X-MS-Exchange-CrossTenant-Id: 158a941a-576e-4e87-993d-b2eab8526e50
+X-MS-Exchange-CrossTenant-AuthSource: DB5PEPF00014B89.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: Internet
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2P193MB2887
+X-MS-Exchange-Transport-EndToEndLatency: 00:00:05.3876345
+X-MS-Exchange-Processed-By-BccFoldering: 15.20.9745.023
+X-Microsoft-Antispam-Mailbox-Delivery:
+	ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(944506478)(944626604)(4710137)(4713098)(4999163)(920097)(930201)(20251009189)(140003)(1420198);
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?JFr6IcwdYEOVAhZoVRNFJgAJJc3t7xBUm7rQD1ZbaZhJBvrs/4xNxpH3CDZV?=
+ =?us-ascii?Q?kN8EjUofDYMbpWSrHJp1qqoaXgpi6SXSq8tczV/y2n/xfK8rfL4PIxh5He89?=
+ =?us-ascii?Q?wnNu/Is/a4EG6dySqii/bDgpk4uKLeTkioegRwLwVilg0LlpmTYLn4fbfnQ+?=
+ =?us-ascii?Q?JG2BWfRpSveVsqBS1VLNCuuCeJaJO2oipDF6+fka90vbjigUXzdwlNzOHX1G?=
+ =?us-ascii?Q?8v/wPcuNBVxxPCkp0Aa9C8rF49cHh6RX7TDKpjzw6r7XF6mhu5smAUT4m4fG?=
+ =?us-ascii?Q?8N/fNHgTDcVKr0cNfgp/TThqWINF2DKhr52oEqwoCB6UzP1KnhxJSe+GYD2d?=
+ =?us-ascii?Q?x5LXUg9QMdqt8ef0FTncbDq2fdgKtbcl+i/AdNgxX4KtFXfw+8Zjx1+KLoiV?=
+ =?us-ascii?Q?1uUv8ujOxopCcJMz086uxPEplYhLF53bCKOdFYSCAPsAXcO8JN6zZjROiatQ?=
+ =?us-ascii?Q?WsBE4yIAigQ4Jpa3M0Z81cTjCf2W3/JnuYQK2hzULrjZ0LFcb5a+qKHz+4em?=
+ =?us-ascii?Q?i6s6KfZUl5lmmWt4t4oQpRChNI2GP9luGKWnyHfvBhd//eNOcXxFgmokBPyr?=
+ =?us-ascii?Q?fLawS9xGAnQ9i8cAEqR6PDIRNzeqT3XefHcD/eSBLLqdGlGsK8NAGIfAoiKG?=
+ =?us-ascii?Q?DQkAqkylV6wls3B/hhrrMnYGpudOyPf1qOddkyl51X5L75HMDF3RxOboXto2?=
+ =?us-ascii?Q?OWoHrK3UyS+HBsmIHLrouhfiHA9nnhs7cilBETWcLZq4Ki9LoZEp3u4xvf0i?=
+ =?us-ascii?Q?8YhocnUlzqANpwOhL+jiE8AgZMjGTEGwmKd5DkGbGIG6hsIRcrEEu7B2yYCx?=
+ =?us-ascii?Q?0i8CCe4K4p3iJjI9u97ngUSIWRsYXVkegQPVHS9EhaDt3puAXVxq9xCxIK3j?=
+ =?us-ascii?Q?byg/LRxw+qNSDmMIBpUFrCIWWRho/OCnwOQVWBHUY5R3Sykdn/Lyxyqxaajs?=
+ =?us-ascii?Q?t81f9ly0laDAhMiH453WJKHX+f4Jq2UAf3hbeReUA3R+hVSry8uem3b/NPnZ?=
+ =?us-ascii?Q?gGRxIxYM6TQnVk7RjpmxhqleCaQwdnpkbPH2nCi+hnX84efvJPHgJor1sK1D?=
+ =?us-ascii?Q?UBiqLhvCDuBiDcaFLF5iKSoKkvmVdxYAIAk/bw+jymyv3lSuroSJgA2etGYR?=
+ =?us-ascii?Q?3TzO493KVWYoezOVVampca2w0vBwOlvafoHlHWrJbqqavRSVTHJfDcJx7WyL?=
+ =?us-ascii?Q?Op9XgRP9HIjaVCJI+JAj2T3tqPG8YLBILn0I24Sl9PP47jJIprPLx7LhXAH5?=
+ =?us-ascii?Q?zaiJoKGXgZpkNXADfwa4KyaivBG3KmX75BVP6u9XuMw0lTQnYLiaT1VWN06O?=
+ =?us-ascii?Q?DAim7KhSGgMg/z6p6KBypq5ympEntzk+5+9I0kjxFpAkFyTrRF7CI/KzDHd9?=
+ =?us-ascii?Q?whnXXQAQPICNgTe6eMEUafxQAXsZlEHbge/NU9RLqr7JXIhjvRNjoVFu+khV?=
+ =?us-ascii?Q?QU3xGnMcreHrdhZNUsah4gzHB46DWtugAtNilLbZ4oFRJoVJit/ymKjFS+Yu?=
+ =?us-ascii?Q?D6GPz/LyOTfBQXrh1R3SjLBa+v9SqSSiHU84Ogo3gqLbWXU68WISrzxYyjar?=
+ =?us-ascii?Q?VlvNoWSI0Uo+aowblDWg813s3cFaOiT+5wIRzmB2A3fSLkMiRpdd8THVg6Qw?=
+ =?us-ascii?Q?GOTL9p3hfsoLTk2rrm5fOk+FkA9OQOgBew9RKXo2AtV6l6gSGdaLLFzl/uAC?=
+ =?us-ascii?Q?V+m6yCRG2dW9fJAgT+aINvgF/lpzCYn4HfvmoXUXeXQuj4nfGQry7HeDqpMV?=
+ =?us-ascii?Q?cM8B+793KG17pWItikEUisjNmwRWarofwZGJiyKNQTxC98MYaQlYYMO/hM3v?=
+ =?us-ascii?Q?RNdCIiz3LcuafN+eqxc+Nu/2MiIH2/Ju+oAXoIUPhjm2vqWt+x29d92GIn6h?=
+ =?us-ascii?Q?7eXvdn1MU+L2Kkf4vp/xrQajCQzTjj73bk84yjfck5r6PiX+xRROjCbM2Rrs?=
+ =?us-ascii?Q?3j1CumMozWRiDGPux19FSHqfs1PcuhQsz3nos8v2lNTSsFN+Gp0sKNpFMGnd?=
+ =?us-ascii?Q?25KVYvKWyBOLcKTmzp+rKvy+1ZNwst2P+dgoEtYl2KmhECukh4pWzxcwpxq/?=
+ =?us-ascii?Q?BGOtLoP8MwKWHzOzKAEYx4LlQNklF8o44wpJcb4SQ0detZQwRaHLMFv+wV8v?=
+ =?us-ascii?Q?CXwkIgFlnq4gikYBEoPARKsLsRoYbS8UzJldEe2nu9lzCQXgvW9jm/3R0GlU?=
+ =?us-ascii?Q?oG0Pgnvgc87iBhPYfEHHv7z9y63etWIk4/Pb4GJ6hjrf8GhmySVbnnBAjxHG?=
+ =?us-ascii?Q?INs+yJ7WSqqppOL6iTHvWzrO3CCgdUEiVAxsmQ8BOKTB1cKxYHjOOfyGYyBH?=
+ =?us-ascii?Q?3q30auWuolx6f03mwxcB2C6hmQtfj705ZMpdpbTLjHg+7vEpxtA50fpc++C2?=
+ =?us-ascii?Q?Gbk2eu/iXcu70LF8HHfmTRTfC2PyPq/f1II9DfdgKOxK/ChGXZ8C24YSiL66?=
+ =?us-ascii?Q?VlFUNDkLG/iE9yyaKgG+/4gFuLXVYgHphxcjHAp/eoB3QlfTVI/fbAAydonb?=
+ =?us-ascii?Q?z5hWYUqdOnJ/Hu18IT+ArPSxA2HrfXhfdwexa5CpIt+duwJKsF99AIXyJSKk?=
+ =?us-ascii?Q?9Xi9dIhf+RcLbaeL4wyxpJIJe8CwI3mZLq0e47OcfuiWmq/QvrDqhHI9Bv/e?=
+ =?us-ascii?Q?iR87yYcbI7BX14ritp1mZKq5OgLFyicApnrhyIOBqn0HssGvB+Vsb73YenKy?=
+ =?us-ascii?Q?XZHI0FV6ZZIPtiUNZ81xEL0hs0t4yeGrlHwy5DonU4yQ7Mc+fDxe6X/OoyF1?=
+ =?us-ascii?Q?CfaGt3m4cNXgAJ/WfVZzw1y+AmMTstzuExEXkNHtiUQASwE0wbarRy1pXRz4?=
+ =?us-ascii?Q?opeNe+ccNlO6DlwuI4fWaRrsOpyW6omF1zM5UMS4QQFTRvty5guW+3oSqfZm?=
+ =?us-ascii?Q?2+KXcBm8u/hNc6/c5QUjxc1pdT36cul3v7aAa5pUIBdppqRzSenISaRLj39s?=
+ =?us-ascii?Q?kdmB3K59UzJVLUUUcmeLEIGmplH60Q4AkA3V6w8joEk=3D?=
+MIME-Version: 1.0
+
+--_000_CWLP302MB01016BA6D7C6565F0EA00C54E952ACWLP302MB0101GBRP_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+You don't often get email from pyswjw@bath.ac.uk. Learn why this is importa=
+nt<https://aka.ms/LearnAboutSenderIdentification>
+EDITED to correct the wrong camera!
+
+Hi Florian,
+
+                The Forum thread https://openflexure.discourse.group/t/alte=
+rnative-file-options-other-than-stl-for-block-delta-stages/1438 explains ou=
+r CAD pipeline in answer to a similar question. This design process there a=
+pplies to the Microscope as well as to the other stages.
+
+                For your particular need, the OpenSCAD changes are minimal,=
+ and from what you have said about your software development the code-based=
+ CAD will probably make a lot of sense to you. The advice from https://open=
+flexure.discourse.group/t/arducam-b0196-on-high-resolution-v7-microscope/23=
+93/3 is similar, although the mount for the Pi HQ camera is not currently i=
+n the main repository. You will need to clone the repository at the branch =
+https://gitlab.com/openflexure/openflexure-microscope/-/tree/hq_camera. The=
+n you should be able to set `CAMERA =3D "picamera_hq";` in the file `rms_op=
+tics_module.scad` and then build it with OpenSCAD. It should give you an op=
+tics module with the HQ camera mount. This still has the f=3D50mm lens. To =
+change that you just need to find the configuration function `rms_f50d13_co=
+nfig` in `optics_configurations.scad`. There are two things that you need t=
+o change, the nominal focal length, "tube_lens_f", and the back focal dista=
+nce of the lens that you are using "tube_lens_ffd" (this is a little shorte=
+r than the focal length). That should build the optics module that you need=
+.
+                If you need help understanding the project and the CAD, ple=
+ase post your questions on the Forum (https://openflexure.discourse.group/)=
+ so that the solutions are available to all.
+
+William
+
+From: Feigl Florian Helmut Joseph <florian.feigl@stud.plus.ac.at<mailto:flo=
+rian.feigl@stud.plus.ac.at>>
+Sent: 30 March 2026 20:35
+To: Julian Stirling <julian@julianstirling.co.uk<mailto:julian@julianstirli=
+ng.co.uk>>; contact@openflexure.org<mailto:contact@openflexure.org>
+Subject: Re: Request for DWG Files
+
+You don't often get email from florian.feigl@stud.plus.ac.at<mailto:florian=
+.feigl@stud.plus.ac.at>. Learn why this is important<https://aka.ms/LearnAb=
+outSenderIdentification>
+CAUTION:  This email came from outside of the University. To keep your acco=
+unt safe, only click on links and open attachments if you know the person w=
+ho sent the email, or you expected to receive this communication.
+
+
+Hey Julian!
+
+Sorry for necrobumping, but I just want to give you a heads up on the proje=
+ct, which you might find interesting.
+
+For high resolution pictures, we started to implement the IMX477 camera, ma=
+king us switch from a 50 mm focal length achromatic doublet to a 125 mm mm =
+focal length achromatic doublet (both 12.7 mm in diameter).
+
+My job will soon be to refactor the affected parts to use most of the resou=
+rces of the given camera. Now, the team I am working with uses AutoCAD occa=
+sionally but mostly Solid Edge for model manipulation. I am a rookie to thi=
+s, but as far as my understanding is correct, scaling a part up is just don=
+e by setting the according parameters - hard to build, but easy to replicat=
+e.
+
+I will go down the road to deliver the message, that if something is alread=
+y perfectly built, nothing needs to change, but do you happen to know any r=
+eliable way to provide those guys with some PAR files to play with?
+
+I cannot be the only one, who this is happening to. Why must it be so hard,=
+ when it can come so easy?
+
+Alright, father Julian. Thank you for your attention. I hope this made your=
+ day.
+
+Thankfully
+
+Florian
+________________________________
+From: Feigl Florian Helmut Joseph <florian.feigl@stud.plus.ac.at<mailto:flo=
+rian.feigl@stud.plus.ac.at>>
+Sent: Tuesday, March 10, 2026 5:14 PM
+To: Julian Stirling <julian@julianstirling.co.uk<mailto:julian@julianstirli=
+ng.co.uk>>; contact@openflexure.org<mailto:contact@openflexure.org> <contac=
+t@openflexure.org<mailto:contact@openflexure.org>>
+Subject: Re: Request for DWG Files
+
+Hi Julian,
+
+Thanks for the quick reply!
+
+Thank you for pointing out my missing link. I am new to 3D modelling and wa=
+s blind somehow.
+
+I am using V3 at this stage and worked over dependency issues so far.
+
+I am hosting the repository at https://github.com/florianfeigl/mesoscope at=
+ the moment but will soon transfer it to the university's gitlab instance f=
+or further development.
+
+I will think about community forum contribution, thanks for the hint, I wil=
+l sooner or later find it usefully ;)
+
+Best wishes,
+Florian
+________________________________
+From: Julian Stirling <julian@julianstirling.co.uk<mailto:julian@julianstir=
+ling.co.uk>>
+Sent: Tuesday, March 10, 2026 4:32 PM
+To: Feigl Florian Helmut Joseph <florian.feigl@stud.plus.ac.at<mailto:flori=
+an.feigl@stud.plus.ac.at>>; contact@openflexure.org<mailto:contact@openflex=
+ure.org> <contact@openflexure.org<mailto:contact@openflexure.org>>
+Subject: Re: Request for DWG Files
+
+You don't often get email from julian@julianstirling.co.uk<mailto:julian@ju=
+lianstirling.co.uk>. Learn why this is important<https://aka.ms/LearnAboutS=
+enderIdentification>
+
+Hi Florian,
+
+
+
+We don't use autodesk so there are no DWG files available. We use OpenSCAD =
+which is a text-based parametic CAD that allows us to collaborate and build=
+ the STLs on the GitLab CI. All openscad files are in our GitLab repo here:
+https://gitlab.com/openflexure/openflexure-microscope
+
+Just to check are you using the new v3 server in development or are you usi=
+ng v2? I'd highly recommend using v3 as it is on the new picamera stack. We=
+ are interested in Pi5, but it hasn't reached the top of our proprieties ye=
+t in the transfer to v3. I think you should be able to get it working with =
+a PISP tuning file for the IMX500, all the code is available here:
+
+https://gitlab.com/openflexure/openflexure-microscope-server
+
+Test images are built and shared via the forum. We would be interested to h=
+ear how your Pi5 migration goes. Would you be happy to sare on our forum so=
+ the whole community can see?
+
+
+
+Best wishes
+
+
+
+Julian
+
+
+On 10/03/2026 15:20, Feigl Florian Helmut Joseph wrote:
+Hi there!
+
+My name is Florian Feigl and I work for Dr. Lepperdinger in the Medical Bio=
+logy Departement of the University of Salzburg.
+
+I found your amazing project, when I was looking up existing technology tha=
+t I could use for my case.
+
+So far, I migrated the openflexure Packages to RPi5 with Raspberry OS 13 an=
+d added support for the IMX500 (did not make it into the project, but will =
+be useful for other projects, I am sure).
+
+My goal is to marry openflexure with image processing via a NPU (RPi AI HAT=
+) and to do so I will probably need to customize some of the 3D printed par=
+ts.
+
+Would you be so kind to share them?
+
+I will soon set up a repository. Maybe you are interested in the RPi5 migra=
+tion as well?
+
+Best,
+
+Florian Feigl
+
+Links:
++ https://www.plus.ac.at/biosciences/the-department/research-groups/lepperd=
+inger/?lang=3Den
+
+--_000_CWLP302MB01016BA6D7C6565F0EA00C54E952ACWLP302MB0101GBRP_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40"><head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+><meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<!--[if !mso]><style>v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style><![endif]--><style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Aptos;}
+@font-face
+	{font-family:"Helvetica Neue";}
+@font-face
+	{font-family:"Segoe UI";
+	panose-1:2 11 5 2 4 2 4 2 2 3;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	font-size:12.0pt;
+	font-family:"Aptos",sans-serif;}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+span.EmailStyle22
+	{mso-style-type:personal-reply;
+	font-family:"Aptos",sans-serif;
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;
+	mso-ligatures:none;}
+@page WordSection1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 72.0pt 72.0pt 72.0pt;}
+div.WordSection1
+	{page:WordSection1;}
+--></style>
+</head>
+<body lang=3D"EN-GB" link=3D"blue" vlink=3D"purple" style=3D"word-wrap:brea=
+k-word">
+<table border=3D"0" cellspacing=3D"0" cellpadding=3D"0" width=3D"100%" styl=
+e=3D" aspect-ratio: revert !important; background: revert !important; block=
+-size: revert !important; border: revert !important; bottom: revert !import=
+ant; color: revert !important; color-scheme: revert !important; content-vis=
+ibility: revert !important; cursor: revert !important; direction: revert !i=
+mportant; display: revert !important; font-size: revert !important; height:=
+ revert !important; hyphens: revert !important; letter-spacing: revert !imp=
+ortant; line-height: revert !important; margin: revert !important; opacity:=
+ revert !important; order: revert !important; outline: revert !important; o=
+verflow: revert !important; padding: revert !important; position: revert !i=
+mportant; resize: revert !important; rotate: revert !important; scale: reve=
+rt !important; tab-size: revert !important; table-layout: revert !important=
+; text-align: revert !important; text-indent: revert !important; text-orien=
+tation: revert !important; text-overflow: revert !important; text-shadow: r=
+evert !important; text-transform: revert !important; text-wrap: revert !imp=
+ortant; top: revert !important; transition: revert !important; user-select:=
+ revert !important; vertical-align: revert !important; visibility: revert !=
+important; white-space: revert !important; width: revert !important; word-b=
+reak: revert !important; word-spacing: revert !important; writing-mode: rev=
+ert !important; zoom: revert !important; cellpadding: 0 !important; border:=
+ 0 !important; cellspacing: 0 !important; display: table !important; width:=
+ 100% !important; table-layout: fixed !important; border-collapse: seperate=
+ !important; float: none !important; border-spacing: 0px 0px !important; " =
+align=3D"left">
+<tbody style=3D" aspect-ratio: revert !important; background: revert !impor=
+tant; block-size: revert !important; border: revert !important; bottom: rev=
+ert !important; color: revert !important; color-scheme: revert !important; =
+content-visibility: revert !important; cursor: revert !important; direction=
+: revert !important; display: revert !important; font-size: revert !importa=
+nt; height: revert !important; hyphens: revert !important; letter-spacing: =
+revert !important; line-height: revert !important; margin: revert !importan=
+t; opacity: revert !important; order: revert !important; outline: revert !i=
+mportant; overflow: revert !important; padding: revert !important; position=
+: revert !important; resize: revert !important; rotate: revert !important; =
+scale: revert !important; tab-size: revert !important; table-layout: revert=
+ !important; text-align: revert !important; text-indent: revert !important;=
+ text-orientation: revert !important; text-overflow: revert !important; tex=
+t-shadow: revert !important; text-transform: revert !important; text-wrap: =
+revert !important; top: revert !important; transition: revert !important; u=
+ser-select: revert !important; vertical-align: revert !important; visibilit=
+y: revert !important; white-space: revert !important; width: revert !import=
+ant; word-break: revert !important; word-spacing: revert !important; writin=
+g-mode: revert !important; zoom: revert !important; display: block !importa=
+nt; ">
+<tr style=3D" aspect-ratio: revert !important; background: revert !importan=
+t; block-size: revert !important; border: revert !important; bottom: revert=
+ !important; color: revert !important; color-scheme: revert !important; con=
+tent-visibility: revert !important; cursor: revert !important; direction: r=
+evert !important; display: revert !important; font-size: revert !important;=
+ height: revert !important; hyphens: revert !important; letter-spacing: rev=
+ert !important; line-height: revert !important; margin: revert !important; =
+opacity: revert !important; order: revert !important; outline: revert !impo=
+rtant; overflow: revert !important; padding: revert !important; position: r=
+evert !important; resize: revert !important; rotate: revert !important; sca=
+le: revert !important; tab-size: revert !important; table-layout: revert !i=
+mportant; text-align: revert !important; text-indent: revert !important; te=
+xt-orientation: revert !important; text-overflow: revert !important; text-s=
+hadow: revert !important; text-transform: revert !important; text-wrap: rev=
+ert !important; top: revert !important; transition: revert !important; user=
+-select: revert !important; vertical-align: revert !important; visibility: =
+revert !important; white-space: revert !important; width: revert !important=
+; word-break: revert !important; word-spacing: revert !important; writing-m=
+ode: revert !important; zoom: revert !important; ">
+<td valign=3D"middle" width=3D"1px" bgcolor=3D"#A6A6A6" cellpadding=3D"7px =
+2px 7px 2px" style=3D" aspect-ratio: revert !important; background: revert =
+!important; block-size: revert !important; border: revert !important; botto=
+m: revert !important; color: revert !important; color-scheme: revert !impor=
+tant; content-visibility: revert !important; cursor: revert !important; dir=
+ection: revert !important; display: revert !important; font-size: revert !i=
+mportant; height: revert !important; hyphens: revert !important; letter-spa=
+cing: revert !important; line-height: revert !important; margin: revert !im=
+portant; opacity: revert !important; order: revert !important; outline: rev=
+ert !important; overflow: revert !important; padding: revert !important; po=
+sition: revert !important; resize: revert !important; rotate: revert !impor=
+tant; scale: revert !important; tab-size: revert !important; table-layout: =
+revert !important; text-align: revert !important; text-indent: revert !impo=
+rtant; text-orientation: revert !important; text-overflow: revert !importan=
+t; text-shadow: revert !important; text-transform: revert !important; text-=
+wrap: revert !important; top: revert !important; transition: revert !import=
+ant; user-select: revert !important; vertical-align: revert !important; vis=
+ibility: revert !important; white-space: revert !important; width: revert !=
+important; word-break: revert !important; word-spacing: revert !important; =
+writing-mode: revert !important; zoom: revert !important; padding: 7px 2px =
+7px 2px !important; background-color: #A6A6A6 !important; valign: middle !i=
+mportant; width: 0px !important; ">
+</td>
+<td valign=3D"middle" width=3D"100%" bgcolor=3D"#EAEAEA" cellpadding=3D"7px=
+ 5px 7px 15px" color=3D"#212121" style=3D" aspect-ratio: revert !important;=
+ background: revert !important; block-size: revert !important; border: reve=
+rt !important; bottom: revert !important; color: revert !important; color-s=
+cheme: revert !important; content-visibility: revert !important; cursor: re=
+vert !important; direction: revert !important; display: revert !important; =
+font-size: revert !important; height: revert !important; hyphens: revert !i=
+mportant; letter-spacing: revert !important; line-height: revert !important=
+; margin: revert !important; opacity: revert !important; order: revert !imp=
+ortant; outline: revert !important; overflow: revert !important; padding: r=
+evert !important; position: revert !important; resize: revert !important; r=
+otate: revert !important; scale: revert !important; tab-size: revert !impor=
+tant; table-layout: revert !important; text-align: revert !important; text-=
+indent: revert !important; text-orientation: revert !important; text-overfl=
+ow: revert !important; text-shadow: revert !important; text-transform: reve=
+rt !important; text-wrap: revert !important; top: revert !important; transi=
+tion: revert !important; user-select: revert !important; vertical-align: re=
+vert !important; visibility: revert !important; white-space: revert !import=
+ant; width: revert !important; word-break: revert !important; word-spacing:=
+ revert !important; writing-mode: revert !important; zoom: revert !importan=
+t; width: 100% !important; background-color: #EAEAEA !important; padding: 7=
+px 5px 7px 15px !important; font-family: wf_segoe-ui_normal, Segoe UI, Sego=
+e WP, Tahoma, Arial, sans-serif !important; font-size: 12px !important; fon=
+t-weight: normal !important; color: #212121 !important; text-align: left !i=
+mportant; word-wrap: break-word !important; ">
+<div style=3D" aspect-ratio: revert !important; background: revert !importa=
+nt; block-size: revert !important; border: revert !important; bottom: rever=
+t !important; color: revert !important; color-scheme: revert !important; co=
+ntent-visibility: revert !important; cursor: revert !important; direction: =
+revert !important; display: revert !important; font-size: revert !important=
+; height: revert !important; hyphens: revert !important; letter-spacing: re=
+vert !important; line-height: revert !important; margin: revert !important;=
+ opacity: revert !important; order: revert !important; outline: revert !imp=
+ortant; overflow: revert !important; padding: revert !important; position: =
+revert !important; resize: revert !important; rotate: revert !important; sc=
+ale: revert !important; tab-size: revert !important; table-layout: revert !=
+important; text-align: revert !important; text-indent: revert !important; t=
+ext-orientation: revert !important; text-overflow: revert !important; text-=
+shadow: revert !important; text-transform: revert !important; text-wrap: re=
+vert !important; top: revert !important; transition: revert !important; use=
+r-select: revert !important; vertical-align: revert !important; visibility:=
+ revert !important; white-space: revert !important; width: revert !importan=
+t; word-break: revert !important; word-spacing: revert !important; writing-=
+mode: revert !important; zoom: revert !important; ">
+You don't often get email from pyswjw@bath.ac.uk. <a href=3D"https://aka.ms=
+/LearnAboutSenderIdentification" style=3D"background: revert !important;col=
+or: revert !important;content-visibility: revert !important;direction: reve=
+rt !important;display: revert !important;font-size: revert !important;opaci=
+ty: revert !important;rotate: revert !important;scale: revert !important;vi=
+sibility: revert !important;">
+Learn why this is important</a> </div>
+</td>
+<td valign=3D"middle" align=3D"left" width=3D"75px" bgcolor=3D"#EAEAEA" cel=
+lpadding=3D"7px 5px 7px 5px" color=3D"#212121" style=3D" aspect-ratio: reve=
+rt !important; background: revert !important; block-size: revert !important=
+; border: revert !important; bottom: revert !important; color: revert !impo=
+rtant; color-scheme: revert !important; content-visibility: revert !importa=
+nt; cursor: revert !important; direction: revert !important; display: rever=
+t !important; font-size: revert !important; height: revert !important; hyph=
+ens: revert !important; letter-spacing: revert !important; line-height: rev=
+ert !important; margin: revert !important; opacity: revert !important; orde=
+r: revert !important; outline: revert !important; overflow: revert !importa=
+nt; padding: revert !important; position: revert !important; resize: revert=
+ !important; rotate: revert !important; scale: revert !important; tab-size:=
+ revert !important; table-layout: revert !important; text-align: revert !im=
+portant; text-indent: revert !important; text-orientation: revert !importan=
+t; text-overflow: revert !important; text-shadow: revert !important; text-t=
+ransform: revert !important; text-wrap: revert !important; top: revert !imp=
+ortant; transition: revert !important; user-select: revert !important; vert=
+ical-align: revert !important; visibility: revert !important; white-space: =
+revert !important; width: revert !important; word-break: revert !important;=
+ word-spacing: revert !important; writing-mode: revert !important; zoom: re=
+vert !important; width: 75px !important; background-color: #EAEAEA !importa=
+nt; padding: 7px 5px 7px 5px !important; font-family: wf_segoe-ui_normal, S=
+egoe UI, Segoe WP, Tahoma, Arial, sans-serif !important; font-size: 12px !i=
+mportant; font-weight: normal !important; color: #212121 !important; text-a=
+lign: left !important; word-wrap: break-word !important; align: left !impor=
+tant; ">
+</td>
+</tr>
+</tbody>
+</table>
+<div>
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">EDITED to correct the wrong camera!<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">Hi Florian,<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; The Forum thread
+<a href=3D"https://eur05.safelinks.protection.outlook.com/?url=3Dhttps%3A%2=
+F%2Fopenflexure.discourse.group%2Ft%2Falternative-file-options-other-than-s=
+tl-for-block-delta-stages%2F1438&amp;data=3D05%7C02%7Cflorian.feigl%40stud.=
+plus.ac.at%7Cbd24a22d75f84fb2104208de8e999468%7C158a941a576e4e87993db2eab85=
+26e50%7C1%7C0%7C639104987459378699%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGki=
+OnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3=
+D%7C0%7C%7C%7C&amp;sdata=3DvkFKn2aSWRF2py4JZBqNVt3s73kyffr6EOJc7pSsJxA%3D&a=
+mp;reserved=3D0" originalsrc=3D"https://openflexure.discourse.group/t/alter=
+native-file-options-other-than-stl-for-block-delta-stages/1438">
+https://openflexure.discourse.group/t/alternative-file-options-other-than-s=
+tl-for-block-delta-stages/1438</a> explains our CAD pipeline in answer to a=
+ similar question. This design process there applies to the Microscope as w=
+ell as to the other stages.<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; For your particular need, the OpenSCAD changes are =
+minimal, and from what you have said about your software development the co=
+de-based CAD will probably make a lot
+ of sense to you. The advice from <a href=3D"https://eur05.safelinks.protec=
+tion.outlook.com/?url=3Dhttps%3A%2F%2Fopenflexure.discourse.group%2Ft%2Fard=
+ucam-b0196-on-high-resolution-v7-microscope%2F2393%2F3&amp;data=3D05%7C02%7=
+Cflorian.feigl%40stud.plus.ac.at%7Cbd24a22d75f84fb2104208de8e999468%7C158a9=
+41a576e4e87993db2eab8526e50%7C1%7C0%7C639104987459400742%7CUnknown%7CTWFpbG=
+Zsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiT=
+WFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3DqNy2djOmixKxLvdSW9MS5Uxfxf=
+PBxZP6II9jCKoDH7I%3D&amp;reserved=3D0" originalsrc=3D"https://openflexure.d=
+iscourse.group/t/arducam-b0196-on-high-resolution-v7-microscope/2393/3">
+https://openflexure.discourse.group/t/arducam-b0196-on-high-resolution-v7-m=
+icroscope/2393/3</a> is similar, although the mount for the Pi HQ camera is=
+ not currently in the main repository. You will need to clone the repositor=
+y at the branch
+<a href=3D"https://eur05.safelinks.protection.outlook.com/?url=3Dhttps%3A%2=
+F%2Fgitlab.com%2Fopenflexure%2Fopenflexure-microscope%2F-%2Ftree%2Fhq_camer=
+a&amp;data=3D05%7C02%7Cflorian.feigl%40stud.plus.ac.at%7Cbd24a22d75f84fb210=
+4208de8e999468%7C158a941a576e4e87993db2eab8526e50%7C1%7C0%7C639104987459414=
+377%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlA=
+iOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3DVD8g=
+CRxtNX0WNWgpm86G5wUA%2Bmuyzw8evhh3j9Mcrz0%3D&amp;reserved=3D0" originalsrc=
+=3D"https://gitlab.com/openflexure/openflexure-microscope/-/tree/hq_camera"=
+>
+https://gitlab.com/openflexure/openflexure-microscope/-/tree/hq_camera</a>.=
+ Then you should be able to set `CAMERA =3D &quot;picamera_hq&quot;;` in th=
+e file `rms_optics_module.scad` and then build it with OpenSCAD. It should =
+give you an optics module with the HQ camera
+ mount. This still has the f=3D50mm lens. To change that you just need to f=
+ind the configuration function `rms_f50d13_config` in `optics_configuration=
+s.scad`. There are two things that you need to change, the nominal focal le=
+ngth, &quot;tube_lens_f&quot;, and the back
+ focal distance of the lens that you are using &quot;tube_lens_ffd&quot; (t=
+his is a little shorter than the focal length). That should build the optic=
+s module that you need.
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp; If you need help understanding the project and the =
+CAD, please post your questions on the Forum (<a href=3D"https://eur05.safe=
+links.protection.outlook.com/?url=3Dhttps%3A%2F%2Fopenflexure.discourse.gro=
+up%2F&amp;data=3D05%7C02%7Cflorian.feigl%40stud.plus.ac.at%7Cbd24a22d75f84f=
+b2104208de8e999468%7C158a941a576e4e87993db2eab8526e50%7C1%7C0%7C63910498745=
+9428272%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCI=
+sIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3D=
+Lj347M9HPiEklx5Ml8OfDDNstx2pucnNcKz9d0PLcjI%3D&amp;reserved=3D0" originalsr=
+c=3D"https://openflexure.discourse.group/">https://openflexure.discourse.gr=
+oup/</a>)
+ so that the solutions are available to all.<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US">William<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;mso-fareast-language=
+:EN-US"><o:p>&nbsp;</o:p></span></p>
+<div>
+<div style=3D"border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm =
+0cm 0cm;font-size:pt">
+<p class=3D"MsoNormal"><b><span style=3D"font-family:&quot;Calibri&quot;,sa=
+ns-serif">From:</span></b><span style=3D"font-family:&quot;Calibri&quot;,sa=
+ns-serif"> Feigl Florian Helmut Joseph &lt;<a href=3D"mailto:florian.feigl@=
+stud.plus.ac.at">florian.feigl@stud.plus.ac.at</a>&gt;
+<br>
+<b>Sent:</b> 30 March 2026 20:35<br>
+<b>To:</b> Julian Stirling &lt;<a href=3D"mailto:julian@julianstirling.co.u=
+k">julian@julianstirling.co.uk</a>&gt;;
+<a href=3D"mailto:contact@openflexure.org">contact@openflexure.org</a><br>
+<b>Subject:</b> Re: Request for DWG Files<o:p></o:p></span></p>
+</div>
+</div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"100%" style=3D"width:100.0%">
+<tbody>
+<tr>
+<td width=3D"0" style=3D"width:.3pt;background:#A6A6A6;padding:5.25pt 1.5pt=
+ 5.25pt 1.5pt">
+</td>
+<td width=3D"100%" style=3D"width:100.0%;background:#EAEAEA;padding:5.25pt =
+3.75pt 5.25pt 11.25pt;aspect-ratio: revert !important;background:revert !im=
+portant;block-size: revert !important;border:revert !important;bottom: reve=
+rt !important;color:revert !important;color-scheme: revert !important;conte=
+nt-visibility: revert !important;cursor:revert !important;direction:revert =
+!important;display:revert !important;font-size:revert !important;height:rev=
+ert !important;hyphens: revert !important;letter-spacing:revert !important;=
+line-height:revert !important;margin:revert !important;opacity: revert !imp=
+ortant;order: revert !important;outline: revert !important;overflow:revert =
+!important;padding:revert !important;position:revert !important;resize: rev=
+ert !important;rotate: revert !important;scale: revert !important;tab-size:=
+ revert !important;table-layout:revert !important;text-align:revert !import=
+ant;text-indent:revert !important;text-orientation: revert !important;text-=
+overflow: revert !important;text-shadow:revert !important;text-transform:re=
+vert !important;text-wrap: revert !important;top:revert !important;transiti=
+on: revert !important;user-select: revert !important;vertical-align:revert =
+!important;visibility:revert !important;white-space:revert !important;width=
+:revert !important;word-break:revert !important;word-spacing:revert !import=
+ant;writing-mode:revert !important;zoom: revert !important">
+<div>
+<p class=3D"MsoNormal" style=3D"mso-element:frame;mso-element-frame-hspace:=
+2.25pt;mso-element-wrap:around;mso-element-anchor-vertical:paragraph;mso-el=
+ement-anchor-horizontal:column;mso-height-rule:exactly">
+<span style=3D"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif;=
+color:#212121">You don't often get email from
+<a href=3D"mailto:florian.feigl@stud.plus.ac.at">florian.feigl@stud.plus.ac=
+.at</a>.
+<a href=3D"https://aka.ms/LearnAboutSenderIdentification">Learn why this is=
+ important</a>
+<o:p></o:p></span></p>
+</div>
+</td>
+<td width=3D"75" style=3D"width:56.25pt;background:#EAEAEA;padding:5.25pt 3=
+.75pt 5.25pt 3.75pt;aspect-ratio: revert !important;background:revert !impo=
+rtant;block-size: revert !important;border:revert !important;bottom: revert=
+ !important;color:revert !important;color-scheme: revert !important;content=
+-visibility: revert !important;cursor:revert !important;direction:revert !i=
+mportant;display:revert !important;font-size:revert !important;height:rever=
+t !important;hyphens: revert !important;letter-spacing:revert !important;li=
+ne-height:revert !important;margin:revert !important;opacity: revert !impor=
+tant;order: revert !important;outline: revert !important;overflow:revert !i=
+mportant;padding:revert !important;position:revert !important;resize: rever=
+t !important;rotate: revert !important;scale: revert !important;tab-size: r=
+evert !important;table-layout:revert !important;text-align:revert !importan=
+t;text-indent:revert !important;text-orientation: revert !important;text-ov=
+erflow: revert !important;text-shadow:revert !important;text-transform:reve=
+rt !important;text-wrap: revert !important;top:revert !important;transition=
+: revert !important;user-select: revert !important;vertical-align:revert !i=
+mportant;visibility:revert !important;white-space:revert !important;width:r=
+evert !important;word-break:revert !important;word-spacing:revert !importan=
+t;writing-mode:revert !important;zoom: revert !important;align: left !impor=
+tant">
+</td>
+</tr>
+</tbody>
+</table>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" style=3D"background:#FFF698;border-collapse:collapse">
+<tbody>
+<tr>
+<td width=3D"100%" valign=3D"top" style=3D"width:100.0%;border:none;border-=
+left:solid #FEC811 6.0pt;padding:5.65pt 5.65pt 5.65pt 5.65pt">
+<p class=3D"MsoNormal" style=3D"mso-margin-top-alt:auto;mso-margin-bottom-a=
+lt:auto"><strong><span style=3D"font-family:&quot;Helvetica Neue&quot;;colo=
+r:black">CAUTION:
+</span></strong><span style=3D"font-family:&quot;Helvetica Neue&quot;;color=
+:black">&nbsp;This email came from outside of the University. To keep your =
+account safe, only click on links and open attachments if you know the pers=
+on who sent the email, or you expected to receive
+ this communication.</span><span style=3D"font-family:&quot;Helvetica Neue&=
+quot;"><o:p></o:p></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;<o:p></o:p></p>
+<div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Hey Julian!<o:p></o:p></=
+span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Sorry for necrobumping, =
+but I just want to give you a heads up on the project, which you might find=
+ interesting.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">For high resolution pict=
+ures, we started to implement the IMX477 camera, making us switch from a 50=
+ mm focal length achromatic doublet to a 125 mm mm focal length achromatic =
+doublet (both 12.7 mm in diameter).<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">My job will soon be to r=
+efactor the affected parts to use most of the resources of the given camera=
+. Now, the team I am working with uses AutoCAD occasionally but mostly Soli=
+d Edge for model manipulation. I am
+ a rookie to this, but as far as my understanding is correct, scaling a par=
+t up is just done by setting the according parameters - hard to build, but =
+easy to replicate.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I will go down the road =
+to deliver the message, that if something is already perfectly built, nothi=
+ng needs to change, but do you happen to know any reliable way to provide t=
+hose guys with some PAR files to play
+ with?<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I cannot be the only one=
+, who this is happening to. Why must it be so hard, when it can come so eas=
+y?<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Alright, father Julian. =
+Thank you for your attention. I hope this made your day.<o:p></o:p></span><=
+/p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Thankfully<o:p></o:p></s=
+pan></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Florian<o:p></o:p></span=
+></p>
+</div>
+<div class=3D"MsoNormal" align=3D"center" style=3D"text-align:center">
+<hr size=3D"1" width=3D"98%" align=3D"center">
+</div>
+<div id=3D"divRplyFwdMsg">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Calibri&quot;,sans-serif;color:black">From:</span></b><span style=3D"font-=
+size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;color:black"> Feigl =
+Florian Helmut Joseph &lt;<a href=3D"mailto:florian.feigl@stud.plus.ac.at">=
+florian.feigl@stud.plus.ac.at</a>&gt;<br>
+<b>Sent:</b> Tuesday, March 10, 2026 5:14 PM<br>
+<b>To:</b> Julian Stirling &lt;<a href=3D"mailto:julian@julianstirling.co.u=
+k">julian@julianstirling.co.uk</a>&gt;;
+<a href=3D"mailto:contact@openflexure.org">contact@openflexure.org</a> &lt;=
+<a href=3D"mailto:contact@openflexure.org">contact@openflexure.org</a>&gt;<=
+br>
+<b>Subject:</b> Re: Request for DWG Files</span> <o:p></o:p></p>
+<div>
+<p class=3D"MsoNormal">&nbsp;<o:p></o:p></p>
+</div>
+</div>
+<div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Hi Julian,&nbsp;<o:p></o=
+:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Thanks for the quick rep=
+ly!<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Thank you for pointing o=
+ut my missing link. I am new to 3D modelling and was blind somehow.<o:p></o=
+:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I am using V3 at this st=
+age and worked over dependency issues so far.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I am hosting the reposit=
+ory at <a href=3D"https://eur05.safelinks.protection.outlook.com/?url=3Dhtt=
+ps%3A%2F%2Fgithub.com%2Fflorianfeigl%2Fmesoscope&amp;data=3D05%7C02%7Cflori=
+an.feigl%40stud.plus.ac.at%7Cbd24a22d75f84fb2104208de8e999468%7C158a941a576=
+e4e87993db2eab8526e50%7C1%7C0%7C639104987459442122%7CUnknown%7CTWFpbGZsb3d8=
+eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCI=
+sIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3Dq5IP9F%2BhdNlMJ0GcTw1ZLaG83aTAKp=
+jU7TaB7r0%2Be5k%3D&amp;reserved=3D0" originalsrc=3D"https://github.com/flor=
+ianfeigl/mesoscope">
+https://github.com/florianfeigl/mesoscope</a>&nbsp;at the moment but will s=
+oon transfer it to the university's gitlab instance for further development=
+.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I will think about commu=
+nity forum contribution, thanks for the hint, I will sooner or later find i=
+t usefully ;)<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Best wishes,<o:p></o:p><=
+/span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Florian<o:p></o:p></span=
+></p>
+</div>
+<div class=3D"MsoNormal" align=3D"center" style=3D"text-align:center">
+<hr size=3D"1" width=3D"98%" align=3D"center">
+</div>
+<div id=3D"x_divRplyFwdMsg">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:11.0pt;font-family:&quot=
+;Calibri&quot;,sans-serif;color:black">From:</span></b><span style=3D"font-=
+size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;color:black"> Julian=
+ Stirling &lt;<a href=3D"mailto:julian@julianstirling.co.uk">julian@julians=
+tirling.co.uk</a>&gt;<br>
+<b>Sent:</b> Tuesday, March 10, 2026 4:32 PM<br>
+<b>To:</b> Feigl Florian Helmut Joseph &lt;<a href=3D"mailto:florian.feigl@=
+stud.plus.ac.at">florian.feigl@stud.plus.ac.at</a>&gt;;
+<a href=3D"mailto:contact@openflexure.org">contact@openflexure.org</a> &lt;=
+<a href=3D"mailto:contact@openflexure.org">contact@openflexure.org</a>&gt;<=
+br>
+<b>Subject:</b> Re: Request for DWG Files</span> <o:p></o:p></p>
+<div>
+<p class=3D"MsoNormal">&nbsp;<o:p></o:p></p>
+</div>
+</div>
+<div>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"100%" style=3D"width:100.0%;background:rever=
+t!important;border:revert!important;bottom:revert!important;color:revert!im=
+portant;direction:revert!important;display:revert!important;font-size:rever=
+t!important;height:revert!important;letter-spacing:revert!important;line-he=
+ight:revert!important;margin:revert!important;opacity:revert!important;orde=
+r:revert!important;outline:revert!important;overflow:revert!important;paddi=
+ng:revert!important;position:revert!important;tab-size:revert!important;tab=
+le-layout:revert!important;text-align:revert!important;text-indent:revert!i=
+mportant;text-orientation:revert!important;text-overflow:revert!important;t=
+ext-transform:revert!important;top:revert!important;vertical-align:revert!i=
+mportant;visibility:revert!important;white-space:revert!important;width:rev=
+ert!important;word-break:revert!important;word-spacing:revert!important;wri=
+ting-mode:revert!important;zoom:revert!important;border:0!important;display=
+:table!important;width:100%!important;table-layout:fixed!important;border-c=
+ollapse:seperate!important;float:none!important;border-spacing:0px 0px!impo=
+rtant">
+<tbody>
+<tr style=3D"background:revert!important;border:revert!important;bottom:rev=
+ert!important;color:revert!important;direction:revert!important;display:rev=
+ert!important;font-size:revert!important;height:revert!important;letter-spa=
+cing:revert!important;line-height:revert!important;margin:revert!important;=
+opacity:revert!important;order:revert!important;outline:revert!important;ov=
+erflow:revert!important;padding:revert!important;position:revert!important;=
+tab-size:revert!important;table-layout:revert!important;text-align:revert!i=
+mportant;text-indent:revert!important;text-orientation:revert!important;tex=
+t-overflow:revert!important;text-transform:revert!important;top:revert!impo=
+rtant;vertical-align:revert!important;visibility:revert!important;white-spa=
+ce:revert!important;width:revert!important;word-break:revert!important;word=
+-spacing:revert!important;writing-mode:revert!important;zoom:revert!importa=
+nt">
+<td style=3D"background:#A6A6A6;padding:0cm 0cm 0cm 0cm;background:revert!i=
+mportant;border:revert!important;bottom:revert!important;color:revert!impor=
+tant;direction:revert!important;display:revert!important;font-size:revert!i=
+mportant;height:revert!important;letter-spacing:revert!important;line-heigh=
+t:revert!important;margin:revert!important;opacity:revert!important;order:r=
+evert!important;outline:revert!important;overflow:revert!important;padding:=
+revert!important;position:revert!important;tab-size:revert!important;table-=
+layout:revert!important;text-align:revert!important;text-indent:revert!impo=
+rtant;text-orientation:revert!important;text-overflow:revert!important;text=
+-transform:revert!important;top:revert!important;vertical-align:revert!impo=
+rtant;visibility:revert!important;white-space:revert!important;width:revert=
+!important;word-break:revert!important;word-spacing:revert!important;writin=
+g-mode:revert!important;zoom:revert!important;padding:2px!important;backgro=
+und-color:#A6A6A6!important;width:0px!important">
+</td>
+<td width=3D"100%" style=3D"width:100.0%;background:#EAEAEA;padding:0cm 0cm=
+ 0cm 0cm;background:revert!important;border:revert!important;bottom:revert!=
+important;color:revert!important;direction:revert!important;display:revert!=
+important;font-size:revert!important;height:revert!important;letter-spacing=
+:revert!important;line-height:revert!important;margin:revert!important;opac=
+ity:revert!important;order:revert!important;outline:revert!important;overfl=
+ow:revert!important;padding:revert!important;position:revert!important;tab-=
+size:revert!important;table-layout:revert!important;text-align:revert!impor=
+tant;text-indent:revert!important;text-orientation:revert!important;text-ov=
+erflow:revert!important;text-transform:revert!important;top:revert!importan=
+t;vertical-align:revert!important;visibility:revert!important;white-space:r=
+evert!important;width:revert!important;word-break:revert!important;word-spa=
+cing:revert!important;writing-mode:revert!important;zoom:revert!important;w=
+idth:100%!important;background-color:#EAEAEA!important;padding:15px!importa=
+nt;font-size:12px!important;font-weight:normal!important;color:#212121!impo=
+rtant;text-align:left!important;word-wrap:break-word!important">
+<div>
+<p class=3D"MsoNormal" style=3D"mso-element:frame;mso-element-frame-hspace:=
+2.25pt;mso-element-wrap:around;mso-element-anchor-vertical:paragraph;mso-el=
+ement-anchor-horizontal:column;mso-height-rule:exactly">
+<span style=3D"font-family:&quot;Segoe UI&quot;,sans-serif;color:black">You=
+ don't often get email from
+<a href=3D"mailto:julian@julianstirling.co.uk">julian@julianstirling.co.uk<=
+/a>. <a href=3D"https://aka.ms/LearnAboutSenderIdentification">
+Learn why this is important</a> </span><span style=3D"font-family:&quot;Seg=
+oe UI&quot;,sans-serif"><o:p></o:p></span></p>
+</div>
+</td>
+<td style=3D"background:#EAEAEA;padding:0cm 0cm 0cm 0cm;background:revert!i=
+mportant;border:revert!important;bottom:revert!important;color:revert!impor=
+tant;direction:revert!important;display:revert!important;font-size:revert!i=
+mportant;height:revert!important;letter-spacing:revert!important;line-heigh=
+t:revert!important;margin:revert!important;opacity:revert!important;order:r=
+evert!important;outline:revert!important;overflow:revert!important;padding:=
+revert!important;position:revert!important;tab-size:revert!important;table-=
+layout:revert!important;text-align:revert!important;text-indent:revert!impo=
+rtant;text-orientation:revert!important;text-overflow:revert!important;text=
+-transform:revert!important;top:revert!important;vertical-align:revert!impo=
+rtant;visibility:revert!important;white-space:revert!important;width:revert=
+!important;word-break:revert!important;word-spacing:revert!important;writin=
+g-mode:revert!important;zoom:revert!important;width:75px!important;backgrou=
+nd-color:#EAEAEA!important;padding:5px!important;font-size:12px!important;f=
+ont-weight:normal!important;color:#212121!important;text-align:left!importa=
+nt;word-wrap:break-word!important">
+</td>
+</tr>
+</tbody>
+</table>
+<div>
+<p>Hi Florian,<o:p></o:p></p>
+<p><o:p>&nbsp;</o:p></p>
+<p>We don't use autodesk so there are no DWG files available. We use OpenSC=
+AD which is a text-based parametic CAD that allows us to collaborate and bu=
+ild the STLs on the GitLab CI. All openscad files are in our GitLab repo he=
+re:&nbsp;<br>
+<a href=3D"https://eur05.safelinks.protection.outlook.com/?url=3Dhttps%3A%2=
+F%2Fgitlab.com%2Fopenflexure%2Fopenflexure-microscope&amp;data=3D05%7C02%7C=
+florian.feigl%40stud.plus.ac.at%7Cbd24a22d75f84fb2104208de8e999468%7C158a94=
+1a576e4e87993db2eab8526e50%7C1%7C0%7C639104987459455849%7CUnknown%7CTWFpbGZ=
+sb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTW=
+FpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3DQRaAWjM%2BHR4KzSbhbpJOk04VS=
+ec7erDTTe8D4srwW%2FQ%3D&amp;reserved=3D0" originalsrc=3D"https://gitlab.com=
+/openflexure/openflexure-microscope">https://gitlab.com/openflexure/openfle=
+xure-microscope</a><br>
+<br>
+Just to check are you using the new v3 server in development or are you usi=
+ng v2? I'd highly recommend using v3 as it is on the new picamera stack. We=
+ are interested in Pi5, but it hasn't reached the top of our proprieties ye=
+t in the transfer to v3. I think
+ you should be able to get it working with a PISP tuning file for the IMX50=
+0, all the code is available here:<o:p></o:p></p>
+<p><a href=3D"https://eur05.safelinks.protection.outlook.com/?url=3Dhttps%3=
+A%2F%2Fgitlab.com%2Fopenflexure%2Fopenflexure-microscope-server&amp;data=3D=
+05%7C02%7Cflorian.feigl%40stud.plus.ac.at%7Cbd24a22d75f84fb2104208de8e99946=
+8%7C158a941a576e4e87993db2eab8526e50%7C1%7C0%7C639104987459469280%7CUnknown=
+%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIs=
+IkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=3DsbAZ4OSFyD35ipSbH=
+H6oEH%2FnR1Hk6SfGl9IWZ6uq4CA%3D&amp;reserved=3D0" originalsrc=3D"https://gi=
+tlab.com/openflexure/openflexure-microscope-server">https://gitlab.com/open=
+flexure/openflexure-microscope-server</a><br>
+<br>
+Test images are built and shared via the forum. We would be interested to h=
+ear how your Pi5 migration goes. Would you be happy to sare on our forum so=
+ the whole community can see?<o:p></o:p></p>
+<p><o:p>&nbsp;</o:p></p>
+<p>Best wishes<o:p></o:p></p>
+<p><o:p>&nbsp;</o:p></p>
+<p>Julian<o:p></o:p></p>
+<p><o:p>&nbsp;</o:p></p>
+<div>
+<p class=3D"MsoNormal">On 10/03/2026 15:20, Feigl Florian Helmut Joseph wro=
+te:<o:p></o:p></p>
+</div>
+<blockquote style=3D"margin-top:5.0pt;margin-bottom:5.0pt">
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Hi there!<o:p></o:p></sp=
+an></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">My name is Florian Feigl=
+ and I work for Dr. Lepperdinger in the Medical Biology Departement of the =
+University of Salzburg.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I found your amazing pro=
+ject, when I was looking up existing technology that I could use for my cas=
+e.<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">So far, I migrated the o=
+penflexure Packages to RPi5 with Raspberry OS 13 and added support for the =
+IMX500 (did not make it into the project, but will be useful for other proj=
+ects, I am sure).<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">My goal is to marry open=
+flexure with image processing via a NPU (RPi AI HAT) and to do so I will pr=
+obably need to customize some of the 3D printed parts.&nbsp;<o:p></o:p></sp=
+an></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Would you be so kind to =
+share them?<o:p></o:p></span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">I will soon set up a rep=
+ository. Maybe you are interested in the RPi5 migration as well?<o:p></o:p>=
+</span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Best,<o:p></o:p></span><=
+/p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Florian Feigl<o:p></o:p>=
+</span></p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">Links:<o:p></o:p></span>=
+</p>
+</div>
+<div>
+<p class=3D"MsoNormal"><span style=3D"color:black">+ <a href=3D"https://www=
+.plus.ac.at/biosciences/the-department/research-groups/lepperdinger/?lang=
+=3Den">
+https://www.plus.ac.at/biosciences/the-department/research-groups/lepperdin=
+ger/?lang=3Den</a><o:p></o:p></span></p>
+</div>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+--_000_CWLP302MB01016BA6D7C6565F0EA00C54E952ACWLP302MB0101GBRP_--
