@@ -5,6 +5,7 @@ After=network.target
 [Service]
 User={{ app_user }}
 Group={{ app_user }}
+SupplementaryGroups=video render
 WorkingDirectory=/opt/openflexure/server
 ExecStart=/opt/openflexure/venv/bin/openflexure-microscope-server --fallback -c /var/openflexure/settings/ofm_config.json --host 0.0.0.0 --port 5000
 Restart=always
