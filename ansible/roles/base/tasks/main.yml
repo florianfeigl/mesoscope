@@ -56,3 +56,6 @@
         name: systemd-timesyncd
         state: started
         enabled: yes
+
+- name: Flush reboot handlers (ensure new kernel is running before DKMS builds)
+  meta: flush_handlers
