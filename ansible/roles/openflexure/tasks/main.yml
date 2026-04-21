@@ -74,6 +74,14 @@
   args:
     chdir: /opt/openflexure/server
 
+- name: Apply Pi 5 pisp ISP compatibility patch
+  script: files/patch_rpi5_pisp.sh
+  args:
+    chdir: /opt/openflexure/server
+  register: pisp_patch
+  changed_when: "'Patched' in pisp_patch.stdout"
+  notify: restart_openflexure
+
 - name: Find installed openflexure_microscope_server package path
   command: /opt/openflexure/venv/bin/python3 -c "import openflexure_microscope_server, os; print(os.path.dirname(openflexure_microscope_server.__file__))"
   register: ofm_package_path
