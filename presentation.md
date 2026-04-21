@@ -147,11 +147,11 @@ openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
 
 ### Prerequisites verified
 - [x] OpenSCAD installed
-- [x] HQ Camera mount exists as `arducam_b0196` in `hq_camera` branch (confirmed by OpenFlexure team)
-- [ ] Order 125 or 150 mm achromatic doublet (ThorLabs AC127-125-A or AC127-150-A)
+- [x] HQ Camera mount exists as `picamera_hq` in `hq_camera` branch (confirmed by OpenFlexure team)
+- [ ] Order 125 or 150 mm achromatic doublet (12.7mm dia)
 
 ### Risk: C-mount camera definition
-~~Risk eliminated~~ — `arducam_b0196` mount confirmed present in `hq_camera` branch.
+~~Risk eliminated~~ — `picamera_hq` mount confirmed present in `hq_camera` branch (William Wadsworth, 2026-03-30).
 
 ---
 
@@ -176,21 +176,22 @@ git clone https://gitlab.com/openflexure/openflexure-microscope.git
 git checkout hq_camera
 
 # 2. Set camera type in rms_optics_module.scad
-CAMERA = "arducam_b0196";    # Pi HQ Camera (IMX477, same C-mount)
+CAMERA = "picamera_hq";    # Pi HQ Camera (IMX477, C-mount) — confirmed by OpenFlexure team
 
-# 3. In optics_configurations.scad, find rms_f50d13_config and change:
+# 3. Use mesoscope custom configs (hardware/optics/openscad/) which provide
+#    rms_f125d13 and rms_f150d13 tube lens configurations
 #    tube_lens_f = 125 or 150   (depending on purchased lens)
-#    tube_lens_ffd = <from datasheet>  (back focal distance, slightly < f)
+#    tube_lens_ffd = 122.6 or 146.9  (verify from datasheet)
 
-# 4. Build
-openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
+# 4. Build (using custom build script)
+cd hardware/optics/openscad && ./build_optics.sh
 ```
 
 ### Key insight
 
-The `arducam_b0196` camera type uses the same IMX477 sensor + C-mount as the
-Pi HQ Camera. The mount geometry (C-mount FFD, sensor position) is already
-defined — only the tube lens optics need adjusting.
+The `picamera_hq` camera type provides the correct C-mount geometry for the
+Pi HQ Camera (IMX477). William Wadsworth (OpenFlexure, 2026-03-30) confirmed
+this is the right camera type — `arducam_b0196` is a different module.
 
 ### References
 

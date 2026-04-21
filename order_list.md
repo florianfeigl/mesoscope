@@ -33,7 +33,7 @@
 | **1** | **Tube lens** | Achromat doublet, 12.7mm diameter, **125-150mm focal length** | IMX477 sensor is 2.1× larger than Pi Cam v2. Ordered from taulab. |
 | 1 | Condenser lens | PMMA, 13mm, ~5mm focal | Standard, optional |
 
-**Recommended:** ThorLabs AC127-150-A (150mm) for ≤10x objective, or AC127-125-A (125mm) for ≤4x.
+**Recommended:** 150mm for ≤10x objective, or 125mm for ≤4x.
 
 ---
 

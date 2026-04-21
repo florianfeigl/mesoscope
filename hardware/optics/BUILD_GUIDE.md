@@ -39,50 +39,60 @@ Also check the parfocal distance:
 
 ## 3. Generate Custom Optics Module STL
 
-The standard OpenFlexure STL files (in `../stl/models/`) are for the Pi Camera v2 with
-50mm tube lens. We need to generate a custom optics module for the HQ Camera with our
-tube lens.
+The standard OpenFlexure STL files are for the Pi Camera v2 with 50mm tube lens.
+We need custom optics modules for the HQ Camera (IMX477) with 125mm and 150mm tube lenses.
 
-### 3.1 Clone OpenFlexure and checkout hq_camera branch
+Custom OpenSCAD configurations are provided in `../openscad/`:
+
+| File | Purpose |
+|------|---------|
+| `openscad/optics_configurations_hq.scad` | Tube lens configs (125mm and 150mm) |
+| `openscad/rms_optics_module_hq.scad` | Main module with config dispatch |
+| `openscad/build_optics.sh` | Build script for both STLs |
+| `openscad/README.md` | Parameter reference and usage |
+
+### 3.1 Clone OpenFlexure repo
 
 ```bash
-cd /tmp
-git clone https://gitlab.com/openflexure/openflexure-microscope.git
+cd /path/to/mesoscope/sources
+git clone --branch hq_camera --single-branch \
+  https://gitlab.com/openflexure/openflexure-microscope.git
 cd openflexure-microscope
-git checkout hq_camera
+git lfs install && git lfs pull
 ```
 
-### 3.2 Edit parameters
+The build script (`build_optics.sh`) copies the custom configs into the upstream repo automatically.
 
-**File: `openscad/rms_optics_module.scad`**
-```openscad
-CAMERA = "picamera_hq";         // Pi HQ Camera (IMX477, C-mount)
-```
+### 3.2 Available configurations
 
-> **Important:** Use `"picamera_hq"`, not `"arducam_b0196"`. Confirmed by
-> OpenFlexure team (William, 2026-03-30).
+No manual editing required — all configs are in `optics_configurations_hq.scad`:
 
-**File: `openscad/optics_configurations.scad`** -- in the `rms_f50d13_config` function:
+| OPTICS name | Tube lens | Conjugate | Use case |
+|-------------|-----------|-----------|----------|
+| `rms_f125d13` | 125mm | Finite (160mm) | <=4x objectives |
+| `rms_f150d13` | 150mm | Finite (160mm) | <=10x objectives (preferred) |
+| `rms_infinity_f125d13` | 125mm | Infinity | Infinity-corrected objectives |
+| `rms_infinity_f150d13` | 150mm | Infinity | Infinity-corrected objectives |
 
-| Parameter | Standard Value | Required Value |
-|-----------|---------------|----------------|
-| `tube_lens_f` | 50 | **125** or **150** (mm) |
-| `tube_lens_ffd` | ~48 | **Check ThorLabs datasheet** for chosen lens |
+All configs default to `CAMERA = "picamera_hq"` (confirmed by OpenFlexure team, William Wadsworth, 2026-03-30).
 
-For reference:
-- ThorLabs AC127-125-A: `tube_lens_ffd` ≈ 122.6mm (check datasheet)
-- ThorLabs AC127-150-A: `tube_lens_ffd` ≈ 146.9mm (check datasheet)
-
-### 3.3 Build STL
+### 3.3 Build STLs
 
 ```bash
-openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
+cd /path/to/mesoscope/hardware/optics/openscad
+
+# Build both configurations:
+./build_optics.sh
+
+# Or build one at a time:
+./build_optics.sh 125     # 125mm tube lens
+./build_optics.sh 150     # 150mm tube lens
 ```
 
-Copy the output to `../stl/models/`:
-```bash
-cp optics_hq_camera_rms.stl /path/to/mesoscope/hardware/stl/models/
-```
+Output: `../stl/models/optics_hq_125_rms.stl` and `optics_hq_150_rms.stl`
+
+> **Verify `tube_lens_ffd` values** (122.6mm for 125mm, 146.9mm for 150mm) against your
+> lens datasheet before printing. Edit `optics_configurations_hq.scad` if needed.
 
 ---
 
@@ -101,7 +111,8 @@ cp optics_hq_camera_rms.stl /path/to/mesoscope/hardware/stl/models/
 ### Required STL files:
 
 - `main_body.stl` -- Microscope body with flexure stage
-- `optics_hq_camera_rms.stl` -- **Custom** (generated in step 3)
+- `optics_hq_125_rms.stl` -- **Custom** 125mm tube lens (generated in step 3)
+- `optics_hq_150_rms.stl` -- **Custom** 150mm tube lens (generated in step 3)
 - `large_gears.stl` + `small_gears.stl` -- Actuation gears
 - `condenser.stl` + `condenser_lid.stl` -- Illumination
 - `feet.stl` -- Foot pads
@@ -122,8 +133,7 @@ with these adaptations:
    into the custom optics module. The longer focal length means the lens sits closer to the
    objective end of the tube.
 
-2. **C-mount camera mounting:** The HQ Camera C-mount threads directly into the optics module
-   (the `arducam_b0196` variant has the correct mounting geometry).
+2. **C-mount camera mounting:** The HQ Camera C-mount threads into the `picamera_hq` optics module variant (confirmed by OpenFlexure team, William Wadsworth 2026-03-30).
 
 3. **Ribbon cable:** Route the 200mm ribbon cable from the HQ Camera through the microscope
    body to the Raspberry Pi 5 CSI port.
@@ -170,13 +180,11 @@ curl -s http://localhost:5000/ | head -5
 
 - [ ] Confirm objective type: **finite conjugate 160mm**
 - [ ] Confirm parfocal distance: **45mm** (DIN standard)
-- [ ] Order tube lens: **ThorLabs AC127-125-A** or **AC127-150-A**
-- [ ] Look up `tube_lens_ffd` from ThorLabs datasheet for chosen lens
-- [ ] Clone OpenFlexure repo, checkout `hq_camera` branch
-- [ ] Set `CAMERA = "arducam_b0196"` in `rms_optics_module.scad`
-- [ ] Set `tube_lens_f` and `tube_lens_ffd` in `optics_configurations.scad`
-- [ ] Build STL with OpenSCAD and verify geometry
-- [ ] Print custom optics module
+- [ ] Order tube lens: **125mm or 150mm achromatic doublet** (12.7mm dia)
+- [ ] Look up `tube_lens_ffd` from datasheet for chosen lens — verify values in `hardware/optics/openscad/optics_configurations_hq.scad`
+- [ ] Clone OpenFlexure repo (`hq_camera` branch) and set up symlinks (see step 3.1)
+- [ ] Run `./build_optics.sh` to generate STLs for both tube lens configurations
+- [ ] Print custom optics modules (125mm and/or 150mm)
 - [ ] Print remaining STL parts (main body, gears, condenser, feet, clips)
 - [ ] Assemble microscope with HQ Camera + custom tube lens + scraped objective
 - [ ] Run Ansible playbook for software

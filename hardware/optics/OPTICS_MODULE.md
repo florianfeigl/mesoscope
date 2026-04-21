@@ -178,44 +178,47 @@ The printed optics module tube (from tube lens seat to camera face) needs to be
 ### Repository and branch
 
 ```bash
-git clone https://gitlab.com/openflexure/openflexure-microscope.git
-git checkout hq_camera
+cd /path/to/mesoscope/sources
+git clone --branch hq_camera --single-branch \
+  https://gitlab.com/openflexure/openflexure-microscope.git
+cd openflexure-microscope
+git lfs install && git lfs pull
 ```
 
 **Do not use the `main` branch** — the HQ Camera mount is only on `hq_camera`.
 
-### Parameters to change
+### Custom configurations (no upstream editing required)
 
-Two files need editing:
+Custom OpenSCAD configs for the mesoscope are in `hardware/optics/openscad/`:
 
-**1. `openscad/rms_optics_module.scad`** — set camera type:
-```openscad
-CAMERA = "picamera_hq";         // Pi HQ Camera (IMX477, C-mount)
-```
+| File | Purpose |
+|------|---------|
+| `optics_configurations_hq.scad` | 125mm and 150mm tube lens configs |
+| `rms_optics_module_hq.scad` | Module dispatch with all 6 optics types |
+| `build_optics.sh` | Build both STLs with one command |
+| `README.md` | Parameter reference |
 
-> **Note:** William (OpenFlexure support, 2026-03-30) confirmed the correct camera
-> type is `"picamera_hq"`, not `"arducam_b0196"`. The `arducam_b0196` is a different
-> camera module that happens to use the same IMX477 sensor but has a different mount.
+The build script (`build_optics.sh`) copies these into the upstream repo automatically before building.
 
-**2. `openscad/optics_configurations.scad`** — in the function `rms_f50d13_config`,
-change the tube lens parameters:
+### Available configurations
 
-| Parameter | Standard value | Required value |
-|---|---|---|
-| `tube_lens_f` | 50 | 125 or 150 (depending on lens purchased) |
-| `tube_lens_ffd` | ~48 (back focal distance) | Check datasheet for chosen lens (slightly shorter than f) |
+| OPTICS name | Tube lens | f (mm) | ffd (mm) | Conjugate | Camera |
+|-------------|-----------|--------|----------|-----------|--------|
+| `rms_f125d13` | 125mm | 125 | 122.6 | Finite (160mm) | picamera_hq |
+| `rms_f150d13` | 150mm | 150 | 146.9 | Finite (160mm) | picamera_hq |
+| `rms_infinity_f125d13` | 125mm | 125 | 122.6 | Infinity | picamera_hq |
+| `rms_infinity_f150d13` | 150mm | 150 | 146.9 | Infinity | picamera_hq |
 
-The `tube_lens_ffd` is the **back focal distance** of the actual lens, which is
-slightly shorter than the nominal focal length due to lens thickness. For ThorLabs
-achromatic doublets this is specified on the product page.
-
-> **Note:** The module tube height (`optics_module_cam_tube_h`) and camera Z offset
-> are computed automatically from these parameters — no need to set them manually.
+All default to `CAMERA = "picamera_hq"`. The `ffd` values should be verified
+against your lens datasheet.
 
 ### Build
 
 ```bash
-openscad -o optics_hq_camera_rms.stl openscad/rms_optics_module.scad
+cd /path/to/mesoscope/hardware/optics/openscad
+./build_optics.sh          # Both configs
+./build_optics.sh 125      # 125mm only
+./build_optics.sh 150      # 150mm only
 ```
 
 ### References from OpenFlexure team
@@ -254,12 +257,10 @@ diffraction limit at NA 0.25, so the sensor is not the limiting factor. Good.
 
 - [ ] Confirm objective type: **finite conjugate 160 mm** (check markings)
 - [ ] Confirm objective parfocal distance: **45 mm** (DIN standard) or 35 mm (older)
-- [ ] Order tube lens: **ThorLabs AC127-125-A** or AC127-150-A (125 mm or 150 mm achromatic doublet)
-- [ ] Look up `tube_lens_ffd` (back focal distance) from ThorLabs datasheet for chosen lens
-- [ ] Clone OpenFlexure repo, checkout `hq_camera` branch
-- [ ] Set `CAMERA = "arducam_b0196"` in `rms_optics_module.scad`
-- [ ] Set `tube_lens_f` and `tube_lens_ffd` in `optics_configurations.scad`
-- [ ] Build STL with OpenSCAD and verify geometry
+- [ ] Order tube lens: **125mm or 150mm achromatic doublet** (12.7mm dia)
+- [ ] Look up `tube_lens_ffd` (back focal distance) from datasheet for chosen lens
+- [ ] Clone OpenFlexure repo (`hq_camera` branch) and set up symlinks (see Step 6)
+- [ ] Run `build_optics.sh` to generate STLs — verify `tube_lens_ffd` in `optics_configurations_hq.scad` first
 - [ ] Print test piece before committing to full print
 
 ---
@@ -270,5 +271,5 @@ diffraction limit at NA 0.25, so the sensor is not the limiting factor. Good.
 - [OpenFlexure optics module assembly](https://build.openflexure.org/openflexure-microscope/v7.0.0-beta5/high_res_optics_module.html)
 - [OpenFlexure customisation](https://build.openflexure.org/openflexure-microscope/v7.0.0-beta5/customisation.html)
 - [OpenFlexure microscope source (GitLab)](https://gitlab.com/openflexure/openflexure-microscope)
-- ThorLabs achromatic doublets: AC127-125-A, AC127-150-A
+- Achromatic doublets, 12.7mm dia: 125mm focal length and 150mm focal length
 - IMX477 datasheet: sensor size 7.857 × 5.893 mm, pixel pitch 1.55 µm, C-mount FFD 17.526 mm

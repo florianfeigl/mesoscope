@@ -79,12 +79,12 @@
 - [ ] **Hardware Procurement**
     - [x] Pi HQ Camera (IMX477, C-mount) -- acquired, currently mounted on conventional microscope
     - [x] Scraped objective ≤10x (finite conjugate 160 mm) -- sourced from existing microscopes
-    - [ ] Tube lens 125-150 mm achromatic doublet (e.g. ThorLabs AC127-125-A or AC127-150-A) -- replaces standard 50 mm
+    - [ ] Tube lens 125-150 mm achromatic doublet (12.7mm dia) — replaces standard 50 mm
     - [ ] Sangaboard v0.5 motor controller
     - [ ] 3x 28BYJ-48 stepper motors -- acquired
 - [ ] **3D Printing**
     - [ ] Verify objective type (160 mm finite vs. infinity) and parfocal distance before printing
-    - [ ] Clone OpenFlexure repo (`hq_camera` branch) and set `CAMERA = "arducam_b0196"` + tube lens params (see OPTICS_MODULE.md)
+    - [ ] Clone OpenFlexure repo (`hq_camera` branch) and set `CAMERA = "picamera_hq"` + tube lens params (see OPTICS_MODULE.md)
     - [ ] Generate custom optics module STL with OpenSCAD
     - [ ] Print OpenFlexure microscope body and stage
     - [ ] Print custom optics module (HQ Camera C-mount variant)
@@ -111,7 +111,7 @@
 |-----------|-------------|-----------|--------|
 | Pi HQ Camera (IMX477) | C-mount, 12.3 MP sensor -- **primary microscopy camera** | ~35 EUR | Acquired |
 | Scraped ≤10x objective | Finite conjugate 160 mm, sourced from existing microscopes | ~0 EUR | Acquired |
-| Tube lens (125-150 mm) | Achromatic doublet, 12.7 mm dia (e.g. ThorLabs AC127-125-A or AC127-150-A) | ~15-80 EUR | Pending |
+| Tube lens (125-150 mm) | Achromatic doublet, 12.7 mm dia | ~15-80 EUR | Pending |
 | 20x RMS Plan Achromat (0.40 NA) | Cell tracking, movement patterns (~0.7 µm resolution) | ~25-80 EUR | Pending |
 | 40x RMS Plan Achromat (0.65 NA) | Subcellular detail, calcification (optional) | ~25-80 EUR | Optional |
 
