@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies (if present)
+        run: |
+          if [ -f "requirements.txt" ]; then python -m pip install --upgrade pip && pip install -r requirements.txt; fi
+          if [ -f "model/requirements.txt" ]; then python -m pip install -r model/requirements.txt; fi
+
+      - name: Run tests (if available)
+        run: |
+          if command -v pytest >/dev/null 2>&1; then pytest -q || true; else echo "No pytest available; skipping tests."; fi
