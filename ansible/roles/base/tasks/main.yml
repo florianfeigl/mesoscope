@@ -57,5 +57,41 @@
         state: started
         enabled: yes
 
+- name: Configure passwordless sudo for app user
+  copy:
+    content: "{{ app_user }} ALL=(ALL) NOPASSWD:ALL"
+    dest: "/etc/sudoers.d/{{ app_user }}"
+    mode: '0440'
+    owner: root
+    group: root
+    validate: /usr/sbin/visudo -csf %s
+
+- name: Mask pipewire to prevent camera device conflicts
+  block:
+    - name: Mask pipewire system services
+      systemd:
+        name: "{{ item }}"
+        masked: yes
+      loop:
+        - pipewire.service
+        - pipewire-pulse.service
+        - wireplumber.service
+      ignore_errors: yes
+
+    - name: Mask pipewire user services
+      become: yes
+      become_user: "{{ app_user }}"
+      systemd:
+        name: "{{ item }}"
+        masked: yes
+        scope: user
+      loop:
+        - pipewire.service
+        - pipewire.socket
+        - pipewire-pulse.service
+        - pipewire-pulse.socket
+        - wireplumber.service
+      ignore_errors: yes
+
 - name: Flush reboot handlers (ensure new kernel is running before DKMS builds)
   meta: flush_handlers
