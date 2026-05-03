@@ -22,6 +22,11 @@
     - [x] Deploy configuration (`ofm_config.json`) with HQ Camera and DummyStage
     - [x] Download and integrate web app frontend from GitLab CI artifacts
     - [x] Verify server starts, web UI accessible on port 5000
+- [x] Fix Pi 5 pisp ISP compatibility (vc4 tuning files incompatible with Pi 5 ISP)
+- [x] Fix pipewire camera device conflict (pipewire holds /dev/media* preventing picamera2 access)
+- [x] Fix systemd SupplementaryGroups for camera access (video, render)
+- [x] Fix DKMS kernel module build ordering (reboot between apt upgrade and modprobe)
+- [ ] Fix camera black frame issue (ISP auto-exposure not active without tuning file)
 - [ ] Create software list for OpenFlexure Suite
 - [ ] Validate Autofocus with motorised stage
 
@@ -34,7 +39,8 @@
 - [x] Deploy OpenFlexure with HQ Camera (IMX477) configuration
 - [x] Test live preview via OpenFlexure web UI
 - [x] Verify Hailo-8 NPU inference (see test results below)
-- [ ] Design and 3D-print custom optics module for IMX477 + 125-150mm tube lens
+- [x] Design and 3D-print custom optics module for IMX477 + 125-150mm tube lens (STLs generated)
+- [ ] Assemble optics module with tube lens and IMX477
 - [ ] Validate autofocus with motorised stage
 
 ### Phase 4: Integration Testing
@@ -47,6 +53,7 @@
     - [x] Server starts and responds on HTTP (port 5000)
     - [x] Web UI accessible
     - [x] HQ Camera (IMX477) initialised and streaming
+    - [ ] Fix camera black frame issue (ISP auto-exposure without tuning file)
     - [ ] Test stage control via sangaboard (if connected)
     - [ ] Verify smart scan and autofocus functionality
 - [x] **AI Inference (Hailo-8 NPU)**
@@ -83,11 +90,11 @@
     - [ ] Sangaboard v0.5 motor controller
     - [ ] 3x 28BYJ-48 stepper motors -- acquired
 - [ ] **3D Printing**
-    - [ ] Verify objective type (160 mm finite vs. infinity) and parfocal distance before printing
-    - [ ] Clone OpenFlexure repo (`hq_camera` branch) and set `CAMERA = "picamera_hq"` + tube lens params (see OPTICS_MODULE.md)
-    - [ ] Generate custom optics module STL with OpenSCAD
-    - [ ] Print OpenFlexure microscope body and stage
-    - [ ] Print custom optics module (HQ Camera C-mount variant)
+    - [x] Verify objective type (160 mm finite conjugate) and parfocal distance (see OPTICS_MODULE.md)
+    - [x] Clone OpenFlexure repo (`hq_camera` branch) and set `CAMERA = "picamera_hq"` + tube lens params
+    - [x] Generate custom optics module STLs with OpenSCAD (125mm and 150mm variants)
+    - [ ] Print all parts (see `hardware/PRINT_CHECKLIST.md`)
+    - [ ] Assemble optics module with tube lens and IMX477
 - [ ] **Assembly & Calibration**
     - [ ] Assemble OpenFlexure with HQ Camera + scraped objective
     - [ ] Integrate with Ansible-deployed software stack
@@ -130,9 +137,10 @@
 ### 3D Printed Parts
 | Component | Description | Est. Price | Status |
 |-----------|-------------|-----------|--------|
-| OpenFlexure Microscope Body | Main structure with flexure stage | ~5 EUR filament | Pending |
-| Optics Module (HQ Camera) | Holds objective + camera | ~2 EUR filament | Pending |
-| Illumination Module | LED illumination (transmission) | ~2 EUR filament | Pending |
+| OpenFlexure Microscope Body | Main structure with flexure stage | ~5 EUR filament | Ready to print |
+| Optics Module (HQ Camera, 150mm) | Holds objective + HQ Camera + 150mm tube lens | ~2 EUR filament | STL generated |
+| Optics Module (HQ Camera, 125mm) | Holds objective + HQ Camera + 125mm tube lens | ~2 EUR filament | STL generated |
+| Illumination Module | LED illumination (transmission) | ~2 EUR filament | Ready to print |
 
 ### Consumables & Misc
 | Component | Description | Est. Price | Status |
@@ -268,9 +276,13 @@ ssh lab@mesoscope.local
 ### Step 3: Run the Ansible Playbook
 ```bash
 git clone <repository_url>
-cd cellair/ansible
-ansible-playbook site.yml
+cd mesoscope/ansible
+ansible-playbook site.yml --skip-tags motor-controller -v -K
 ```
+
+> **Note:** The `motor-controller` tag is skipped until Sangaboard hardware is connected.
+> The playbook includes Pi 5 compatibility patches (pisp ISP tuning, pipewire masking, etc.)
+> applied automatically via the `patch_rpi5_pisp.sh` script.
 
 ### Step 4: Verify
 Access OpenFlexure at `http://mesoscope.local:5000/`
