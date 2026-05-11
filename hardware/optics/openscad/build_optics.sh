@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-UPSTREAM_DIR="/home/feivel/dev/mesoscope/sources/openflexure-microscope"
+UPSTREAM_DIR="/home/feivel/dev/mesoscope/resources/openflexure-microscope"
 OUTPUT_DIR="/home/feivel/dev/mesoscope/hardware/stl/models"
 
 mkdir -p "${OUTPUT_DIR}"
@@ -40,7 +40,10 @@ CONFIGS_DIR="/home/feivel/dev/mesoscope/hardware/optics/openscad"
 
 cp "${CONFIGS_DIR}/optics_configurations_hq.scad" "${UPSTREAM_DIR}/openscad/libs/"
 cp "${CONFIGS_DIR}/rms_optics_module_hq.scad" "${UPSTREAM_DIR}/openscad/"
-echo "Custom configs copied into upstream repo."
+# Override the upstream picamera_hq.scad with our C-mount variant.
+# The mesoscope uses the HQ Camera intact (C-mount body), not the bare PCB.
+cp "${CONFIGS_DIR}/picamera_hq_cmount.scad" "${UPSTREAM_DIR}/openscad/libs/cameras/picamera_hq.scad"
+echo "Custom configs copied into upstream repo (including C-mount picamera_hq override)."
 
 echo "Output dir:   ${OUTPUT_DIR}"
 echo "OpenSCAD:     ${OPENSCAD_CMD}"

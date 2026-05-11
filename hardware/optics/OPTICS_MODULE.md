@@ -152,6 +152,27 @@ the IMX219 sensor in the Pi Cam v2.
 
 **Effective extra offset compared to standard module: +20–25 mm.**
 
+### Camera-side interface: C-mount seat (not bare PCB)
+
+The upstream `picamera_hq.scad` mounts the **bare PCB** of the HQ Camera (with the
+C-mount lens removed) on four M2 posts and uses a small printed cover for the
+underside. We do not do that — we use the HQ Camera intact, with its full
+C-mount housing.
+
+`hardware/optics/openscad/picamera_hq_cmount.scad` is a drop-in replacement for
+the upstream camera mount that:
+
+- sets `mount_height = 17.526` (C-mount FFD) and `sensor_height = 0`, so the
+  sensor lands at the correct optical distance automatically,
+- replaces the printed PCB mount with a **32.6 mm bore × 4 mm deep flange seat**
+  for the C-mount housing (32 mm OD + 0.3 mm clearance),
+- opens a **26 mm clear bore** above the seat for the optical path,
+- removes the screw posts, counterbore, and `picamera_hq_cover` (no longer
+  needed — the C-mount housing is its own enclosure).
+
+The build script (`build_optics.sh`) copies this file over the upstream
+`picamera_hq.scad` before rendering, so the change is local to our repo.
+
 ---
 
 ## Step 5 — Total optics module tube length

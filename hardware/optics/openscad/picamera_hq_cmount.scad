@@ -1,0 +1,180 @@
+// Custom HQ Camera mount for the mesoscope project
+// =================================================
+//
+// This is a DROP-IN REPLACEMENT for the upstream
+// `openscad/libs/cameras/picamera_hq.scad`.
+//
+// The upstream module mounts the BARE PCB of the HQ Camera (with the C-mount
+// lens removed) on four mounting posts, and uses a small printed cover to
+// protect the underside. That approach assumes the user has stripped the
+// camera down to its sensor board.
+//
+// The mesoscope uses the HQ Camera intact, with its full C-mount body. The
+// camera body threads/seats into the optics module via its native C-mount
+// flange. There is no PCB-on-posts mounting and no cover -- the camera body
+// is its own enclosure.
+//
+// Geometry (C-mount standard, ISO 1792):
+//   - Thread:          1"-32 UN  (major dia 25.4 mm, pitch 0.794 mm)
+//   - Flange diameter: ~32 mm (HQ Camera C-mount housing OD)
+//   - Flange focal distance (FFD): 17.526 mm  (flange face to sensor)
+//
+// In this file:
+//   - mount_height = 17.526   (FFD: distance from mount-top face to sensor)
+//   - sensor_height = 0       (sensor is referenced directly to flange face)
+//
+// The optics module body builds upward from `mount_top_z`, and the camera
+// hangs below the mount face -- only the C-mount flange seats against the
+// printed face. This automatically gives the correct sensor-to-tube-lens
+// distance via `rms_camera_mount_top_z()` in `rms_calculations.scad`.
+//
+// Securing the camera:
+//   We do NOT print a 1"-32 UN female thread. FDM-printed C-mount threads
+//   are unreliable (engagement is short, layer adhesion fights the helix).
+//   Instead we provide a smooth seat with a ~0.3 mm clearance over the
+//   camera's flange housing (~32 mm OD). The camera is held by either:
+//     (a) a thin retaining clip (printed separately), or
+//     (b) the optics module's existing M3 / objective load path -- the
+//         camera weight is small and the C-mount face naturally seats
+//         against the printed lip when the microscope is inverted.
+//
+// References:
+//   - C-mount FFD: https://en.wikipedia.org/wiki/C_mount
+//   - Pi HQ Camera mech drawing (page 9):
+//     https://datasheets.raspberrypi.com/hq-camera/hq-camera-product-brief.pdf
+
+use <../utilities.scad>
+use <../libdict.scad>
+
+// ---------------------------------------------------------------------------
+// Camera dictionary -- consumed by camera.scad and rms_calculations.scad
+// ---------------------------------------------------------------------------
+//
+// mount_height  is the distance from the top face of the printed mount
+//               down to the reference plane the camera dictionary uses for
+//               its "PCB" position. Because the camera mount calculation
+//               places the sensor at  sensor_z = mount_top_z - mount_height
+//                                                + sensor_height,
+//               we pick:
+//                   mount_height  = 17.526  (C-mount FFD)
+//                   sensor_height = 0
+//               so that the sensor sits exactly 17.526 mm below the
+//               flange face -- matching the C-mount standard.
+function picamera_hq_camera_dict() = [["mount_height", 17.526],
+                                      ["sensor_height", 0]];
+
+function picamera_hq_bottom_z() = -key_lookup("mount_height", picamera_hq_camera_dict());
+
+// The flange housing OD on the Pi HQ Camera is ~32 mm (measured).
+// We add a ~0.3 mm clearance for an easy slide-fit.
+function picamera_hq_cmount_flange_od() = 32.0;
+function picamera_hq_cmount_seat_id()   = picamera_hq_cmount_flange_od() + 0.6;
+
+// Depth of the recess that the C-mount housing slides into.
+// 4 mm is enough to keep the camera concentric without forcing
+// the sensor stack any further from the tube lens.
+function picamera_hq_cmount_seat_h() = 4.0;
+
+// Inner clear bore above the seat -- the optical path passes through this.
+// Slightly wider than the C-mount thread major (25.4 mm) so the camera's
+// internal IR-cut filter and sensor stack have unobstructed view of the
+// tube lens.
+function picamera_hq_cmount_clear_bore_d() = 26.0;
+
+// Outer wall radius of the printed mount face. Needs to be larger than the
+// flange seat so the seat lip has structural material around it.
+function picamera_hq_mount_outer_r() = picamera_hq_cmount_seat_id()/2 + 2.0;
+
+// Legacy values retained so library code that still references them doesn't break.
+function picamera_hq_hole_spacing() = 30;
+function picamera_board_size()      = [38, 38];
+
+// ---------------------------------------------------------------------------
+// Optical-path cutout
+// ---------------------------------------------------------------------------
+// In the upstream design this carves out a cone for the (removed) C-mount
+// lens barrel. Here the camera body threads in from below, so the cutout
+// is just the clear bore plus the flange seat.
+module picamera_hq_cutout(beam_length=15){
+    // Clear bore extending up into the optics body
+    translate_z(-tiny()){
+        cylinder(d=picamera_hq_cmount_clear_bore_d(),
+                 h=beam_length+tiny(),
+                 $fn=64);
+    }
+    // Flange seat -- recess for the C-mount housing
+    translate_z(-picamera_hq_cmount_seat_h()){
+        cylinder(d=picamera_hq_cmount_seat_id(),
+                 h=picamera_hq_cmount_seat_h()+tiny(),
+                 $fn=64);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Camera mount -- the printed face the HQ Camera flange seats against
+// ---------------------------------------------------------------------------
+// The optics module hulls onto a thin slice of this at z = mount_top_z.
+// Top face is at z = 0, mount extends downward to z = picamera_hq_bottom_z().
+module picamera_hq_camera_mount(screwhole=true, counterbore=false){
+    // We ignore screwhole / counterbore -- not used in the C-mount design.
+    difference(){
+        // Solid disk forming the mount face, just thick enough to hold the seat.
+        translate_z(-picamera_hq_cmount_seat_h() - 1){
+            cylinder(r=picamera_hq_mount_outer_r(),
+                     h=picamera_hq_cmount_seat_h() + 1 + tiny(),
+                     $fn=64);
+        }
+        // Subtract the optical path / flange seat
+        picamera_hq_cutout(beam_length=15);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Stubs for upstream API compatibility
+// ---------------------------------------------------------------------------
+// These modules exist in the upstream picamera_hq.scad and are referenced
+// from camera.scad and lib_optics.scad. We replace them with no-ops so the
+// build doesn't error out, but they generate no geometry in the C-mount
+// design (no PCB, no screws, no cover).
+
+module picamera_hq_screwholes(){
+    // No screwholes -- the camera is held by the C-mount seat.
+}
+
+module picamera_hq_counterbore(){
+    // No counterbore -- nothing to seat from below.
+}
+
+module picamera_hq_bottom_mounting_posts(optics_config, outers=true, cutouts=true, bottom_slice=false){
+    // No posts -- the C-mount flange does the mounting.
+    // Empty union so that callers using this in `union(){...}` blocks work.
+    if (false) cube(0);
+}
+
+module at_picamera_hq_hole_pattern(){
+    // Retained for API compatibility. Iterates over the legacy 30 mm hole
+    // pattern; if anything still calls it, it gets the same children
+    // placement, but nothing in the C-mount path uses this.
+    hole_spacing = picamera_hq_hole_spacing();
+    rotate(45){
+        for(x_tr=[-.5, .5]*hole_spacing){
+            for(y_tr=[-.5, .5]*hole_spacing){
+                translate([x_tr, y_tr, 0]){
+                    children();
+                }
+            }
+        }
+    }
+}
+
+module picamera_hq_board(h=tiny(), rotated=true, clearance=0){
+    // No printed PCB outline in the C-mount design.
+}
+
+module picamera_hq_cover_pads(clearance=1){
+    // No cover in the C-mount design.
+}
+
+module picamera_hq_cover(){
+    // No cover in the C-mount design -- the camera body is its own enclosure.
+}

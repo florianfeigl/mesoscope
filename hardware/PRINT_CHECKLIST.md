@@ -19,8 +19,9 @@
 | # | File | Size | Supports | Notes | Status |
 |---|------|------|----------|-------|--------|
 | 1 | `main_body.stl` | 6.0M | Yes (built-in) | Core frame with flexure stage | ☐ |
-| 2 | `optics_hq_150_rms.stl` | 2.2M | No | IMX477 HQ Camera, 150mm tube lens (use for <=10x objectives) | ☐ |
-| 3 | `optics_hq_125_rms.stl` | 2.2M | No | IMX477 HQ Camera, 125mm tube lens (only if using <=4x objectives) | ☐ |
+| 2 | `optics_hq_150_rms.stl` | 2.0M | No | IMX477 HQ Camera, 150mm tube lens (use for <=10x objectives) — C-mount seat | ☐ |
+| 3 | `optics_hq_125_rms.stl` | 1.9M | No | IMX477 HQ Camera, 125mm tube lens (only if using <=4x objectives) — C-mount seat | ☐ |
+| 4 | `picamera_hq_cover.stl` | 110K | No | HQ Camera PCB protective cover (print upside down) | ☐ |
 
 ### Actuation — Must Print
 
@@ -59,6 +60,8 @@
 
 - ~~`optics_picamera_2_rms_f50d13.stl`~~ — Pi Camera v2 mount, incompatible with IMX477
 - ~~`picamera_2_cover.stl`~~ — Pi Camera v2 cover, incompatible with IMX477
+- ~~`picamera_hq_cover.stl`~~ — bare-PCB cover, not needed: the HQ Camera C-mount body
+  is its own enclosure and seats directly into the optics module via its native flange.
 
 ## Optics Module Choice
 
@@ -90,6 +93,7 @@ Output: `hardware/stl/models/optics_hq_{125,150}_rms.stl`
 - [ ] Test fit: gears on actuator shafts
 - [ ] Insert M2/M3 heat-set inserts where required
 - [ ] Verify tube lens seats cleanly in optics module
+- [ ] **Test fit HQ Camera C-mount housing into optics module seat (32 mm OD, 4 mm deep, ~0.3 mm clearance)** — should slide in concentrically
 - [ ] Check IMX477 ribbon cable routing through main body
 
 ## Assembly References
