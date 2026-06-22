@@ -64,10 +64,10 @@ Use **125mm** for <=4x objectives or wider field of view.
 Before printing, check your lens datasheet for the **back focal distance (BFD)**.
 If it differs from the values below, edit `optics_configurations_hq.scad`:
 
-| Lens | Current ffd | Parameter |
-|------|------------|-----------|
-| 125mm | 122.6 mm | `rms_f125d13_config` line 23 |
-| 150mm | 146.9 mm | `rms_f150d13_config` line 44 |
+| Lens | ffd | Source | Parameter |
+|------|-----|--------|-----------|
+| 125mm | 124.1 mm | taulab supplier (Filip, 2026-06-22) | `rms_f125d13_config` |
+| 150mm | 148.8 mm | taulab supplier (Filip, 2026-06-22) | `rms_f150d13_config` |
 
 ## C-mount camera-side interface
 
