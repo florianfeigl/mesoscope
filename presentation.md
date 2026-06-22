@@ -46,7 +46,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │  Outside incubator                                              │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (27 TOPS)              ││
+│  │ Raspberry Pi 5 (8 GB) + Hailo-8 NPU (26 TOPS)              ││
 │  │ • OpenFlexure Server (stage control, camera)              ││
 │  │ • AI inference: YOLOv8 segmentation, cell tracking         ││
 │  └─────────────────────────────────────────────────────────────┘│

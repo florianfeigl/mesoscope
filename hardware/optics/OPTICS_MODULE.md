@@ -278,10 +278,12 @@ diffraction limit at NA 0.25, so the sensor is not the limiting factor. Good.
 
 - [ ] Confirm objective type: **finite conjugate 160 mm** (check markings)
 - [ ] Confirm objective parfocal distance: **45 mm** (DIN standard) or 35 mm (older)
-- [ ] Order tube lens: **125mm or 150mm achromatic doublet** (12.7mm dia)
-- [ ] Look up `tube_lens_ffd` (back focal distance) from datasheet for chosen lens
-- [ ] Clone OpenFlexure repo (`hq_camera` branch) and set up symlinks (see Step 6)
-- [ ] Run `build_optics.sh` to generate STLs — verify `tube_lens_ffd` in `optics_configurations_hq.scad` first
+- [x] Order tube lens: **125mm or 150mm achromatic doublet** (12.7mm dia) — **erhalten 2026-06-20**
+- [ ] Look up `tube_lens_ffd` (back focal distance) from datasheet for chosen lens — Distributor angefragt
+- [x] Clone OpenFlexure repo (`hq_camera` branch) — liegt in `resources/openflexure-microscope/`
+- [x] Run `build_optics.sh` — STLs generiert 2026-06-20 (150mm: 2.0M, 125mm: 1.9M)
+- [x] STL in PrusaSlicer geprüft — C-Mount-Sitz ⌀32.6mm vorhanden, Unterseite offen
+- [ ] Test-Fit HQ-Kamera in gedrucktes Optics-Modul
 - [ ] Print test piece before committing to full print
 
 ---

@@ -5,7 +5,7 @@
 | Component | Specification | Status |
 |-----------|---------------|--------|
 | Raspberry Pi 5 | 8GB RAM | Required |
-| Hailo-8 AI HAT | 27 TOPS | Required |
+| Hailo-8 AI HAT | 26 TOPS | Required |
 | HQ Camera (IMX477) | C-mount, 12.3 MP | Required |
 
 ## Directory Structure

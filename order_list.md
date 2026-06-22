@@ -50,7 +50,7 @@
 ## ALREADY HAVE
 
 - Raspberry Pi 5 (8GB)
-- AI HAT+ (Hailo-8, 27 TOPS) — for inference only, not camera
+- AI HAT+ (Hailo-8, 26 TOPS) — for inference only, not camera
 - HQ Camera (IMX477, C-mount) — primary microscope camera
 - DS3231 RTC Module
 - GPIO Stacking Header

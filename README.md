@@ -7,7 +7,7 @@
 ### Phase 1: Infrastructure & Base Setup
 - [x] **Hardware Setup (Raspberry Pi 5)**
     - [x] Install Raspberry Pi OS (Trixie, Python 3.13)
-    - [x] Configure AI HAT (27 TOPS) drivers and dependencies
+    - [x] Configure AI HAT (26 TOPS) drivers and dependencies
     - [x] Configure Pi HQ Camera (IMX477) integration
     - [ ] Configure RTC Module (DS3231) -- hardware not yet connected
 - [x] **Ansible Configuration**
@@ -86,7 +86,7 @@
 - [ ] **Hardware Procurement**
     - [x] Pi HQ Camera (IMX477, C-mount) -- acquired, currently mounted on conventional microscope
     - [x] Scraped objective ≤10x (finite conjugate 160 mm) -- sourced from existing microscopes
-    - [ ] Tube lens 125-150 mm achromatic doublet (12.7mm dia) — replaces standard 50 mm
+    - [x] Tube lens 125 mm + 150 mm achromatic doublet (12.7mm dia) — acquired 2026-06-20
     - [ ] Sangaboard v0.5 motor controller
     - [ ] 3x 28BYJ-48 stepper motors -- acquired
 - [ ] **3D Printing**
@@ -107,7 +107,7 @@
 | Component | Description | Est. Price | Status |
 |-----------|-------------|-----------|--------|
 | Raspberry Pi 5 (8GB) | Main computing unit | ~80 EUR | Acquired |
-| AI HAT+ (Hailo-8, 27 TOPS) | PCIe NPU for heavy inference (segmentation, YOLOv8) | ~70 EUR | Acquired |
+| AI HAT+ (Hailo-8, 26 TOPS) | PCIe NPU for heavy inference (segmentation, YOLOv8) | ~70 EUR | Acquired |
 | DS3231 RTC Module | Battery-backed real-time clock | ~5 EUR | Acquired |
 | GPIO Stacking Header | Pass-through for RTC under AI HAT | ~3 EUR | Acquired |
 | MicroSD Card (32GB+) | OS and software storage | ~10 EUR | Acquired |
@@ -118,7 +118,7 @@
 |-----------|-------------|-----------|--------|
 | Pi HQ Camera (IMX477) | C-mount, 12.3 MP sensor -- **primary microscopy camera** | ~35 EUR | Acquired |
 | Scraped ≤10x objective | Finite conjugate 160 mm, sourced from existing microscopes | ~0 EUR | Acquired |
-| Tube lens (125-150 mm) | Achromatic doublet, 12.7 mm dia | ~15-80 EUR | Pending |
+| Tube lens (125 mm + 150 mm) | Achromatic doublet, 12.7 mm dia | ~15-80 EUR | **Acquired** |
 | 20x RMS Plan Achromat (0.40 NA) | Cell tracking, movement patterns (~0.7 µm resolution) | ~25-80 EUR | Pending |
 | 40x RMS Plan Achromat (0.65 NA) | Subcellular detail, calcification (optional) | ~25-80 EUR | Optional |
 
@@ -161,18 +161,57 @@
     - [ ] Investigate influence of pressure changes on calcification [in progress]
     - [ ] Test series: Test different medium flow rates [in progress]
 
-## Camera Architecture
+## System Architecture
 
 ```
-RPi5 + Hailo-8 NPU (outside incubator)
-  |
-  +-- [HQ Camera (IMX477) + RMS objective + 125-150mm tube lens]
-  |     --> Microscopy: cell-level imaging (OpenFlexure)
-  |     --> Full sensor utilization (~85-95% with custom tube lens)
-  |
-  +-- [Hailo-8 AI HAT (27 TOPS)]
-        --> Heavy inference: YOLOv8-seg cell segmentation, tracking (HEF)
+                          CELLAIR / MESOSCOPE SYSTEM
+═══════════════════════════════════════════════════════════════════════════════
+
+                    ┌─────────────────────────────────────┐
+                    │         Raspberry Pi 5 (8GB)        │
+                    │   ┌─────────────┐  ┌─────────────┐  │
+                    │   │  OFM Server │  │ AI HAT+     │  │
+                    │   │   (FastAPI) │  │ Hailo-8     │  │
+                    │   └─────────────┘  │ 26 TOPS     │  │
+                    │                    └─────────────┘  │
+                    └──────────────┬──────────────────────┘
+                                   │ CSI
+                    ┌──────────────▼──────────────────────┐
+                    │      HQ Camera (IMX477, 12MP)       │
+                    │      C-Mount │ 150mm Achromat       │
+                    │      10x/0.25 Objektiv              │
+                    └──────────────┬──────────────────────┘
+                                   │
+                    ┌──────────────▼──────────────────────┐
+                    │     OpenFlexure Microscope Body     │
+                    │     Sangaboard v5 + 3× 28BYJ-48    │
+                    │     XYZ-Flexure Stage               │
+                    └──────────────┬──────────────────────┘
+                                   │
+                                   │  montiert auf Schlitten
+                                   │
+═══════════════════════╤═══════════▼══════╤══════════════════════════════════
+  Linearschiene        │                  │
+  ═════════════════════╪══════════════════╪═════════════════════════════════▶
+                        │     ← →         │
+                   Antrieb/Motor          │
+═══════════════════════╧══════════════════╧══════════════════════════════════
+          │                    │                    │
+          ▼                    ▼                    ▼
+   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+   │             │      │             │      │             │
+   │ {Bioreaktor}│      │ {Bioreaktor}│      │ {Bioreaktor}│
+   │             │      │             │      │             │
+   │  hFOB 1.19  │      │  hFOB 1.19  │      │  hMEC 1    │
+   │  + hMEC 1   │      │  + hMEC 1   │      │  (Kontrolle)│
+   │             │      │             │      │             │
+   └─────────────┘      └─────────────┘      └─────────────┘
+         #1                   #2                   #n
 ```
+
+Das Mikroskop fährt automatisch entlang der Schiene von Bioreaktor zu Bioreaktor,
+nimmt Bilder auf, und der Hailo-8 läuft on-device Inferenz (Zellzählung,
+Konfluenz, Segmentierung) — ohne externe Recheninfrastruktur.
 
 ### HQ Camera (IMX477) -- Microscopy
 
@@ -253,7 +292,7 @@ curl -s http://localhost:5000/ | head -5
 | Provision User  | `lab`                                |
 | OS              | Raspberry Pi OS (Trixie)             |
 | Python          | 3.13                                 |
-| Hardware        | RPi5, AI HAT 27 TOPS, HQ Camera IMX477 |
+| Hardware        | RPi5, AI HAT 26 TOPS, HQ Camera IMX477 |
 
 ### Step 1: Flash the SD Card
 1. Download and install [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
@@ -298,7 +337,7 @@ To use different credentials, update the following files:
 ### Hailo-8 NPU Models
 
 Pre-installed HEF models at `/usr/share/hailo-models/` (installed via `hailo-models`).
-These run on the Hailo-8 NPU (AI HAT, 27 TOPS) via PCIe for real-time cell analysis.
+These run on the Hailo-8 NPU (AI HAT, 26 TOPS) via PCIe for real-time cell analysis.
 
 | Model | Task | File |
 |-------|------|------|
@@ -329,7 +368,7 @@ Latency: 10.9ms avg
 HQ Camera (IMX477) --> picamera2 streams (OpenFlexure UI)
                          |
                          v
-Captured Frame --> Hailo-8 NPU (PCIe, 27 TOPS) --> Output tensors
+Captured Frame --> Hailo-8 NPU (PCIe, 26 TOPS) --> Output tensors
                     Heavy: segmentation, pose estimation, custom HEF models
 ## Notes
 - **Meetings:** Jour fixe is usually Tuesday 10:00 AM.

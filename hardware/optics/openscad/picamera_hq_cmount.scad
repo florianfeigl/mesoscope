@@ -115,17 +115,36 @@ module picamera_hq_cutout(beam_length=15){
 // ---------------------------------------------------------------------------
 // The optics module hulls onto a thin slice of this at z = mount_top_z.
 // Top face is at z = 0, mount extends downward to z = picamera_hq_bottom_z().
+//
+// IMPORTANT: This must be an open-bottom tube, NOT a solid disk.
+// optics_module_body_outer() uses sequential_hull() between camera_mount_top_slice()
+// (at z=0) and bottom_of_body_and_wedge() (at z=-2). If camera_mount generates
+// a solid floor, the hull closes the bottom and blocks camera insertion.
+//
+// We generate a thin-walled tube (annular ring): outer wall + seat lip, no floor.
+// The inner bore (picamera_hq_cmount_clear_bore_d) is removed throughout, and
+// the flange seat pocket (picamera_hq_cmount_seat_id) is recessed at the bottom.
 module picamera_hq_camera_mount(screwhole=true, counterbore=false){
     // We ignore screwhole / counterbore -- not used in the C-mount design.
     difference(){
-        // Solid disk forming the mount face, just thick enough to hold the seat.
+        // Outer tube wall: from z=-(seat_h+1) up to z=0
         translate_z(-picamera_hq_cmount_seat_h() - 1){
             cylinder(r=picamera_hq_mount_outer_r(),
                      h=picamera_hq_cmount_seat_h() + 1 + tiny(),
                      $fn=64);
         }
-        // Subtract the optical path / flange seat
-        picamera_hq_cutout(beam_length=15);
+        // Remove optical bore all the way through (no floor)
+        translate_z(-picamera_hq_cmount_seat_h() - 1 - tiny()){
+            cylinder(d=picamera_hq_cmount_clear_bore_d(),
+                     h=picamera_hq_cmount_seat_h() + 1 + 2*tiny(),
+                     $fn=64);
+        }
+        // Flange seat pocket: wider bore at the bottom (seat_h deep)
+        translate_z(-picamera_hq_cmount_seat_h() - tiny()){
+            cylinder(d=picamera_hq_cmount_seat_id(),
+                     h=picamera_hq_cmount_seat_h() + tiny(),
+                     $fn=64);
+        }
     }
 }
 
@@ -146,9 +165,20 @@ module picamera_hq_counterbore(){
 }
 
 module picamera_hq_bottom_mounting_posts(optics_config, outers=true, cutouts=true, bottom_slice=false){
-    // No posts -- the C-mount flange does the mounting.
-    // Empty union so that callers using this in `union(){...}` blocks work.
-    if (false) cube(0);
+    // No physical posts -- the C-mount flange does the mounting.
+    //
+    // bottom_slice=true is called by optics_module_body_outer / camera_platform
+    // to get a thin cross-section at the bottom of the mount for sequential_hull.
+    // We return the annular ring cross-section of the mount tube so the hull
+    // knows the correct extent at the bottom -- without this the hull closes
+    // the underside and blocks camera insertion.
+    if (bottom_slice){
+        difference(){
+            cylinder(r=picamera_hq_mount_outer_r(), h=tiny(), $fn=64);
+            cylinder(d=picamera_hq_cmount_seat_id(), h=2*tiny(), center=true, $fn=64);
+        }
+    }
+    // outers / cutouts cases: no geometry needed (no posts to add or drill)
 }
 
 module at_picamera_hq_hole_pattern(){

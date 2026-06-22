@@ -137,7 +137,7 @@ M2  M3  M4   M4  M5  M6     M6  M7  M8     M8  M9  M10
 ## Technical Decisions
 
 ### Model Architecture: YOLOv8s-seg
-- **Rationale**: Best accuracy/speed tradeoff for 27 TOPS Hailo-8
+- **Rationale**: Best accuracy/speed tradeoff for 26 TOPS Hailo-8
 - **Alternative considered**: YOLOv8n-seg (faster, lower accuracy)
 - **Alternative considered**: YOLOv8m-seg (slower, better accuracy)
 

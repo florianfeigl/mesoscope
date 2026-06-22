@@ -82,7 +82,7 @@ Deployed via `ansible/roles/`:
 
 | Parameter | Value |
 |-----------|-------|
-| Architecture | Hailo-8, 27 TOPS |
+| Architecture | Hailo-8, 26 TOPS |
 | Firmware | v4.23.0 |
 | Kernel module | `hailo_pci` (DKMS) |
 | Device | `/dev/hailo0` |

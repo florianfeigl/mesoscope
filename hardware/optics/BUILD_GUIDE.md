@@ -76,6 +76,17 @@ No manual editing required — all configs are in `optics_configurations_hq.scad
 
 All configs default to `CAMERA = "picamera_hq"` (confirmed by OpenFlexure team, William Wadsworth, 2026-03-30).
 
+> **Note on camera screw holes:** The generated STL has no screw holes at the
+> camera end. This is intentional — the four No.2 self-tapping holes in the
+> upstream design are for bare-PCB mounting. The mesoscope uses the HQ Camera
+> intact with its C-mount body; the camera is retained by the 32.6 mm flange
+> seat, not screws.
+
+> **Note on C-mount opening:** The OpenFlexure `sequential_hull()` closes the
+> underside of the optics module. `rms_optics_module_hq.scad` reopens it with
+> an explicit `difference()` (module `optics_module_rms_cmount`). See
+> `openscad/README.md` for details.
+
 ### 3.3 Build STLs
 
 ```bash

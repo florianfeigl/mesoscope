@@ -84,7 +84,7 @@
                 │
     ┌───────────┼───────────┐
     │    Raspberry Pi 5      │   ← 8 GB, OpenFlexure Server
-    │    + AI HAT (Hailo-8)  │   ← 27 TOPS NPU
+    │    + AI HAT (Hailo-8)  │   ← 26 TOPS NPU
     └────────────────────────┘
 ```
 
@@ -162,7 +162,7 @@ Manual annotation          Model training           Deployment
 (500-1000 images)          (cloud/workstation)       (on-device)
                                     
   HQ Camera        CVAT           YOLOv8n-seg         Hailo-8 NPU
-  (raw images) ──► (annotate) ──► (fine-tune) ──► .hef (27 TOPS)
+  (raw images) ──► (annotate) ──► (fine-tune) ──► .hef (26 TOPS)
                     classes:                        
                     - osteoblast                    91 inf/s
                     - endothelial                   10.9 ms latency
@@ -175,7 +175,7 @@ Manual annotation          Model training           Deployment
 - **Annotation tool:** CVAT (open source, self-hosted)
 - **Target classes:** Osteoblasts, endothelial cells, mineralization zones, membrane boundary
 - **Deployment:** Compiled to Hailo Executable Format (.hef) via Hailo Model Zoo toolchain
-- **Inference:** Real-time on Hailo-8 NPU (27 TOPS), <11 ms per frame
+- **Inference:** Real-time on Hailo-8 NPU (26 TOPS), <11 ms per frame
 
 ### Annotation effort estimate
 
@@ -310,7 +310,7 @@ Specific questions to answer:
 | **Tube lens** | Achromatic doublet between objective and sensor — demagnifies intermediate image to fit camera sensor. Focal length determines magnification and field of view. |
 | **YOLOv8n-seg** | Ultralytics YOLO v8 nano segmentation — lightweight model for edge inference |
 | **Hailo HEF** | Hailo Executable Format — compiled neural network for NPU deployment |
-| **NPU** | Neural Processing Unit — dedicated AI accelerator (here: Hailo-8, 27 TOPS) |
+| **NPU** | Neural Processing Unit — dedicated AI accelerator (here: Hailo-8, 26 TOPS) |
 | **CVAT** | Computer Vision Annotation Tool — open-source image labeling platform |
 | **SAM2** | Segment Anything Model 2 (Meta) — foundation model for automatic pre-segmentation |
 | **Finite conjugate** | Objective designed for fixed tube length (typically 160 mm) — forms real image at fixed distance |

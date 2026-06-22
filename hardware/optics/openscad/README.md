@@ -79,17 +79,32 @@ bare PCB. `picamera_hq_cmount.scad` overrides the upstream `picamera_hq.scad` so
 | `mount_height` | 4.5 mm | 17.526 mm (C-mount FFD) |
 | `sensor_height` | 1 mm | 0 mm (referenced to flange face) |
 | Camera mount | 4× M2 posts on a 30 mm pattern | Smooth bore + 32 mm flange seat |
+| Camera screws | 4× No.2 self-tapping | None — not needed with C-mount |
 | Cover STL | `picamera_hq_cover.stl` | None — camera body is its own enclosure |
 
-The optics module has a **32.6 mm bore × 4 mm deep flange seat** at z = 0; the
+The optics module has a **32.6 mm bore × 4 mm deep flange seat**; the
 C-mount housing of the HQ Camera (32 mm OD) slides into it with ~0.3 mm
 clearance. Above the seat, a **26 mm clear bore** lets the sensor see the tube
 lens unobstructed. The sensor ends up exactly 17.526 mm below the printed seat
-face — matching the C-mount standard — and the optics module's tube length is
-recalculated automatically by `rms_camera_mount_top_z()`.
+face — matching the C-mount standard.
 
 We deliberately do **not** print 1"-32 UN female threads (FDM threads are
 unreliable at this scale). The slip-fit is more than tight enough for an
 inverted scope where the C-mount face seats against the printed lip under
 gravity. If you mount the scope upright, add a small printed retainer or a
 wrap of PTFE tape on the camera flange.
+
+## Implementation note: sequential_hull fix
+
+The OpenFlexure upstream `optics_module_rms()` uses `sequential_hull()` to build
+the module body. This hull always **closes the underside** — regardless of what
+`picamera_hq_camera_mount` subtracts internally. The C-mount opening is therefore
+cut as a post-process in `rms_optics_module_hq.scad` via an explicit `difference()`
+in `optics_module_rms_cmount()`:
+
+- Flange seat (⌀32.6 mm, 4 mm deep) cut from `camera_mount_top_z` downward
+- Clear optical bore (⌀26 mm) cut through the full remaining hull depth
+
+`rms_camera_mount_top_z()` is `-33.8 mm` for the 150 mm config (computed from
+sensor Z + C-mount FFD). The safety cutout extends 40 mm further down to punch
+through any hull-generated floor.
