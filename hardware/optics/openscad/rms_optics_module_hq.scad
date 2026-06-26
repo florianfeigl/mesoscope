@@ -37,38 +37,64 @@ CMOUNT_CLEAR_D   = 26.0;   // optical clear bore diameter (mm)
 CMOUNT_SEAT_H    = 4.0;    // depth of flange seat pocket (mm)
 CMOUNT_BORE_EXTRA = 40.0;  // extra depth to punch through any hull-closed floor
 
-// Post-process: cut the C-mount opening through the bottom of the optics module.
-// optics_module_rms() uses sequential_hull() which closes the underside.
-// We reopen it here with an explicit difference() after the hull is complete.
+// Post-process: cut the C-mount opening through the bottom of the optics module
+// and add a bridging cone to structurally connect the body to the seat ring.
 //
-// Geometry (all z values relative to OpenFlexure coordinate system):
-//   camera_top_z  = rms_camera_mount_top_z() — the face the camera seats against
-//   Seat pocket:  from camera_top_z downward by CMOUNT_SEAT_H (wider bore for flange)
-//   Clear bore:   from camera_top_z downward through the entire hull (CMOUNT_BORE_EXTRA)
+// Problem: sequential_hull() leaves a ~5mm unsupported gap between the body
+// bottom (z=camera_top_z, inner_d~9.6mm) and the seat ring bottom
+// (z=camera_top_z - CMOUNT_BORE_EXTRA, inner_d=32.6mm). The seat ring
+// floats in air, which is unprintable and structurally weak.
 //
-// The sequential_hull closes the body below camera_top_z. We cut both:
-//   1. The wide seat (CMOUNT_SEAT_ID) for the full depth below camera_top_z
-//   2. This automatically includes the clear bore since CMOUNT_SEAT_ID > CMOUNT_CLEAR_D
+// Fix: after cutting the bore, add a thin conical wall (frustum) that
+// bridges the gap. The cone runs from the body bottom face outward/downward
+// to the seat ring, with a shallow taper angle. It is subtracted from on the
+// inside by the optical bore so it forms a ring frustum — stable, printable,
+// and does not obstruct the camera insertion.
 module optics_module_rms_cmount(params, optics_config){
     camera_top_z = rms_camera_mount_top_z(params, optics_config);
+
+    // Geometry derived from STL scan:
+    //   body bottom:  z = camera_top_z,            outer_r = 18.3mm, inner_r = 4.8mm
+    //   seat ring:    z = camera_top_z - CMOUNT_BORE_EXTRA (clipped to body bottom),
+    //                 outer_r = 18.3mm, inner_r = 16.3mm (seat ID/2)
+    // The cone bridges inner_r from 4.8mm (top) to 16.3mm (bottom) over the gap height.
+    // Outer radius stays constant at 18.3mm — matches existing body wall.
+    // Cone geometry:
+    //   The hull body ends at camera_top_z with outer_r ~18.3mm.
+    //   The seat ring sits cone_h mm below, also outer_r ~18.3mm.
+    //   We add a solid cylinder connecting them, then subtract:
+    //     - the seat pocket (CMOUNT_SEAT_ID wide, CMOUNT_SEAT_H deep) at the bottom
+    //     - a conical bore that tapers from CMOUNT_CLEAR_D (26mm) at the top face
+    //       down to CMOUNT_SEAT_ID (32.6mm) at the bottom — this is the visible taper
+    //     - the optical clear bore below the cone
+    //   The taper keeps the inner wall self-supporting at any print angle and avoids
+    //   a flat unsupported overhang in air.
+    cone_h  = CMOUNT_SEAT_H + 1.5;      // 5.5mm — overlaps body + seat with margin
+    r_outer = CMOUNT_SEAT_ID/2 + 2.0;   // 18.3mm — matches body outer wall
+
     difference(){
-        optics_module_rms(params, optics_config);
-        // Cut the full camera insertion bore from camera_top_z downward.
-        // Use CMOUNT_SEAT_ID (32.6mm) for the top CMOUNT_SEAT_H (4mm) — flange seat.
-        // Below that use CMOUNT_CLEAR_D (26mm) — optical path.
-        // Both extend far enough down to punch through any hull-closed material.
-        // Seat pocket: top CMOUNT_SEAT_H mm below camera_top_z (wide, for flange)
+        union(){
+            optics_module_rms(params, optics_config);
+            // Solid bridging cylinder — fills the gap between body bottom and seat ring
+            translate([0, 0, camera_top_z - cone_h]){
+                cylinder(r=r_outer, h=cone_h, $fn=64);
+            }
+        }
+        // Conical inner bore: tapers from CMOUNT_CLEAR_D (top, narrow) to
+        // CMOUNT_SEAT_ID (bottom, wide). This creates the shallow visible cone
+        // on the inside of the ring and keeps the wall self-supporting.
+        translate([0, 0, camera_top_z - cone_h - 0.1]){
+            cylinder(r1=CMOUNT_SEAT_ID/2, r2=CMOUNT_CLEAR_D/2,
+                     h=cone_h + 0.2, $fn=64);
+        }
+        // Seat pocket: widens the bottom CMOUNT_SEAT_H mm to full CMOUNT_SEAT_ID
+        // to create the step the camera flange seats against.
         translate([0, 0, camera_top_z - CMOUNT_SEAT_H]){
             cylinder(d=CMOUNT_SEAT_ID, h=CMOUNT_SEAT_H + 0.1, $fn=64);
         }
-        // Clear bore: from seat bottom all the way through (CMOUNT_BORE_EXTRA down)
-        translate([0, 0, camera_top_z - CMOUNT_SEAT_H - CMOUNT_BORE_EXTRA]){
+        // Clear optical bore below the cone — punch through any hull material
+        translate([0, 0, camera_top_z - cone_h - CMOUNT_BORE_EXTRA]){
             cylinder(d=CMOUNT_CLEAR_D, h=CMOUNT_BORE_EXTRA + 0.1, $fn=64);
-        }
-        // Safety: also cut the seat diameter all the way to the bottom of the body,
-        // in case the hull extends below camera_top_z - CMOUNT_SEAT_H.
-        translate([0, 0, camera_top_z - CMOUNT_BORE_EXTRA]){
-            cylinder(d=CMOUNT_SEAT_ID, h=CMOUNT_BORE_EXTRA + 0.1, $fn=64);
         }
     }
 }
