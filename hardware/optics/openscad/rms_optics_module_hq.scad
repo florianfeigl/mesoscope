@@ -32,91 +32,117 @@ PARFOCAL_DISTANCE = 45;
 configurable_optics_module(OPTICS, CAMERA, BEAMSPLITTER, PARFOCAL_DISTANCE);
 
 // C-mount geometry constants — must match picamera_hq_cmount.scad
-CMOUNT_SEAT_ID   = 32.6;   // flange seat inner diameter (mm)
-CMOUNT_CLEAR_D   = 26.0;   // optical clear bore diameter (mm)
-CMOUNT_SEAT_H    = 4.0;    // depth of flange seat pocket (mm)
-CMOUNT_BORE_EXTRA = 40.0;  // extra depth to punch through any hull-closed floor
+CMOUNT_SEAT_ID    = 32.6;   // centering seat inner diameter (mm)
+CMOUNT_CLEAR_D    = 26.0;   // optical clear bore diameter (mm)
+CMOUNT_SEAT_H     = 4.0;    // depth of centering seat (mm)
+CMOUNT_RING_ID    = 36.6;   // entry recess inner diameter for locking ring (mm)
+CMOUNT_RING_H     = 2.5;    // depth of entry recess for locking ring (mm)
+CMOUNT_BORE_EXTRA = 40.0;   // extra depth to punch through any hull-closed floor
 
-// M3 radial set-screw geometry for camera retention
-// Four M3 through-holes through the seat ring wall at 90° spacing.
-// Hole centres sit at mid-depth of the seat pocket (CMOUNT_SEAT_H/2 below
-// the seat bottom face) so screws press squarely against the camera flange.
-// Through-hole diameter 3.5mm (M3 clearance / self-tap in PETG/PLA wall).
-CMOUNT_SETSCREW_D   = 3.5;  // M3 through-hole diameter (mm)
-CMOUNT_SETSCREW_Z   = CMOUNT_SEAT_H / 2;  // 2.0mm below seat face → mid-flange
+// Total depth of the two-step bore
+CMOUNT_TOTAL_H    = CMOUNT_SEAT_H + CMOUNT_RING_H;  // 6.5mm
 
-// Post-process: cut the C-mount opening through the bottom of the optics module
-// and add a bridging cone to structurally connect the body to the seat ring.
+// Outer wall radius: sized to the wider ring recess + 2mm wall thickness
+CMOUNT_R_OUTER    = CMOUNT_RING_ID/2 + 2.0;  // 20.3mm
+
+// Axial PCB screw flange geometry for camera retention.
+// A flat annular flange carries 4× M2 axial screw holes matching the HQ Camera
+// PCB mounting pattern:
+//   - 30mm square grid, rotated 45° → holes at (0,±21.21mm) and (±21.21mm,0)
+//   - M2 self-tapping: 1.7mm pilot hole
+// The flange sits at the PCB level, reached via a thin cylindrical standoff tube
+// that extends CMOUNT_PCB_OFFSET mm below the entry recess.
 //
-// Problem: sequential_hull() leaves a ~5mm unsupported gap between the body
-// bottom (z=camera_top_z, inner_d~9.6mm) and the seat ring bottom
-// (z=camera_top_z - CMOUNT_BORE_EXTRA, inner_d=32.6mm). The seat ring
-// floats in air, which is unprintable and structurally weak.
+// CMOUNT_PCB_OFFSET: measured distance from the bottom face of the C-mount body
+// (= bottom of entry recess) down to the HQ Camera PCB surface. ~12mm measured.
+CMOUNT_PCB_OFFSET     = 12.0;  // mm — C-mount body bottom to PCB surface
+CMOUNT_PCB_HOLE_SPACING = 30.0;  // mm — square grid side length
+CMOUNT_PCB_HOLE_R = CMOUNT_PCB_HOLE_SPACING / 2 * sqrt(2);  // 21.21mm radius
+CMOUNT_PCB_HOLE_D = 1.7;   // M2 pilot hole diameter (mm)
+CMOUNT_FLANGE_R   = CMOUNT_PCB_HOLE_R + 3.0;  // 24.2mm — 3mm wall around holes
+CMOUNT_FLANGE_H   = 3.0;   // flange thickness (mm)
+
+// Post-process: cut the two-step C-mount opening through the bottom of the
+// optics module, add a bridging frustum, and add a mounting flange with 4×
+// axial M2 screw holes matching the HQ Camera PCB hole pattern.
 //
-// Fix: after cutting the bore, add a thin conical wall (frustum) that
-// bridges the gap. The cone runs from the body bottom face outward/downward
-// to the seat ring, with a shallow taper angle. It is subtracted from on the
-// inside by the optical bore so it forms a ring frustum — stable, printable,
-// and does not obstruct the camera insertion.
+// Problem: sequential_hull() leaves a gap between the body bottom
+// (z=camera_top_z, inner_d~9.6mm) and the seat ring. The seat ring
+// floats in air — unprintable and structurally weak.
+//
+// Fix: add a solid cylinder bridging the gap, then subtract:
+//   - conical inner bore (CMOUNT_CLEAR_D → CMOUNT_SEAT_ID taper)
+//   - centering seat pocket (CMOUNT_SEAT_ID, CMOUNT_SEAT_H deep)
+//   - entry recess (CMOUNT_RING_ID, CMOUNT_RING_H deep) for the locking ring
+//   - clear optical bore below
+// Then add a flat annular flange at the base with 4× M2 pilot holes at the
+// HQ Camera's PCB mounting pattern (30mm square, 45° rotated).
 module optics_module_rms_cmount(params, optics_config){
     camera_top_z = rms_camera_mount_top_z(params, optics_config);
 
-    // Geometry derived from STL scan:
-    //   body bottom:  z = camera_top_z,            outer_r = 18.3mm, inner_r = 4.8mm
-    //   seat ring:    z = camera_top_z - CMOUNT_BORE_EXTRA (clipped to body bottom),
-    //                 outer_r = 18.3mm, inner_r = 16.3mm (seat ID/2)
-    // The cone bridges inner_r from 4.8mm (top) to 16.3mm (bottom) over the gap height.
-    // Outer radius stays constant at 18.3mm — matches existing body wall.
-    // Cone geometry:
-    //   The hull body ends at camera_top_z with outer_r ~18.3mm.
-    //   The seat ring sits cone_h mm below, also outer_r ~18.3mm.
-    //   We add a solid cylinder connecting them, then subtract:
-    //     - the seat pocket (CMOUNT_SEAT_ID wide, CMOUNT_SEAT_H deep) at the bottom
-    //     - a conical bore that tapers from CMOUNT_CLEAR_D (26mm) at the top face
-    //       down to CMOUNT_SEAT_ID (32.6mm) at the bottom — this is the visible taper
-    //     - the optical clear bore below the cone
-    //     - 4x M3 radial set-screw holes through the outer wall for camera retention
-    //   The taper keeps the inner wall self-supporting at any print angle and avoids
-    //   a flat unsupported overhang in air.
-    cone_h  = CMOUNT_SEAT_H + 1.5;      // 5.5mm — overlaps body + seat with margin
-    r_outer = CMOUNT_SEAT_ID/2 + 2.0;   // 18.3mm — matches body outer wall
+    // cone_h: bridging cylinder height — covers total bore depth + overlap
+    cone_h = CMOUNT_TOTAL_H + 1.5;  // 8.0mm
 
-    // Z centre of the set-screw holes: mid-depth of seat pocket
-    screw_z = camera_top_z - CMOUNT_SETSCREW_Z;
+    // Z position of the bottom face of the entry recess (= bottom of C-mount body)
+    recess_bottom_z = camera_top_z - CMOUNT_TOTAL_H;
+
+    // Z position of the top face of the flange = PCB surface level
+    // = recess_bottom_z minus the PCB offset distance
+    flange_top_z    = recess_bottom_z - CMOUNT_PCB_OFFSET;
+    flange_bottom_z = flange_top_z - CMOUNT_FLANGE_H;
+
+    // Total height of the standoff tube connecting recess bottom to flange top
+    standoff_h = CMOUNT_PCB_OFFSET;
 
     difference(){
         union(){
             optics_module_rms(params, optics_config);
-            // Solid bridging cylinder — fills the gap between body bottom and seat ring
+            // Solid bridging cylinder — fills gap between body bottom and seat ring
             translate([0, 0, camera_top_z - cone_h]){
-                cylinder(r=r_outer, h=cone_h, $fn=64);
+                cylinder(r=CMOUNT_R_OUTER, h=cone_h, $fn=64);
+            }
+            // Thin standoff tube — connects the seat ring down to the flange level.
+            // Wall thickness = CMOUNT_R_OUTER (solid cylinder; inner bore punched
+            // out below by the CMOUNT_CLEAR_D bore subtraction).
+            translate([0, 0, flange_top_z]){
+                cylinder(r=CMOUNT_R_OUTER, h=standoff_h, $fn=64);
+            }
+            // Flat annular mounting flange at PCB level — extends outward to
+            // CMOUNT_FLANGE_R so the PCB screw holes (radius 21.21mm) land in
+            // solid material.
+            translate([0, 0, flange_bottom_z]){
+                cylinder(r=CMOUNT_FLANGE_R, h=CMOUNT_FLANGE_H, $fn=64);
             }
         }
-        // Conical inner bore: tapers from CMOUNT_CLEAR_D (top, narrow) to
-        // CMOUNT_SEAT_ID (bottom, wide). This creates the shallow visible cone
-        // on the inside of the ring and keeps the wall self-supporting.
+        // Conical inner bore: tapers from CMOUNT_CLEAR_D (top) to CMOUNT_SEAT_ID
+        // (bottom) — shallow taper, self-supporting, no flat overhang.
         translate([0, 0, camera_top_z - cone_h - 0.1]){
             cylinder(r1=CMOUNT_SEAT_ID/2, r2=CMOUNT_CLEAR_D/2,
                      h=cone_h + 0.2, $fn=64);
         }
-        // Seat pocket: widens the bottom CMOUNT_SEAT_H mm to full CMOUNT_SEAT_ID
-        // to create the step the camera flange seats against.
+        // Centering seat: 32.6mm bore, SEAT_H deep from top face
         translate([0, 0, camera_top_z - CMOUNT_SEAT_H]){
             cylinder(d=CMOUNT_SEAT_ID, h=CMOUNT_SEAT_H + 0.1, $fn=64);
+        }
+        // Entry recess: 36.6mm bore, RING_H deep below the centering seat
+        translate([0, 0, camera_top_z - CMOUNT_TOTAL_H]){
+            cylinder(d=CMOUNT_RING_ID, h=CMOUNT_RING_H + 0.1, $fn=64);
         }
         // Clear optical bore below the cone — punch through any hull material
         translate([0, 0, camera_top_z - cone_h - CMOUNT_BORE_EXTRA]){
             cylinder(d=CMOUNT_CLEAR_D, h=CMOUNT_BORE_EXTRA + 0.1, $fn=64);
         }
-        // 4x M3 radial set-screw holes at 90° spacing through the seat ring wall.
-        // Holes are centred at mid-depth of the seat pocket (screw_z) and pass
-        // fully through the outer wall (r_outer) into the flange bore.
-        // Diameter 3.5mm — M3 clearance / self-tapping fit in PETG/PLA.
-        for (angle = [0, 90, 180, 270]){
-            rotate([0, 0, angle]){
-                translate([0, 0, screw_z]){
-                    rotate([0, 90, 0]){
-                        cylinder(d=CMOUNT_SETSCREW_D, h=r_outer + 1, $fn=16);
+        // 4× M2 axial pilot holes on 30mm square pattern rotated 45°.
+        // Holes run from flange bottom face upward through flange + standoff tube,
+        // so a screw inserted from below passes through both and engages the PCB.
+        // Pattern: rotate 45°, then place at (±15, ±15) → radius 21.21mm.
+        rotate([0, 0, 45]){
+            for (x = [-CMOUNT_PCB_HOLE_SPACING/2, CMOUNT_PCB_HOLE_SPACING/2]){
+                for (y = [-CMOUNT_PCB_HOLE_SPACING/2, CMOUNT_PCB_HOLE_SPACING/2]){
+                    translate([x, y, flange_bottom_z - 0.1]){
+                        cylinder(d=CMOUNT_PCB_HOLE_D,
+                                 h=CMOUNT_FLANGE_H + standoff_h + 0.2,
+                                 $fn=16);
                     }
                 }
             }
@@ -140,8 +166,29 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
     // For other cameras: fall through to plain optics_module_rms.
     use_cmount = (camera_type == "picamera_hq");
 
+    // 100mm tube lens (achromatic doublet) — finite conjugate — BEST MATCH for IMX477
+    // ffd is a placeholder until datasheet is confirmed — do not print STL yet
+    if (optics=="rms_f100d13"){
+        optics_config = rms_f100d13_config(
+            camera_type=camera_type,
+            beamsplitter=beamsplitter,
+            parfocal_distance=parfocal_distance
+        );
+        if (use_cmount) optics_module_rms_cmount(params, optics_config);
+        else            optics_module_rms(params, optics_config);
+    }
+    // 100mm tube lens — infinity conjugate
+    else if (optics=="rms_infinity_f100d13"){
+        optics_config = rms_infinity_f100d13_config(
+            camera_type=camera_type,
+            beamsplitter=beamsplitter,
+            parfocal_distance=parfocal_distance
+        );
+        if (use_cmount) optics_module_rms_cmount(params, optics_config);
+        else            optics_module_rms(params, optics_config);
+    }
     // 125mm tube lens (achromatic doublet) — finite conjugate
-    if (optics=="rms_f125d13"){
+    else if (optics=="rms_f125d13"){
         optics_config = rms_f125d13_config(
             camera_type=camera_type,
             beamsplitter=beamsplitter,

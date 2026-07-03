@@ -16,12 +16,17 @@ and [imaging optics explanation](https://build.openflexure.org/openflexure-micro
 |---|---|---|
 | Sensor | IMX219 | IMX477 |
 | Resolution | 8 MP | 12.3 MP |
-| Sensor size | 3.68 × 2.76 mm | 7.857 × 5.893 mm |
-| Diagonal | 4.6 mm | **9.79 mm** |
+| Sensor size (active) | 3.68 × 2.76 mm | **6.287 × 4.712 mm** |
+| Diagonal | 4.6 mm | **7.857 mm** |
 | Mount | Fixed lens (removed for OFM) | **C-mount** |
 | C-mount FFD | n/a | 17.526 mm |
 
-The IMX477 sensor diagonal (9.79 mm) is **2.1× larger** than the IMX219 (4.6 mm).
+> **Correction (2026-07-03):** Earlier versions of this document incorrectly stated
+> sensor size as 7.857 × 5.893 mm and diagonal as 9.79 mm. The Sony IMX477 datasheet
+> gives the die diagonal as 7.857 mm; the active pixel area is 4056 × 3040 px at
+> 1.55 µm pitch = 6.287 × 4.712 mm. All calculations below use the corrected value.
+
+The IMX477 sensor diagonal (7.857 mm) is **1.7× larger** than the IMX219 (4.6 mm).
 This drives all downstream optical decisions.
 
 ---
@@ -55,7 +60,7 @@ match the sensor to a standard eyepiece field number (FN). Standard range: 14–
 target: **FN = 20 mm** (comfortable mid-range).
 
 ```
-M_desired = sensor_diagonal / FN = 9.79 mm / 20 mm = 0.490
+M_desired = sensor_diagonal / FN = 7.857 mm / 20 mm = 0.393
 ```
 
 For reference, the upstream Pi Cam v2 calculation:
@@ -72,42 +77,47 @@ From the OpenFlexure thin-lens formula:
 ```
 f_t = M / (M − 1) × p
 
-With M = 0.490, p = −141.5 mm:
+With M = 0.393, p = −141.5 mm:
 
-f_t = 0.490 / (0.490 − 1) × (−141.5)
-    = 0.490 / (−0.510) × (−141.5)
-    = 0.961 × 141.5
-    = 135.9 mm
+f_t = 0.393 / (0.393 − 1) × (−141.5)
+    = 0.393 / (−0.607) × (−141.5)
+    = 0.648 × 141.5
+    = 91.7 mm
 ```
 
-**Calculated optimum: ~136 mm.**
-Available from distributor: **125 mm or 150 mm achromatic doublet** (12.7 mm diameter).
-Both are within the acceptable range (see table below).
+**Calculated optimum: ~92 mm.**
+Available from distributor: **100 mm, 125 mm, or 150 mm achromatic doublet** (12.7 mm diameter).
+The 100 mm lens is the best match; 125 mm and 150 mm are usable with slight image
+circle overfill (see table below).
 
 The standard 50 mm tube lens is a poor match for the IMX477:
 ```
-M = 50 / (50 − (−141.5)) = 50 / 191.5 = 0.261
-Effective FN = 9.79 / 0.261 = 37.5 mm   ← far above 26 mm maximum
+M = 50 / (50 + 141.5) = 50 / 191.5 = 0.261
+Effective FN = 7.857 / 0.261 = 30.1 mm   ← above 26 mm maximum
 ```
-With the 50 mm tube lens the intermediate image is larger than the sensor can capture,
-meaning only the central ~25% of the image area is used.
+With the 50 mm tube lens the intermediate image exceeds the sensor, and only the
+central ~66% of the image area is used.
 
 ### Tube lens options
 
-| Focal length | M | Effective FN | Sensor fill | Note |
+| Focal length | M | Effective FN | vs. sensor | Note |
 |---|---|---|---|---|
-| 50 mm | 0.261 | 37.5 mm | ~25% | Standard OFM — poor fit for IMX477 |
-| 100 mm | 0.414 | 23.6 mm | ~88% | Good, FN within range |
-| **125 mm** | **0.469** | **20.9 mm** | **~85%** | **Available — good fit** |
-| 136 mm (calc.) | 0.490 | 20.0 mm | ~100% | Calculated optimum |
-| **150 mm** | **0.515** | **19.0 mm** | **~95%** | **Available — good fit** |
-| 200 mm | 0.586 | 16.7 mm | overfill | FN slightly below 17 mm minimum |
+| 50 mm | 0.261 | 30.1 mm | image > sensor | Standard OFM — poor fit for IMX477 |
+| 92 mm (calc.) | 0.393 | 20.0 mm | ~100% | Calculated optimum — not available |
+| **100 mm** | **0.414** | **18.98 mm** | **~95%** | **Best available match** |
+| 125 mm | 0.469 | 16.75 mm | ~112% overfill | Available; slight vignetting possible |
+| **150 mm** | **0.515** | **15.25 mm** | **~130% overfill** | **Available; we have these in stock** |
+| 200 mm | 0.586 | 13.4 mm | ~149% overfill | FN below 14 mm minimum |
 
 Calculation for each row: `M = f / (f + |p|)` where `|p| = 141.5 mm`.
+Overfill means the image circle from the objective is larger than the sensor diagonal
+— no image data is lost (sensor captures everything), but peripheral illumination
+from the objective may vignette.
 
-**Buy:** 125 mm or 150 mm achromatic doublet, 12.7 mm diameter.
-Available from taulab or optics distributors. Exact choice depends on scraped objective
-magnification — 150 mm preferred for ≤10x, 125 mm for lower magnification (≤4x).
+**Stock on hand:** 125 mm and 150 mm doublets (received 2026-06-20).
+**Recommendation:** 100 mm would be the ideal purchase; with 125 mm or 150 mm the
+optics still work correctly — the sensor is fully illuminated and vignetting is
+only an issue if the objective's own image circle is smaller than the sensor.
 
 ---
 

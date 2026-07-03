@@ -69,9 +69,39 @@ build_stl() {
     echo ""
 }
 
+# Build via upstream rms_optics_module.scad (standard OpenFlexure pipeline)
+# Uses optics_module_rms() directly — no custom C-mount post-processing.
+# picamera_hq.scad override still applies (C-mount seat geometry).
+build_stl_upstream() {
+    local lens_f="$1"
+    local optics_name="$2"
+    local output_file="${OUTPUT_DIR}/optics_hq_${lens_f}_rms_upstream.stl"
+    local scad_file="${UPSTREAM_DIR}/openscad/rms_optics_module.scad"
+
+    echo "--- Building ${lens_f}mm tube lens via upstream module (OPTICS=${optics_name}) ---"
+    echo "    Output: ${output_file}"
+    "${OPENSCAD_CMD}" -o "${output_file}" \
+        -D "OPTICS=\"${optics_name}\"" \
+        -D "CAMERA=\"picamera_hq\"" \
+        -D "PARFOCAL_DISTANCE=45" \
+        "${scad_file}" 2>&1 || {
+        echo "ERROR: OpenSCAD build failed for ${lens_f}mm upstream lens."
+        exit 1
+    }
+    echo "    Done: $(du -h "${output_file}" | cut -f1)"
+    echo ""
+}
+
 case "${1:-all}" in
+    100)
+        echo "WARNING: 100mm ffd is a placeholder — confirm datasheet before using this STL"
+        build_stl 100 rms_f100d13
+        ;;
     125)
         build_stl 125 rms_f125d13
+        ;;
+    125-upstream)
+        build_stl_upstream 125 rms_f125d13
         ;;
     150)
         build_stl 150 rms_f150d13
@@ -81,7 +111,12 @@ case "${1:-all}" in
         build_stl 150 rms_f150d13
         ;;
     *)
-        echo "Usage: $0 [125|150|all]"
+        echo "Usage: $0 [100|125|125-upstream|150|all]"
+        echo "  100:          100mm tube lens (WARNING: ffd placeholder, confirm datasheet first)"
+        echo "  125:          125mm tube lens via custom HQ module (C-mount post-processing)"
+        echo "  125-upstream: 125mm tube lens via upstream rms_optics_module.scad"
+        echo "  150:          150mm tube lens via custom HQ module"
+        echo "  all:          125mm + 150mm custom (100mm excluded until ffd confirmed)"
         exit 1
         ;;
 esac
