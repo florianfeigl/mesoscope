@@ -37,6 +37,14 @@ CMOUNT_CLEAR_D   = 26.0;   // optical clear bore diameter (mm)
 CMOUNT_SEAT_H    = 4.0;    // depth of flange seat pocket (mm)
 CMOUNT_BORE_EXTRA = 40.0;  // extra depth to punch through any hull-closed floor
 
+// M3 radial set-screw geometry for camera retention
+// Four M3 through-holes through the seat ring wall at 90° spacing.
+// Hole centres sit at mid-depth of the seat pocket (CMOUNT_SEAT_H/2 below
+// the seat bottom face) so screws press squarely against the camera flange.
+// Through-hole diameter 3.5mm (M3 clearance / self-tap in PETG/PLA wall).
+CMOUNT_SETSCREW_D   = 3.5;  // M3 through-hole diameter (mm)
+CMOUNT_SETSCREW_Z   = CMOUNT_SEAT_H / 2;  // 2.0mm below seat face → mid-flange
+
 // Post-process: cut the C-mount opening through the bottom of the optics module
 // and add a bridging cone to structurally connect the body to the seat ring.
 //
@@ -67,10 +75,14 @@ module optics_module_rms_cmount(params, optics_config){
     //     - a conical bore that tapers from CMOUNT_CLEAR_D (26mm) at the top face
     //       down to CMOUNT_SEAT_ID (32.6mm) at the bottom — this is the visible taper
     //     - the optical clear bore below the cone
+    //     - 4x M3 radial set-screw holes through the outer wall for camera retention
     //   The taper keeps the inner wall self-supporting at any print angle and avoids
     //   a flat unsupported overhang in air.
     cone_h  = CMOUNT_SEAT_H + 1.5;      // 5.5mm — overlaps body + seat with margin
     r_outer = CMOUNT_SEAT_ID/2 + 2.0;   // 18.3mm — matches body outer wall
+
+    // Z centre of the set-screw holes: mid-depth of seat pocket
+    screw_z = camera_top_z - CMOUNT_SETSCREW_Z;
 
     difference(){
         union(){
@@ -95,6 +107,19 @@ module optics_module_rms_cmount(params, optics_config){
         // Clear optical bore below the cone — punch through any hull material
         translate([0, 0, camera_top_z - cone_h - CMOUNT_BORE_EXTRA]){
             cylinder(d=CMOUNT_CLEAR_D, h=CMOUNT_BORE_EXTRA + 0.1, $fn=64);
+        }
+        // 4x M3 radial set-screw holes at 90° spacing through the seat ring wall.
+        // Holes are centred at mid-depth of the seat pocket (screw_z) and pass
+        // fully through the outer wall (r_outer) into the flange bore.
+        // Diameter 3.5mm — M3 clearance / self-tapping fit in PETG/PLA.
+        for (angle = [0, 90, 180, 270]){
+            rotate([0, 0, angle]){
+                translate([0, 0, screw_z]){
+                    rotate([0, 90, 0]){
+                        cylinder(d=CMOUNT_SETSCREW_D, h=r_outer + 1, $fn=16);
+                    }
+                }
+            }
         }
     }
 }
