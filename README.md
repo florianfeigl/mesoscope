@@ -314,7 +314,7 @@ ssh lab@mesoscope.local
 
 ### Step 3: Run the Ansible Playbook
 ```bash
-git clone <repository_url>
+git clone git@github.com:florianfeigl/mesoscope.git
 cd mesoscope/ansible
 ansible-playbook site.yml --skip-tags motor-controller -v -K
 ```
