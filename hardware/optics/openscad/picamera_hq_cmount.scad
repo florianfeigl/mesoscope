@@ -102,10 +102,10 @@ function picamera_hq_mount_outer_r() = picamera_hq_cmount_ring_id()/2 + 2.0;
 function picamera_hq_pcb_offset()      = 12.0;  // mm — recess bottom to PCB
 function picamera_hq_pcb_hole_spacing()= 30.0;  // mm — square grid side length
 function picamera_hq_pcb_hole_r()      = picamera_hq_pcb_hole_spacing() / 2 * sqrt(2);  // 21.21mm
-function picamera_hq_pcb_hole_d()      = 1.7;   // M2 pilot hole diameter (mm)
+function picamera_hq_pcb_hole_d()      = 1.9;   // M2 self-tap hole diameter (mm)
 function picamera_hq_flange_r()        = picamera_hq_pcb_hole_r() + 3.0;  // 24.2mm
 function picamera_hq_flange_h()        = 3.0;   // flange thickness (mm)
-function picamera_hq_tower_r()         = 4.0;   // tower cylinder radius (mm)
+function picamera_hq_tower_r()         = 2.5;   // tower cylinder radius (mm) — min wall around M2 hole
 
 // Legacy values retained so library code that still references them doesn't break.
 function picamera_hq_hole_spacing() = 30;
@@ -121,22 +121,14 @@ function picamera_board_size()      = [38, 38];
 //   - Lower entry zone:       36.6 mm ID × 2.5 mm deep — clears the rotatable
 //     locking ring (~36 mm OD, ~2 mm tall) that sits between flange and PCB
 module picamera_hq_cutout(beam_length=15){
-    // Clear bore extending up into the optics body
-    translate_z(-tiny()){
-        cylinder(d=picamera_hq_cmount_clear_bore_d(),
-                 h=beam_length+tiny(),
-                 $fn=64);
-    }
-    // Upper centering seat — grips the 32 mm flange body
-    translate_z(-picamera_hq_cmount_seat_h()){
-        cylinder(d=picamera_hq_cmount_seat_id(),
-                 h=picamera_hq_cmount_seat_h()+tiny(),
-                 $fn=64);
-    }
-    // Lower entry recess — clears the locking ring (~36 mm OD)
-    translate_z(-picamera_hq_cmount_seat_h()-picamera_hq_cmount_ring_h()){
+    // Single consistent bore throughout — no undercut, no support trapping.
+    // Diameter = ring_id (36.6mm) to clear both the locking ring and the
+    // flange body. The camera is located axially by the flange contact face,
+    // not by a step in the bore wall.
+    total_h = beam_length + picamera_hq_cmount_seat_h() + picamera_hq_cmount_ring_h();
+    translate_z(-(picamera_hq_cmount_seat_h() + picamera_hq_cmount_ring_h()) - tiny()){
         cylinder(d=picamera_hq_cmount_ring_id(),
-                 h=picamera_hq_cmount_ring_h()+tiny(),
+                 h=total_h + tiny(),
                  $fn=64);
     }
 }
@@ -158,74 +150,87 @@ module picamera_hq_cutout(beam_length=15){
 module picamera_hq_camera_mount(screwhole=true, counterbore=false){
     // We ignore screwhole / counterbore -- not used in the C-mount design.
     //
-    // Geometry (bottom to top):
-    //   Flange (flange_h = 3mm, r = 24.2mm) at PCB level — annular ring with
-    //     4× towers rising from it (tower_r = 4mm, tower_h = pcb_offset = 12mm)
-    //   Entry recess  (ring_h = 2.5mm): 36.6mm ID — clears locking ring
-    //   Centering seat (seat_h = 4.0mm): 32.6mm ID — grips 32mm flange body
-    //   Clear bore above: 26.0mm ID — optical path
+    // This module generates only the corpus ring (the part that hulls into the
+    // optics body). Towers and flange are added by picamera_hq_bottom_mounting_posts
+    // so they are placed AFTER the hull and are not clipped by it.
+    //
+    // Bore is a single consistent diameter (ring_id = 36.6mm) throughout —
+    // no undercut, no support trapping. The centering seat step is removed;
+    // the camera is located axially by the flange contact face.
+    //
+    // Geometry:
+    //   Outer wall: r = mount_outer_r = 20.3mm
+    //   Single bore: d = ring_id = 36.6mm  (consistent, no step)
+    //   Depth: seat_h + ring_h + 1mm overlap
 
     total_bore_h = picamera_hq_cmount_seat_h() + picamera_hq_cmount_ring_h() + 1;
+
+    difference(){
+        // Outer tube wall
+        translate_z(-total_bore_h){
+            cylinder(r=picamera_hq_mount_outer_r(),
+                     h=total_bore_h + tiny(),
+                     $fn=64);
+        }
+        // Consistent bore — same diameter throughout, no undercut
+        translate_z(-total_bore_h - tiny()){
+            cylinder(d=picamera_hq_cmount_ring_id(),
+                     h=total_bore_h + 2*tiny(),
+                     $fn=64);
+        }
+    }
+}
+
+module picamera_hq_bottom_mounting_posts(optics_config, outers=true, cutouts=true, bottom_slice=false){
+    // In the C-mount design this adds the retention flange + towers AFTER the hull.
+    // The flange sits at the bottom of the corpus ring; towers hang down to PCB level.
+    //
+    // bottom_slice=true: return a thin cross-section at the base of the corpus ring
+    // for sequential_hull() to know the correct outer extent.
+
     recess_bottom_z = -(picamera_hq_cmount_seat_h() + picamera_hq_cmount_ring_h());
-    // Flange sits at the bottom of the corpus (recess_bottom_z), not at PCB level.
-    // Towers hang down from the flange to the PCB.
     flange_top_z    = recess_bottom_z;
     flange_bot_z    = flange_top_z - picamera_hq_flange_h();
     tower_h         = picamera_hq_pcb_offset();
 
-    difference(){
-        union(){
-            // Outer tube wall: covers two-step bore depth
-            translate_z(-total_bore_h){
-                cylinder(r=picamera_hq_mount_outer_r(),
-                         h=total_bore_h + tiny(),
-                         $fn=64);
-            }
-            // Flat annular flange: sits at recess bottom, extends downward
-            translate_z(flange_bot_z){
-                cylinder(r=picamera_hq_flange_r(),
-                         h=picamera_hq_flange_h(),
-                         $fn=64);
-            }
-            // 4× towers: hang downward from flange bottom toward PCB
-            rotate([0, 0, 45]){
-                for(x=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
-                    for(y=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
-                        translate([x, y, flange_bot_z - tower_h]){
-                            cylinder(r=picamera_hq_tower_r(),
-                                     h=tower_h,
-                                     $fn=32);
+    if (bottom_slice){
+        // Thin annular slice at corpus bottom for hull reference
+        difference(){
+            cylinder(r=picamera_hq_mount_outer_r(), h=tiny(), $fn=64);
+            cylinder(d=picamera_hq_cmount_ring_id(), h=2*tiny(), center=true, $fn=64);
+        }
+    }
+    else{
+        difference(){
+            union(){
+                if (outers){
+                    // Flat annular flange at corpus base
+                    translate_z(flange_bot_z){
+                        cylinder(r=picamera_hq_flange_r(),
+                                 h=picamera_hq_flange_h(),
+                                 $fn=64);
+                    }
+                    // 4× towers at PCB corner positions (±15, ±15) mm
+                    for(x=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+                        for(y=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+                            translate([x, y, flange_bot_z - tower_h]){
+                                cylinder(r=picamera_hq_tower_r(),
+                                         h=tower_h,
+                                         $fn=32);
+                            }
                         }
                     }
                 }
             }
-        }
-        // Optical bore through entire height (from tower bottom up through corpus)
-        translate_z(flange_bot_z - tower_h - tiny()){
-            cylinder(d=picamera_hq_cmount_clear_bore_d(),
-                     h=total_bore_h + tower_h + picamera_hq_flange_h() + 2*tiny(),
-                     $fn=64);
-        }
-        // Centering seat: 32.6mm bore, seat_h deep from top face
-        translate_z(-picamera_hq_cmount_seat_h() - tiny()){
-            cylinder(d=picamera_hq_cmount_seat_id(),
-                     h=picamera_hq_cmount_seat_h() + tiny(),
-                     $fn=64);
-        }
-        // Entry recess: 36.6mm bore, ring_h deep below centering seat
-        translate_z(recess_bottom_z - tiny()){
-            cylinder(d=picamera_hq_cmount_ring_id(),
-                     h=picamera_hq_cmount_ring_h() + tiny(),
-                     $fn=64);
-        }
-        // M2 pilot holes through towers + flange (from tower bottom upward)
-        rotate([0, 0, 45]){
-            for(x=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
-                for(y=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
-                    translate([x, y, flange_bot_z - tower_h - tiny()]){
-                        cylinder(d=picamera_hq_pcb_hole_d(),
-                                 h=tower_h + picamera_hq_flange_h() + 2*tiny(),
-                                 $fn=16);
+            if (cutouts){
+                // M2 pilot holes at (±15, ±15) from tower bottom through flange top
+                for(x=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+                    for(y=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+                        translate([x, y, flange_bot_z - tower_h - 1]){
+                            cylinder(d=picamera_hq_pcb_hole_d(),
+                                     h=tower_h + picamera_hq_flange_h() + 2,
+                                     $fn=16);
+                        }
                     }
                 }
             }
@@ -249,22 +254,7 @@ module picamera_hq_counterbore(){
     // No counterbore -- nothing to seat from below.
 }
 
-module picamera_hq_bottom_mounting_posts(optics_config, outers=true, cutouts=true, bottom_slice=false){
-    // No physical posts -- the C-mount flange does the mounting.
-    //
-    // bottom_slice=true is called by optics_module_body_outer / camera_platform
-    // to get a thin cross-section at the bottom of the mount for sequential_hull.
-    // We return the annular ring cross-section of the mount tube so the hull
-    // knows the correct extent at the bottom -- without this the hull closes
-    // the underside and blocks camera insertion.
-    if (bottom_slice){
-        difference(){
-            cylinder(r=picamera_hq_mount_outer_r(), h=tiny(), $fn=64);
-            cylinder(d=picamera_hq_cmount_seat_id(), h=2*tiny(), center=true, $fn=64);
-        }
-    }
-    // outers / cutouts cases: no geometry needed (no posts to add or drill)
-}
+
 
 module at_picamera_hq_hole_pattern(){
     // Retained for API compatibility. Iterates over the legacy 30 mm hole
@@ -291,5 +281,49 @@ module picamera_hq_cover_pads(clearance=1){
 }
 
 module picamera_hq_cover(){
-    // No cover in the C-mount design -- the camera body is its own enclosure.
+    // Protective lid for the back of the Pi HQ Camera PCB.
+    // Mounts onto the 4× retention towers via M2 screws through the PCB holes.
+    //
+    // Geometry:
+    //   Outer shell: 38×38mm rounded square, 1.5mm wall, 5mm deep
+    //   Inner clearance: 3.5mm depth to clear PCB components
+    //   4× M2 through-holes on 30mm pattern (45° rotated) for tower screws
+    //   Central cutout for the ribbon cable exit (if present)
+
+    board  = picamera_board_size();   // [38, 38]
+    wall_t = 1.5;
+    depth  = 5.0;    // total lid depth
+    clear  = 3.5;    // inner component clearance
+    roc    = 2.0;    // corner radius
+    screw_d = 2.2;   // M2 clearance hole (lid passes screw through freely)
+
+    difference(){
+        // Outer shell — rounded square box
+        linear_extrude(depth){
+            offset(r=roc, $fn=16){
+                offset(r=-roc){
+                    square(board + [2*wall_t, 2*wall_t], center=true);
+                }
+            }
+        }
+        // Inner pocket — component clearance
+        translate_z(wall_t){
+            linear_extrude(depth){
+                offset(r=roc - wall_t, $fn=16){
+                    offset(r=-(roc - wall_t)){
+                        square(board, center=true);
+                    }
+                }
+            }
+        }
+        // 4× M2 clearance holes at PCB corner positions: (±15, ±15) mm
+        // No rotation — holes are at the corners of the 30mm square grid
+        for(x=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+            for(y=[-picamera_hq_pcb_hole_spacing()/2, picamera_hq_pcb_hole_spacing()/2]){
+                translate([x, y, -1]){
+                    cylinder(d=screw_d, h=depth + 2, $fn=16);
+                }
+            }
+        }
+    }
 }
