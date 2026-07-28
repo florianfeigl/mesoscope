@@ -1,4 +1,0 @@
-PWD /home/feivel/dev/mesoscope/presentations/01_elevator_pitch
-INPUT /usr/share/texmf-dist/web2c/texmf.cnf
-INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-OUTPUT texput.log

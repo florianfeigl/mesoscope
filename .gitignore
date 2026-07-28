@@ -36,3 +36,6 @@ model/models/compiled/*.hef
 model/data/raw/
 model/data/processed/
 model/data/annotations/
+
+# Jour fixe
+jourfixe/
