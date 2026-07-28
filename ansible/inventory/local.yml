@@ -1,0 +1,9 @@
+all:
+  children:
+    rpi5:
+      hosts:
+        localhost:
+          ansible_connection: local
+          ansible_python_interpreter: /usr/bin/python3
+      vars:
+        app_user: "lab"
