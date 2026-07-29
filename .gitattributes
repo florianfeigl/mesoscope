@@ -2,5 +2,4 @@
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
 *.mkv filter=lfs diff=lfs merge=lfs -text
-# *.stl LFS disabled (git-lfs not available)
 *.stl filter=lfs diff=lfs merge=lfs -text
