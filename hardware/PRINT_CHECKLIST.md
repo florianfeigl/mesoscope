@@ -46,7 +46,7 @@
 | 10 | `feet.stl` | 554K | No | Rubber foot inserts | ☐ |
 | 11 | `sample_clips.stl` | 180K | No | Slide retaining clips | ☐ |
 | 12 | `cable_tidies.stl` | 487K | No | Cable management | ☐ |
-| 13 | `microscope_stand.stl` | 489K | No | Optional stand | ☐ |
+| 13 | `microscope_stand_mesoscope.stl` | 288K | Yes | **Custom stand:** Pi5 + AI-HAT + Sangaboard stack (+13mm drawer height) | ☐ |
 
 ### Tools — Print Once
 
