@@ -3,7 +3,7 @@
 // == Changes vs. upstream lib_microscope_stand.scad ==
 // - default_stand_params: supports pi_version=5 and sanga "ai_hat_stack"
 // - sanga_stand_height: adds "ai_hat_stack" with extra_h=24 (accounts for AI-HAT)
-// - pi_front_connectors: added Pi5 connector layout (micro-HDMI instead of full HDMI)
+// - pi_front_connectors: added Pi5 connector layout (USB+Ethernet same Y as Pi4, micro-HDMI near edge)
 // - pi_side_connectors: Pi5 has no headphone jack, adds PCIe FPC cutout
 // - electronics_drawer_walls: includes ai_hat_lugs for "ai_hat_stack"
 // - sanga_connector_holes: handles "ai_hat_stack"
@@ -716,6 +716,8 @@ module pi_front_connectors(pi_version){
     else if (pi_version==5){
         // Pi5 front edge layout:
         //   USB-C power, USB3, USB2, 2x micro-HDMI, Gigabit Ethernet
+        // USB-A and Ethernet: same Y-distance from board edge as Pi4 (same connector types)
+        // micro-HDMI: smaller, sits close to board edge (within the Y=9 USB cutout range)
         translate_y(45.75-17/2){
             cube([200, 17, 14.5]);  // Ethernet
         }
@@ -723,10 +725,7 @@ module pi_front_connectors(pi_version){
             cube([200, 15.5, 17]);  // USB 2.0
         }
         translate_y(9-15.5/2){
-            cube([200, 15.5, 17]);  // USB 3.0
-        }
-        translate_y(35.5-10/2){
-            cube([200, 10, 11]);    // micro-HDMI 0+1 (stacked, smaller than full HDMI)
+            cube([200, 15.5, 17]);  // USB 3.0 (+ micro-HDMI near edge)
         }
     }
     else{
