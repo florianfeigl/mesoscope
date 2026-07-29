@@ -36,6 +36,7 @@ if [ ! -d "${UPSTREAM_DIR}/openscad/libs" ]; then
 fi
 
 cp "${SCRIPT_DIR}/microscope_stand_mesoscope.scad" "${UPSTREAM_DIR}/openscad/microscope_stand.scad"
+cp "${SCRIPT_DIR}/electronics_drawer_mesoscope.scad" "${UPSTREAM_DIR}/openscad/electronics_drawer.scad"
 cp "${SCRIPT_DIR}/lib_microscope_stand_mesoscope.scad" "${UPSTREAM_DIR}/openscad/libs/lib_microscope_stand.scad"
 echo "Custom stand configs copied into upstream repo."
 
@@ -43,16 +44,22 @@ echo "Output dir:   ${OUTPUT_DIR}"
 echo "OpenSCAD:     ${OPENSCAD_CMD}"
 echo ""
 
-OUTPUT_FILE="${OUTPUT_DIR}/microscope_stand_mesoscope.stl"
-
-echo "--- Building microscope stand (Pi5 + AI-HAT + Sangaboard) ---"
-echo "    Output: ${OUTPUT_FILE}"
-"${OPENSCAD_CMD}" -o "${OUTPUT_FILE}" \
-    "${UPSTREAM_DIR}/openscad/microscope_stand.scad" 2>&1 || {
-    echo "ERROR: OpenSCAD build failed."
-    exit 1
+build_stl() {
+    local scad_name="$1"
+    local scad_path="${UPSTREAM_DIR}/openscad/${scad_name}.scad"
+    local output_file="${OUTPUT_DIR}/${scad_name}_mesoscope.stl"
+    echo "--- Building ${scad_name} ---"
+    echo "    Output: ${output_file}"
+    "${OPENSCAD_CMD}" -o "${output_file}" \
+        "${scad_path}" 2>&1 || {
+        echo "ERROR: OpenSCAD build failed for ${scad_name}."
+        exit 1
+    }
+    echo "    Done: $(du -h "${output_file}" | cut -f1)"
+    echo ""
 }
-echo "    Done: $(du -h "${OUTPUT_FILE}" | cut -f1)"
-echo ""
+
+build_stl "microscope_stand"
+build_stl "electronics_drawer"
+
 echo "=== Build complete ==="
-echo "STL written to: ${OUTPUT_FILE}"
