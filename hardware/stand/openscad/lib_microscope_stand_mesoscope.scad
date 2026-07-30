@@ -700,18 +700,19 @@ module pi_front_connectors(pi_version){
         }
     }
     else if (pi_version==5){
-        // Pi5 front edge layout:
-        //   USB-C power, USB3, USB2, 2x micro-HDMI, Gigabit Ethernet
-        // USB-A and Ethernet: same Y-distance from board edge as Pi4 (same connector types)
-        // micro-HDMI: smaller, sits close to board edge (within the Y=9 USB cutout range)
-        translate_y(45.75-17/2){
-            cube([200, 17, 14.5]);  // Ethernet
+        // Pi5 front edge connector Y-centres from official mechanical drawing
+        // (datasheets.raspberrypi.com/rpi5/raspberry-pi-5-mechanical-drawing.pdf)
+        // Board width 58 mm, Y measured from GPIO-header edge.
+        // Ethernet: 47 mm, USB 2.0: 29.1 mm, USB 3.0: 10.2 mm
+        // (Pi4 values were 45.75 / 27 / 9 — shifted ~1-2 mm)
+        translate_y(47-17/2){
+            cube([200, 17, 14.5]);  // Gigabit Ethernet
         }
-        translate_y(27-15.5/2){
+        translate_y(29.1-15.5/2){
             cube([200, 15.5, 17]);  // USB 2.0
         }
-        translate_y(9-15.5/2){
-            cube([200, 15.5, 17]);  // USB 3.0 (+ micro-HDMI near edge)
+        translate_y(10.2-15.5/2){
+            cube([200, 15.5, 17]);  // USB 3.0 (+ 2x micro-HDMI within cutout)
         }
     }
     else{
