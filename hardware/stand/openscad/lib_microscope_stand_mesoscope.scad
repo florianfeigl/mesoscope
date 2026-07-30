@@ -2,13 +2,11 @@
 //
 // == Changes vs. upstream lib_microscope_stand.scad ==
 // - default_stand_params: supports pi_version=5 and sanga "ai_hat_stack"
-// - sanga_stand_height: adds "ai_hat_stack" with extra_h=24 (accounts for AI-HAT)
 // - pi_front_connectors: added Pi5 connector layout (USB+Ethernet same Y as Pi4, micro-HDMI near edge)
 // - pi_side_connectors: Pi5 has no headphone jack, adds PCIe FPC cutout
-// - electronics_drawer_walls: includes ai_hat_lugs for "ai_hat_stack"
-// - sanga_connector_holes: handles "ai_hat_stack"
-// - sanga_lugs: handles "ai_hat_stack"
-// - added ai_hat_lugs module for intermediate AI-HAT board support
+// - electronics_drawer_walls: for "ai_hat_stack" calls sanga_lugs twice (AI-HAT
+//   bottom at stock stack_11mm height, Sangaboard at +13.7mm)
+// - sanga_connector_holes: for "ai_hat_stack" creates cutouts at both levels
 //
 // This file replaces the upstream lib_microscope_stand.scad when building
 // the mesoscope variant. See microscope_stand_readme.md for details.
@@ -376,19 +374,11 @@ function electronics_drawer_front_pos() = let(
     x_tr = electronics_drawer_base_size().x - electronics_drawer_wall_t()
 ) [x_tr, 0, 0];
 
-function ai_hat_z(sanga_version="stack_8.5mm") = let(
-    // HAT sits on an 8.5mm GPIO stacking header above the Pi standoffs
-    // pi_standoff_h = 5.5mm, header = 10mm (compressed ~0.5mm from 11mm nominal)
-    is_hat = (sanga_version=="ai_hat_stack")
-) is_hat ? electronics_drawer_standoff_h() + 8.5 : 0;
-
 function sanga_stand_height(sanga_version="stack_8.5mm") = let(
     extra_h = (sanga_version=="stack_8.5mm") ?
                 12.5 :
-                (sanga_version=="stack_11mm") ?
+                (sanga_version=="stack_11mm" || sanga_version=="ai_hat_stack") ?
                 15 :
-                (sanga_version=="ai_hat_stack") ?
-                24 :
                 27  // otherwise Sangaboard v0.3
 ) electronics_drawer_standoff_h() + extra_h;
 
@@ -512,11 +502,20 @@ module electronics_drawer_walls(stand_params){
             }
             electronics_drawer_nut_trap();
             sanga_lugs(sanga_version);
-            ai_hat_lugs(sanga_version);
+            if (sanga_version == "ai_hat_stack") {
+                second_z = sanga_stand_height(sanga_version) + 15.2;
+                for (hole = [pi_hole_pos(true)[0], pi_hole_pos(true)[1]]) {
+                    translate_z(second_z) no2_selftap_lug(hole, [hole.x, 0.1, 0], 0);
+                }
+            }
         }
 
         pi_connector_holes(pi_version);
-        sanga_connector_holes(sanga_version);
+        if (sanga_version == "ai_hat_stack") {
+            translate_z(15.2) sanga_connector_holes(sanga_version);
+        } else {
+            sanga_connector_holes(sanga_version);
+        }
 
         translate(electronics_drawer_front_screw_pos()){
             rotate_y(90){
@@ -638,20 +637,7 @@ module sanga_lugs(sanga_version){
     }
 }
 
-// Additional support lugs for the AI-HAT board.
-// The AI-HAT sits between the Pi and the Sangaboard, at the same XY
-// positions as the Pi mounting holes but at the Z height of the
-// 8.5mm GPIO stacking header above the Pi standoffs.
-module ai_hat_lugs(sanga_version){
-    if (sanga_version=="ai_hat_stack"){
-        lugs = [pi_hole_pos(true)[0], pi_hole_pos(true)[1]];
-        translate_z(ai_hat_z(sanga_version)){
-            for (hole_pos = lugs){
-                no2_selftap_lug(hole_pos, [hole_pos.x, 0.1, 0], 0);
-            }
-        }
-    }
-}
+
 
 module electronics_drawer_nut_trap(){
 

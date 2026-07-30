@@ -16,8 +16,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-UPSTREAM_DIR="${SCRIPT_DIR}/../../sources/openflexure-microscope"
-OUTPUT_DIR="${SCRIPT_DIR}/../../stl/models"
+UPSTREAM_DIR="${SCRIPT_DIR}/../../../sources/openflexure-microscope"
+OUTPUT_DIR="${SCRIPT_DIR}/../../../hardware/stl/models"
 
 mkdir -p "${OUTPUT_DIR}"
 
