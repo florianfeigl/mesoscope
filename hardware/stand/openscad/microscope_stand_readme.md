@@ -134,7 +134,6 @@ Reference (upstream Pi4 + stack_11mm):
 1. **Pi5 Ethernet + USB-A cutout positions** — current values copied
    from Pi4 and are known to deviate. Requires physical measurement or
    test print to determine correct Y values.
-2. **AI HAT+ connector cutout** — no wall cutout exists for the AI HAT+
-   connectors (micro-HDMI / USB-C on the HAT itself). Add if needed.
+2. **AI HAT+ connector cutout** — not needed (confirmed).
 3. **Sangaboard USB-C cutout Z** — uses `sanga_stand_height + 15.2 mm`
    as offset. Verify against physical assembly.
