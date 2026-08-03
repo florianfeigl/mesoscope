@@ -7,6 +7,8 @@
 // - electronics_drawer_walls: for "ai_hat_stack" calls sanga_lugs twice (AI-HAT
 //   bottom at stock stack_11mm height, Sangaboard at +13.7mm)
 // - sanga_connector_holes: for "ai_hat_stack" creates cutouts at both levels
+// - mesoscope_branding: embosses "MESOSCOPE" (bold, 5mm) on the drawer front
+//   wall — the visible front face of the assembled stand
 //
 // This file replaces the upstream lib_microscope_stand.scad when building
 // the mesoscope variant. See microscope_stand_readme.md for details.
@@ -480,6 +482,23 @@ module electronics_drawer_base(stand_params){
 }
 
 
+// Mesoscope branding — embossed "MESOSCOPE" on the outer face of the
+// drawer front wall (the visible front of the assembled stand).
+// Text runs horizontally when viewed from the front (+x), letters upright.
+module mesoscope_branding(drawer_h){
+    text_h = 5;
+    emboss_d = 0.8;
+    translate([electronics_drawer_wall_t(), electronics_drawer_front_width()/2, drawer_h - 15]){
+        rotate([0,90,0]){
+            rotate_z(90){
+                linear_extrude(emboss_d){
+                    text("MESOSCOPE", size=text_h, font="Noto Sans:style=Bold", halign="center", valign="center");
+                }
+            }
+        }
+    }
+}
+
 module electronics_drawer_walls(stand_params){
     electronics_drawer_h = key_lookup("electronics_drawer_h", stand_params);
     block_usbc = key_lookup("block_usbc", stand_params);
@@ -496,6 +515,7 @@ module electronics_drawer_walls(stand_params){
             }
             translate(electronics_drawer_front_pos()){
                 cube([wall_t, electronics_drawer_front_width(), electronics_drawer_h]);
+                mesoscope_branding(electronics_drawer_h);
             }
             translate(electronics_drawer_mount_block_pos()){
                 cube(electronics_drawer_mount_block_size());
