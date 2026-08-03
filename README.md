@@ -26,7 +26,7 @@
 - [x] Fix pipewire camera device conflict (pipewire holds /dev/media* preventing picamera2 access)
 - [x] Fix systemd SupplementaryGroups for camera access (video, render)
 - [x] Fix DKMS kernel module build ordering (reboot between apt upgrade and modprobe)
-- [ ] Fix camera black frame issue (ISP auto-exposure not active without tuning file)
+- [x] Fix camera black frame issue (manual exposure via API: 20 ms / gain 1.5 / colour gains 1.4,2.3)
 - [ ] Create software list for OpenFlexure Suite
 - [ ] Validate Autofocus with motorised stage
 
@@ -53,7 +53,7 @@
     - [x] Server starts and responds on HTTP (port 5000)
     - [x] Web UI accessible
     - [x] HQ Camera (IMX477) initialised and streaming
-    - [ ] Fix camera black frame issue (ISP auto-exposure without tuning file)
+    - [x] Fix camera black frame issue (manual exposure via API: 20 ms / gain 1.5 / colour gains 1.4,2.3)
     - [ ] Test stage control via sangaboard (if connected)
     - [ ] Verify smart scan and autofocus functionality
 - [x] **AI Inference (Hailo-8 NPU)**

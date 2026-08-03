@@ -70,6 +70,29 @@ Deployed via `ansible/roles/`:
 | Camera board kwarg | `picamera_hq` |
 | Detection command | `rpicam-hello --list-cameras` |
 
+### Manual Exposure & White Balance (black-frame fix)
+
+OpenFlexure runs the camera with **manual exposure** (`AeEnable: False`, `AwbEnable: False`,
+see `things/camera/picamera.py` → `_get_persistent_controls()`). The defaults (500 µs exposure,
+gain 1.0, colour gains 1.0/1.0) produce black frames in a dark microscope field. The working
+values were set via the REST API (persisted in `/var/openflexure/settings/camera/*.json`):
+
+```bash
+curl -X PUT http://localhost:5000/camera/exposure_time -H "Content-Type: application/json" -d '20000'
+curl -X PUT http://localhost:5000/camera/analogue_gain -H "Content-Type: application/json" -d '1.5'
+curl -X PUT http://localhost:5000/camera/colour_gains  -H "Content-Type: application/json" -d '[1.4, 2.3]'
+```
+
+| Setting | Value | Note |
+|---------|-------|------|
+| exposure_time | 20000 µs | ~40× the default; starting point for current scene |
+| analogue_gain | 1.5 | |
+| colour_gains | (1.4, 2.3) | calibrated for neutral grey on current illumination |
+
+Values survive `systemctl restart openflexure`. For a properly calibrated setup, run the
+**Full Auto-Calibrate** wizard in the UI (LED illumination on, empty field of view) instead —
+it calls `auto_expose_from_minimum`, `calibrate_lens_shading`, etc.
+
 ### IMX500 (AI Camera) — Experimental
 | Parameter | Value |
 |-----------|-------|
