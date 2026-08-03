@@ -59,15 +59,26 @@
 - name: Install pysangaboard Python library
   command: /opt/openflexure/venv/bin/pip install sangaboard
 
+- name: Enable GPIO UART for Sangaboard HAT (RP1 UART0, pins 14/15 -> /dev/ttyAMA0)
+  lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: '^dtoverlay=uart0-pi5'
+    line: 'dtoverlay=uart0-pi5'
+  notify: reboot_pi
+
 - name: Add user to dialout group for serial access
   user:
     name: "{{ app_user }}"
     groups: dialout
     append: yes
 
-- name: Create udev rule for Arduino Nano (Sangaboard DIY)
+- name: Create udev rules for Sangaboard serial ports
   copy:
     content: |
+      # GPIO UART on the 40-pin header (Sangaboard v0.5 HAT, RP1 UART0 -> /dev/ttyAMA0)
+      KERNEL=="ttyAMA0", GROUP="dialout", MODE="0660"
+      # SoC console UART (kept for debug console, dialout access)
+      KERNEL=="ttyAMA10", GROUP="dialout", MODE="0660"
       # Sangaboard-compatible Arduino Nano motor controller
       SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="sangaboard", MODE="0666"
       # Arduino Leonardo / Sangaboard v0.3
