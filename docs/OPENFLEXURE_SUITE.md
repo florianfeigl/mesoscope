@@ -48,14 +48,13 @@ Deployed via `ansible/roles/`:
 | Service | `openflexure.service` (systemd, auto-start on boot) |
 | Port | 5000 (HTTP) |
 | Camera class | `StreamingPiCamera2` with `camera_board: "picamera_hq"` |
-| Stage | `SangaboardThing` (v0.5 HAT, port `/dev/ttyAMA0`) |
+| Stage | `DummyStage` (until Sangaboard connected) |
 
 ### Motor Controller (`roles/motor-controller`)
 | Component | Purpose |
 |-----------|---------|
-| Sangaboard v0.5.5 | RP2040 HAT, firmware v1.0.4 (`Sangaboard Firmware v1.0.4`) |
-| 28BYJ-48 driver | Stepper motor control (3× X/Y/Z) |
-| UART | Pi GPIO 14/15 (RP1 UART0 → `/dev/ttyAMA0`) |
+| Arduino IDE | Sangaboard firmware flashing |
+| 28BYJ-48 driver | Stepper motor control |
 
 ## Camera Configuration
 
@@ -126,12 +125,7 @@ it calls `auto_expose_from_minimum`, `calibrate_lens_shading`, etc.
                 "camera_board": "picamera_hq"
             }
         },
-        "stage": {
-            "class": "openflexure_microscope_server.things.stage.sangaboard:SangaboardThing",
-            "kwargs": {
-                "port": "/dev/ttyAMA0"
-            }
-        },
+        "stage": "openflexure_microscope_server.things.stage.dummy:DummyStage",
         "autofocus": "openflexure_microscope_server.things.autofocus:AutofocusThing",
         "camera_stage_mapping": "openflexure_microscope_server.things.camera_stage_mapping:CameraStageMapper",
         "system": "openflexure_microscope_server.things.system:OpenFlexureSystem",
@@ -154,89 +148,23 @@ it calls `auto_expose_from_minimum`, `calibrate_lens_shading`, etc.
 ```
 
 ### When Sangaboard is connected
-
-The stage runs as `SangaboardThing` on `/dev/ttyAMA0` (Pi GPIO 14/15 = RP1 UART0). Wiring/software setup is
-described in [Sangaboard v0.5 HAT](#sangaboard-v05-hat--gpio-uart-setup) below.
-
-## Sangaboard v0.5 HAT — GPIO UART setup
-
-The Sangaboard v0.5 is an RP2040 HAT that talks to the Pi over the GPIO header UART (pins 14/15).
-The RP1 UART0 is **disabled by default** on this CM5 (`status = disabled` in the device tree), so it must
-be enabled explicitly — otherwise the board never responds (`OSError: The instrument doesn't seem to be responding`).
-
-Applied on the microscope (all in place):
-
-1. **Enable RP1 UART0** — `/boot/firmware/config.txt` (`[all]` section):
-   ```
-   dtoverlay=uart0-pi5
-   ```
-   After reboot this exposes GPIO 14/15 as `/dev/ttyAMA0`.
-
-2. **Serial permissions** — `/etc/udev/rules.d/99-sangaboard.rules` (reload with `udevadm control --reload-rules && udevadm trigger`):
-   ```
-   KERNEL=="ttyAMA0", GROUP="dialout", MODE="0660"
-   KERNEL=="ttyAMA10", GROUP="dialout", MODE="0660"
-   ```
-
-3. **Free the UARTs from console/getty** — the SoC console UART (`ttyAMA10`) does **not** carry the Sangaboard;
-   `serial-getty@ttyAMA10` is masked so a login shell can never interfere:
-   ```
-   sudo systemctl mask serial-getty@ttyAMA10
-   ```
-
-4. **OpenFlexure stage** — `/var/openflexure/settings/ofm_config.json`:
-   ```json
-   "stage": {
-       "class": "openflexure_microscope_server.things.stage.sangaboard:SangaboardThing",
-       "kwargs": {
-           "port": "/dev/ttyAMA0"
-       }
-   }
-   ```
-
-5. **Restart and verify**:
-   ```bash
-   sudo systemctl restart openflexure
-   curl -s http://localhost:5000/stage/position     # {"x":0,"y":0,"z":0}
-   curl -s -X POST -H "Content-Type: application/json" -d '{"z": 200}' \
-       http://localhost:5000/stage/move_relative    # axis name is the key, value = steps
-   curl -s http://localhost:5000/stage/position     # position updates after the move
-   ```
-
-Direct Sangaboard test:
-```bash
-/opt/openflexure/venv/bin/python -c "
-import sangaboard
-sb = sangaboard.Sangaboard(port='/dev/ttyAMA0')
-print(sb.firmware)      # Sangaboard Firmware v1.0.4
-print(sb.query('board')) # Sangaboard v0.5.5
-sb.close()
-"
+Change `stage` from `DummyStage` to:
+```json
+"stage": "openflexure_microscope_server.things.stage.sangaboard:SangaboardThing"
 ```
-
-Note: the motor moves are non-blocking actions in the REST API — `move_relative` returns a
-`pending` action with an `id`; poll `/action_invocations/<id>` for completion and
-`/stage/moving` for motor state.
-
 Then: `ansible-playbook site.yml --tags openflexure && ssh lab@mesoscope.local 'sudo systemctl restart openflexure'`
 
 ## API Endpoints
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /camera/` | Camera status |
-| `PUT /camera/exposure_time` | Set exposure time (µs) |
-| `PUT /camera/analogue_gain` | Set analogue gain |
-| `PUT /camera/colour_gains` | Set colour gains (AWB) |
-| `POST /camera/capture_jpeg` | Capture still image |
-| `POST /camera/lores_mjpeg_stream/start` | Start MJPEG stream |
-| `POST /camera/lores_mjpeg_stream/stop` | Stop stream |
-| `GET /stage/position` | Stage position (x/y/z in steps) |
-| `POST /stage/move_relative` | Relative move, body `{"<axis>": <steps>}` |
-| `POST /stage/move_absolute` | Absolute move, body `{"<axis>": <steps>}` |
-| `POST /stage/jog` | Continuous jog while held |
-| `GET /stage/moving` | Whether a move is in progress |
-| `GET /action_invocations/<id>` | Poll result of a pending action |
+| `GET /api/v2/camera/` | Camera status |
+| `GET /api/v2/camera/capture` | Capture still image |
+| `POST /api/v2/camera/stream/start` | Start MJPEG stream |
+| `POST /api/v2/camera/stream/stop` | Stop stream |
+| `GET /api/v2/stage/` | Stage position (DummyStage: always 0,0,0) |
+| `POST /api/v2/stage/move_absolute` | Move to position (requires Sangaboard) |
+| `GET /api/v2/scan/` | Smart scan workflows |
 
 ## Verification Commands
 

@@ -148,22 +148,16 @@ Current configuration (IMX477 HQ Camera):
                 "camera_board": "picamera_hq"
             }
         },
-        "stage": {
-            "class": "openflexure_microscope_server.things.stage.sangaboard:SangaboardThing",
-            "kwargs": {
-                "port": "/dev/ttyAMA0"
-            }
-        },
+        "stage": "openflexure_microscope_server.things.stage.dummy:DummyStage",
         "autofocus": "openflexure_microscope_server.things.autofocus:AutofocusThing",
         ...
     }
 }
 ```
 
-> **Stage:** `SangaboardThing` on `/dev/ttyAMA0` (GPIO 14/15). See
-> [Sangaboard v0.5 HAT — GPIO UART setup](OPENFLEXURE_SUITE.md#sangaboard-v05-hat--gpio-uart-setup)
-> for the required `dtoverlay=uart0-pi5`, udev rules and firmware notes.
-> Source of truth: `ansible/roles/openflexure/templates/ofm_config.json.j2`.
+> **Stage:** Currently `DummyStage`. Once the Sangaboard is wired and flashed, switch to:
+> `"openflexure_microscope_server.things.stage.sangaboard:SangaboardThing"`
+> Update in `ansible/roles/openflexure/templates/ofm_config.json.j2` and redeploy.
 
 ## Redeploy After Config Changes
 
