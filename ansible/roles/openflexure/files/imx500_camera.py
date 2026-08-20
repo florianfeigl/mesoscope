@@ -30,7 +30,7 @@ from PIL import Image
 import labthings_fastapi as lt
 from labthings_fastapi.types.numpy import NDArray
 
-from openflexure_microscope_server.things.camera import BaseCamera
+from openflexure_microscope_server.things.camera import BaseCamera, downsample
 from openflexure_microscope_server.ui import PropertyControl, property_control_for
 
 LOGGER = logging.getLogger(__name__)
@@ -81,6 +81,20 @@ class IMX500Camera(BaseCamera):
 
     mjpeg_bitrate: Optional[int] = lt.property(default=100000000)
     """Bitrate for MJPEG stream."""
+
+    calibration_crop_fraction: float = lt.property(default=1.0, ge=0.1, le=1.0)
+    """Central fraction of the frame used by `capture_downsampled_array`.
+
+    `camera_stage_mapping` (CSM) uses `capture_downsampled_array` for its
+    autofocus-tracker cross-correlation (both the "fft" and "direct"
+    algorithms). Our lens/illumination setup vignettes the corners of the
+    full frame, which can starve the correlation of usable signal and make
+    `calibrate_xy`/`calibrate_1d` fail with "MappingError: ... but saw no
+    motion" even though the stage is actually moving (see
+    docs/BIOREACTOR_POSITION.md). Setting this below 1.0 (e.g. 0.6) crops to
+    the central region before downsampling, discarding the dark edges, while
+    leaving `capture_array`/live preview/normal snapshots untouched.
+    """
 
     def __init__(
         self,
@@ -255,6 +269,25 @@ class IMX500Camera(BaseCamera):
                 time.sleep(0.3)
                 return cam.capture_array(name="raw", wait=wait or 0.9)
         return np.array(self.capture_image(stream_name, wait))
+
+    @lt.action
+    def capture_downsampled_array(self) -> NDArray:
+        """Acquire an image for `camera_stage_mapping` tracking/calibration.
+
+        Crops to the central `calibration_crop_fraction` of the frame (if set
+        below 1.0) before downsampling by `downsampled_array_factor`. This
+        avoids vignetted/dark corners of the frame confusing the CSM
+        tracker's cross-correlation. See `calibration_crop_fraction` for
+        details.
+        """
+        img = self.capture_array()
+        fraction = self.calibration_crop_fraction
+        if fraction < 1.0:
+            height, width = img.shape[:2]
+            crop_h, crop_w = int(height * fraction), int(width * fraction)
+            y0, x0 = (height - crop_h) // 2, (width - crop_w) // 2
+            img = img[y0 : y0 + crop_h, x0 : x0 + crop_w, ...]
+        return downsample(self.downsampled_array_factor, img)
 
     # -- IMX500 AI Inference --
 

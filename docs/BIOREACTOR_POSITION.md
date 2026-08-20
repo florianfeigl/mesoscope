@@ -46,3 +46,16 @@ MappingError: Moved the stage by [0. 8192. 0.] but saw no motion.
 - CSM-Matrix manuell setzen (steps_per_pixel schätzen)
 - Oder: `capture_downsampled_array` durch `grab_as_array` im Tracker ersetzen und testen
 - Oder: Alternativen Tracking-Algorithmus ("direct" statt "fft") evaluieren
+- **Umgesetzt:** `calibration_crop_fraction` auf der `IMX500Camera`-Thing (siehe
+  `ansible/roles/openflexure/files/imx500_camera.py`) — schneidet vor dem Downsampling
+  in `capture_downsampled_array` auf die mittleren N % des Bildes zu, damit dunkle/vignettierte
+  Ecken den FFT-/Direct-Tracker nicht mehr stören (Community-Vermutung: dunkle Ecken senken den
+  Kontrast für die Kreuzkorrelation). Betrifft nur den CSM-Tracker, nicht Live-Preview oder
+  normale Snapshots (`capture_array`). Aktivieren/Testen:
+  ```
+  curl -X PUT http://mesoscope.local:5000/camera/calibration_crop_fraction \
+    -H "Content-Type: application/json" -d '0.6'
+  curl -X POST http://mesoscope.local:5000/camera_stage_mapping/calibrate_xy
+  ```
+  Nach dem Deploy des neuen `imx500_camera.py` über Ansible testen und Wert ggf. iterativ
+  verkleinern (z.B. 0.6 → 0.4), bis die Kalibrierung erfolgreich durchläuft.
