@@ -1,0 +1,179 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&amp;display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+    }
+
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Cover slide */
+    .slide-cover {
+      flex-direction: column;
+      background: radial-gradient(ellipse at 50% 40%, #1a1a2e 0%, #0a0a0a 70%);
+    }
+
+    .slide-cover h1 {
+      font-size: 4.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff 0%, #8888ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-cover .subtitle {
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #888;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .slide-cover .logo {
+      width: 80px;
+      height: 80px;
+      border: 3px solid #555;
+      border-radius: 20px;
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    /* Image slides */
+    .slide .image-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .slide .image-container img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+      object-fit: contain;
+    }
+
+    .slide .image-label {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.05em;
+      background: rgba(0,0,0,0.4);
+      padding: 0.5rem 1.5rem;
+      border-radius: 100px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* End slide */
+    .slide-end {
+      flex-direction: column;
+      background: radial-gradient(ellipse at 50% 60%, #1a1a2e 0%, #0a0a0a 70%);
+    }
+
+    .slide-end h2 {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, #8888ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-end p {
+      font-size: 1.3rem;
+      color: #888;
+      font-weight: 300;
+    }
+
+    /* Page number */
+    .page-num {
+      position: absolute;
+      bottom: 2rem;
+      right: 3rem;
+      font-size: 0.9rem;
+      color: #444;
+      font-weight: 300;
+    }
+
+    @media print {
+      body { background: white; }
+      .slide { break-after: page; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover -->
+  <div class="slide slide-cover">
+    <div class="logo">🔬</div>
+    <h1>Mesoscope</h1>
+    <p class="subtitle">Imaging Sessions</p>
+    <span class="page-num">1 / 5</span>
+  </div>
+
+  <!-- Image 1 -->
+  <div class="slide">
+    <div class="image-container">
+      <img src="../resources/OFM_2026-08-04T13_39_33.251Z.jpeg" alt="Session 2026-08-04">
+      <span class="image-label">04. August 2026</span>
+    </div>
+    <span class="page-num">2 / 5</span>
+  </div>
+
+  <!-- Image 2 -->
+  <div class="slide">
+    <div class="image-container">
+      <img src="../resources/OFM_2026-08-17T13_33_07.449Z.jpeg" alt="Session 2026-08-17">
+      <span class="image-label">17. August 2026 — 13:33</span>
+    </div>
+    <span class="page-num">3 / 5</span>
+  </div>
+
+  <!-- Image 3 -->
+  <div class="slide">
+    <div class="image-container">
+      <img src="../resources/OFM_2026-08-17T14_42_57.477Z.jpeg" alt="Session 2026-08-17">
+      <span class="image-label">17. August 2026 — 14:42</span>
+    </div>
+    <span class="page-num">4 / 5</span>
+  </div>
+
+  <!-- Image 4 -->
+  <div class="slide">
+    <div class="image-container">
+      <img src="../resources/OFM_2026-08-17T14_51_24.609Z.jpeg" alt="Session 2026-08-17">
+      <span class="image-label">17. August 2026 — 14:51</span>
+    </div>
+    <span class="page-num">5 / 5</span>
+  </div>
+
+</body>
+</html>

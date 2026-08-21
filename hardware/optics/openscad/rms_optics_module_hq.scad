@@ -28,6 +28,10 @@ OPTICS = "rms_f125d13";
 BEAMSPLITTER = false;
 CAMERA = "picamera_hq";
 PARFOCAL_DISTANCE = 45;
+// Threaded C-mount alternative: printed male 1"-32 UN thread screwing into the
+// HQ Camera C-CS adapter instead of the smooth seat. See picamera_hq_cmount.scad.
+// Enable with: -D 'THREADED_CAMERA_MOUNT=true'
+THREADED_CAMERA_MOUNT = false;
 
 configurable_optics_module(OPTICS, CAMERA, BEAMSPLITTER, PARFOCAL_DISTANCE);
 
@@ -150,6 +154,25 @@ module optics_module_rms_cmount(params, optics_config){
     }
 }
 
+// Dispatch for the picamera_hq camera mount:
+//   - threaded (THREADED_CAMERA_MOUNT=true): plain optics_module_rms — the male
+//     1"-32 UN thread is generated inside picamera_hq_camera_mount(), no seat
+//     post-processing needed.
+//   - smooth seat (default): optics_module_rms_cmount() cuts the seat + retention
+//     flange after the hull.
+//   - other cameras: plain optics_module_rms().
+module mesoscope_optics_module(params, optics_config, use_cmount){
+    if (use_cmount && THREADED_CAMERA_MOUNT){
+        optics_module_rms(params, optics_config);
+    }
+    else if (use_cmount){
+        optics_module_rms_cmount(params, optics_config);
+    }
+    else{
+        optics_module_rms(params, optics_config);
+    }
+}
+
 module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_distance){
     params = default_params();
 
@@ -174,8 +197,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // 100mm tube lens — infinity conjugate
     else if (optics=="rms_infinity_f100d13"){
@@ -184,8 +206,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // 125mm tube lens (achromatic doublet) — finite conjugate
     else if (optics=="rms_f125d13"){
@@ -194,8 +215,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // 150mm tube lens (achromatic doublet) — finite conjugate
     else if (optics=="rms_f150d13"){
@@ -204,8 +224,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // 125mm tube lens — infinity conjugate
     else if (optics=="rms_infinity_f125d13"){
@@ -214,8 +233,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // 150mm tube lens — infinity conjugate
     else if (optics=="rms_infinity_f150d13"){
@@ -224,8 +242,7 @@ module configurable_optics_module(optics, camera_type, beamsplitter, parfocal_di
             beamsplitter=beamsplitter,
             parfocal_distance=parfocal_distance
         );
-        if (use_cmount) optics_module_rms_cmount(params, optics_config);
-        else            optics_module_rms(params, optics_config);
+        mesoscope_optics_module(params, optics_config, use_cmount);
     }
     // Upstream: 50mm finite conjugate (default OpenFlexure)
     else if (optics=="rms_f50d13"){

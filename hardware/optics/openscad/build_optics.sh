@@ -16,8 +16,8 @@
 
 set -euo pipefail
 
-UPSTREAM_DIR="/home/feivel/dev/mesoscope/resources/openflexure-microscope"
-OUTPUT_DIR="/home/feivel/dev/mesoscope/hardware/stl/models"
+UPSTREAM_DIR="${HOME}/repositories/openflexure-microscope"
+OUTPUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../stl/models" && pwd)"
 
 mkdir -p "${OUTPUT_DIR}"
 
@@ -30,13 +30,13 @@ echo "=== Mesoscope Optics Module Builder ==="
 echo "Upstream repo: ${UPSTREAM_DIR}"
 
 # Copy custom .scad files into upstream repo
-if [ ! -d "${UPSTREAM_DIR}/openscad/libs" ]; then
+if [ ! -d "${UPSTREAM_DIR}/openscad" ]; then
     echo "ERROR: Upstream repo not found at ${UPSTREAM_DIR}"
     echo "Clone it first: git clone --branch hq_camera https://gitlab.com/openflexure/openflexure-microscope.git"
     exit 1
 fi
 
-CONFIGS_DIR="/home/feivel/dev/mesoscope/hardware/optics/openscad"
+CONFIGS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cp "${CONFIGS_DIR}/optics_configurations_hq.scad" "${UPSTREAM_DIR}/openscad/libs/"
 cp "${CONFIGS_DIR}/rms_optics_module_hq.scad" "${UPSTREAM_DIR}/openscad/"
@@ -92,6 +92,29 @@ build_stl_upstream() {
     echo ""
 }
 
+# Threaded C-mount alternative: printed male 1"-32 UN thread screwing into the
+# HQ Camera C-CS adapter (THREADED_CAMERA_MOUNT=true).
+build_stl_threaded() {
+    local lens_f="$1"
+    local optics_name="$2"
+    local output_file="${OUTPUT_DIR}/optics_hq_${lens_f}_rms_threaded.stl"
+    local scad_file="${UPSTREAM_DIR}/openscad/rms_optics_module_hq.scad"
+
+    echo "--- Building ${lens_f}mm tube lens, THREADED C-mount (OPTICS=${optics_name}) ---"
+    echo "    Output: ${output_file}"
+    "${OPENSCAD_CMD}" -o "${output_file}" \
+        -D "OPTICS=\"${optics_name}\"" \
+        -D "CAMERA=\"picamera_hq\"" \
+        -D "PARFOCAL_DISTANCE=45" \
+        -D "THREADED_CAMERA_MOUNT=true" \
+        "${scad_file}" 2>&1 || {
+        echo "ERROR: OpenSCAD build failed for ${lens_f}mm threaded lens."
+        exit 1
+    }
+    echo "    Done: $(du -h "${output_file}" | cut -f1)"
+    echo ""
+}
+
 case "${1:-all}" in
     100)
         echo "WARNING: 100mm ffd is a placeholder — confirm datasheet before using this STL"
@@ -103,19 +126,32 @@ case "${1:-all}" in
     125-upstream)
         build_stl_upstream 125 rms_f125d13
         ;;
+    125-threaded)
+        build_stl_threaded 125 rms_f125d13
+        ;;
     150)
         build_stl 150 rms_f150d13
+        ;;
+    150-threaded)
+        build_stl_threaded 150 rms_f150d13
+        ;;
+    threaded)
+        build_stl_threaded 125 rms_f125d13
+        build_stl_threaded 150 rms_f150d13
         ;;
     all)
         build_stl 125 rms_f125d13
         build_stl 150 rms_f150d13
         ;;
     *)
-        echo "Usage: $0 [100|125|125-upstream|150|all]"
+        echo "Usage: $0 [100|125|125-upstream|125-threaded|150|150-threaded|threaded|all]"
         echo "  100:          100mm tube lens (WARNING: ffd placeholder, confirm datasheet first)"
         echo "  125:          125mm tube lens via custom HQ module (C-mount post-processing)"
         echo "  125-upstream: 125mm tube lens via upstream rms_optics_module.scad"
+        echo "  125-threaded: 125mm tube lens, threaded C-mount (male 1\"-32 UN)"
         echo "  150:          150mm tube lens via custom HQ module"
+        echo "  150-threaded: 150mm tube lens, threaded C-mount (male 1\"-32 UN)"
+        echo "  threaded:     125mm + 150mm threaded C-mount"
         echo "  all:          125mm + 150mm custom (100mm excluded until ffd confirmed)"
         exit 1
         ;;
