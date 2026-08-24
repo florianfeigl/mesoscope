@@ -15,7 +15,21 @@ curl -X POST http://mesoscope.local:5000/stage/move_absolute \
 
 ---
 
-## Kamera-Einstellungen (Stand: 2026-08-17, nach Service-Restart)
+## Kamera-Einstellungen (Stand: 2026-08-24, getestet)
+
+| Einstellung    | Wert             |
+|----------------|------------------|
+| ExposureTime   | 492 µs           |
+| AnalogueGain   | 1.0              |
+| ColourGains    | [0.9, 2.9]       |
+
+Iterativ am Live-Bild getunt und als gut bestätigt. Persistiert in
+`/var/openflexure/settings/camera/settings.json`, daher nach Neustart aktiv.
+Manuelle Werte halten die Auto-Weißabgleich-/Belichtungskalibrierung (AWB/AE)
+deaktiviert — nicht den Auto-Kalibrier-/Weißabgleich-Button im Web-UI drücken,
+sonst werden die ColourGains wieder auf ~neutral überschrieben (Grünstich).
+
+### Frühere Werte (Stand: 2026-08-17, überholt)
 
 | Einstellung    | Wert             |
 |----------------|------------------|
@@ -23,7 +37,7 @@ curl -X POST http://mesoscope.local:5000/stage/move_absolute \
 | AnalogueGain   | 1.0              |
 | ColourGains    | [1.4, 2.3]       |
 
-Diese Werte sind nach dem Service-Restart aktiv und sehen gut aus.
+Waren für die damalige Beleuchtung getunt; bei aktuellem Licht zu hell mit Rotstich.
 
 ---
 
