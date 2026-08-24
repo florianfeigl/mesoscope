@@ -158,7 +158,57 @@ PYEOF
   patched=1
 fi
 
-# Patch 3: Clean up persisted settings with empty tuning
+# Patch 3: picamera.py image orientation
+# The mesoscope's optical path delivers a vertically-inverted image
+# (top/bottom flipped). OpenFlexure v3 exposes no orientation setting, so
+# inject a picamera2 Transform(vflip=1) into both the streaming (video) and
+# still-capture configurations. Applies at the ISP level, so preview and
+# captures match.
+PY="${SRC}/picamera.py"
+if ! grep -q 'from libcamera import Transform' "$PY" 2>/dev/null; then
+  python3 << 'PYEOF'
+path = "src/openflexure_microscope_server/things/camera/picamera.py"
+with open(path) as f:
+    c = f.read()
+
+# Import Transform from libcamera
+c = c.replace(
+    "from picamera2.outputs import Output\n",
+    "from picamera2.outputs import Output\nfrom libcamera import Transform\n",
+    1,
+)
+
+# Streaming (video) configuration
+c = c.replace(
+    '                stream_config = picam.create_video_configuration(\n'
+    '                    main={"size": main_resolution},\n'
+    '                    lores={"size": (320, 240), "format": "YUV420"},\n'
+    '                    sensor=self._sensor_mode,\n'
+    '                    controls=controls,\n'
+    '                )',
+    '                stream_config = picam.create_video_configuration(\n'
+    '                    main={"size": main_resolution},\n'
+    '                    lores={"size": (320, 240), "format": "YUV420"},\n'
+    '                    sensor=self._sensor_mode,\n'
+    '                    controls=controls,\n'
+    '                    transform=Transform(vflip=1),\n'
+    '                )'
+)
+
+# Still capture configuration
+c = c.replace(
+    'cam.configure(cam.create_still_configuration(sensor=self._sensor_mode))',
+    'cam.configure(cam.create_still_configuration(sensor=self._sensor_mode, transform=Transform(vflip=1)))'
+)
+
+with open(path, 'w') as f:
+    f.write(c)
+print('Patched image orientation (vflip)')
+PYEOF
+  patched=1
+fi
+
+# Patch 4: Clean up persisted settings with empty tuning
 SETTINGS="/var/openflexure/settings/camera/settings.json"
 if [ -f "$SETTINGS" ]; then
   python3 -c "
