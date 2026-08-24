@@ -213,6 +213,11 @@ Das Mikroskop fährt automatisch entlang der Schiene von Bioreaktor zu Bioreakto
 nimmt Bilder auf, und der Hailo-8 läuft on-device Inferenz (Zellzählung,
 Konfluenz, Segmentierung) — ohne externe Recheninfrastruktur.
 
+> **Nächster Meilenstein — Halterung/Schiene:** Der mechanische Aufbau (Mikroskop
+> um 90° gekippt auf X-Linearschiene + Reaktor-Gerüst in Serie) ist als Konzept in
+> [`docs/RAIL_MOUNT_CONCEPT.md`](docs/RAIL_MOUNT_CONCEPT.md) festgehalten
+> (Geometrie, Schienen-/Antriebsempfehlung, Flexure-Schwerkraftrisiko, offene Punkte).
+
 ### HQ Camera (IMX477) -- Microscopy
 
 The Pi HQ Camera with C-mount and RMS objectives provides cell-level resolution:

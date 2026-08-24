@@ -40,3 +40,6 @@ model/data/annotations/
 # Jour fixe
 jourfixe/
 sources/
+
+# OpenClaude local settings/state
+.openclaude/
