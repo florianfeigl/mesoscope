@@ -53,8 +53,15 @@ mgn_car_w  = 27; mgn_car_l = 45; mgn_car_h = 10;
 // Carriage adapter plate (microscope <-> MGN12 carriage)
 adapter_t = 6;
 
-// Rack support brackets (rise from the same beam)
-bracket_t = 6;
+// ---- Shared base plate (Grundplatte) ----
+// One common foundation: the rail (moving microscope) AND the FIXED reactor
+// row both mount to it. Only the microscope travels; the reactors stand still.
+gp_t = 8;   // Grundplatte thickness (top face at z = 0)
+
+// ---- Fixed reactor stand (stationary, rises from the Grundplatte) ----
+stand_wall_t = 6;   // back wall behind the reactor row (+Y side)
+shelf_t      = 6;   // ledge the reactors rest on
+stand_over   = 15;  // stand X overhang beyond the reactor row each side
 
 // ---- X drive: NEMA17 + T8 leadscrew (separate stepper) ----
 nema_sz   = 42.3;   // NEMA17 body cross-section
@@ -146,18 +153,27 @@ module reactor(xpos) {
         translate([xpos+dx, window_y+1, oa_z]) rotate([90,0,0]) cylinder(h=2, d=port_d);
 }
 
-module rack() {
-    // base bar spanning the reactor row, supported by two brackets off the beam
-    rack_x0 = -reactor_w/2 - 15;
-    rack_len= span + reactor_w + 30;
-    base_z  = oa_z - reactor_h/2 - 8;
-    // base bar
+module base_plate() {
+    // Grundplatte: the shared foundation. Spans the full rail length in X and,
+    // in Y, reaches from behind the rail out past the fixed reactor row.
+    y0 = -(ext_w/2 + 30);
+    y1 = window_y + reactor_d + stand_wall_t + 20;
+    color([0.55,0.55,0.58])
+    translate([rail_x0, y0, -gp_t]) cube([rail_len, y1 - y0, gp_t]);
+}
+
+module reactor_stand() {
+    // FIXED holder standing on the Grundplatte (NOT on the moving beam, NOT on
+    // the carriage). Carries the stationary reactor row at optical-axis height.
+    row_x0  = -reactor_w/2 - stand_over;
+    row_len = span + reactor_w + 2*stand_over;
+    shelf_z = oa_z - reactor_h/2;                 // top of shelf = reactor underside
+    // shelf the reactors rest on
+    color([0.8,0.45,0.25])
+    translate([row_x0, window_y-4, shelf_z - shelf_t]) cube([row_len, reactor_d+8, shelf_t]);
+    // back wall behind the row rises from the Grundplatte up to reactor top
     color([0.8,0.4,0.2])
-    translate([rack_x0, window_y-5, base_z]) cube([rack_len, reactor_d+10, 8]);
-    // two support brackets rising from the beam top up to the base bar
-    for (bx = [rack_x0+20, rack_x0+rack_len-20-bracket_t])
-        color([0.8,0.45,0.25])
-        translate([bx, ext_w/2, beam_top]) cube([bracket_t, window_y-ext_w/2, base_z-beam_top+8]);
+    translate([row_x0, window_y+reactor_d, 0]) cube([row_len, stand_wall_t, oa_z + reactor_h/2]);
 }
 
 module back_support(xpos) {
@@ -200,8 +216,11 @@ module nut_block(xpos) {
 }
 
 // ===================== ASSEMBLY =====================
-carriage_x = 0;   // current station = reactor #0
+carriage_x = 0;   // current station = reactor #0 (microscope travels in X)
 
+// shared foundation
+base_plate();
+// rail + moving microscope
 beam();
 mgn12_rail();
 mgn12_carriage(carriage_x);
@@ -209,12 +228,12 @@ carriage_adapter(carriage_x);
 back_support(carriage_x);
 microscope(carriage_x);
 optical_axis_line(carriage_x);
-// X drive
+// X drive (moves the microscope, not the reactors)
 leadscrew();
 nema17(rail_x0+10);
 coupler(rail_x0+10);
 end_bearing(rail_x0+ls_len+10);
 nut_block(carriage_x);
-// reactor row
-rack();
+// FIXED reactor row on its own stand on the Grundplatte
+reactor_stand();
 for (i = [0 : n_reactors-1]) reactor(i * reactor_pitch);

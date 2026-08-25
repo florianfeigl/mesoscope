@@ -5,8 +5,10 @@
 > and carries it along a linear X-rail past a series of bioreactors.
 >
 > **Schematic massing draft:** `hardware/mount/openscad/rail_mount_mesoscope.scad`
-> (parametric block model — beam, MGN12 guide, tilted microscope, back-support
-> plate, NEMA17 + T8 leadscrew drive, and the reactor row). Previews:
+> (parametric block model — shared **base plate (Grundplatte)**, the rail beam +
+> MGN12 guide under the moving microscope, back-support plate, NEMA17 + T8
+> leadscrew drive, and a **fixed reactor stand** carrying the stationary reactor
+> row). Previews:
 > `rail_mount_preview.png` (3/4) and `rail_mount_top.png` (elevation). This is a
 > massing model to make the layout discussable, **not** print-ready geometry.
 >
@@ -29,12 +31,13 @@ imaging head** that scans a **row of bioreactors** arranged in series:
 
 - Lay the whole OpenFlexure microscope on its side (**90° tilt**), resting on the
   face of the **Z-axis motor**, so the **optical axis becomes horizontal**.
-- Mount it on a **carriage on a linear rail** running in **X** (90° to the optical
-  path).
-- At a defined working-distance offset along the optical axis, the **same mount**
-  carries a **frame ("Gerüst") holding the bioreactors in series** (also along X).
-- A **separate stepper drive** moves the carriage in X from bioreactor to
-  bioreactor; at each station the microscope images the sample.
+- Bind a **linear rail under the microscope** so it rides on a **carriage** in
+  **X** (90° to the optical path) — **only the microscope moves.**
+- On the **same base plate (Grundplatte)**, a **fixed stand** holds the
+  **bioreactors in a stationary row** at a working-distance offset along the
+  optical axis. The reactors do **not** move with the carriage.
+- A **separate stepper drive** moves the microscope carriage in X so it travels
+  **along the fixed row of reactors**; at each station it images the sample.
 
 This matches the system architecture diagram in the root `README.md`
 ("montiert auf Schlitten" / "Linearschiene" / "Antrieb/Motor" / Bioreaktoren #1…#n).
@@ -70,32 +73,36 @@ pre-tensioned for.
 
 ---
 
-## 3. Mechanical concept — one shared reference beam
+## 3. Mechanical concept — one shared base plate (Grundplatte)
 
-**Key principle:** the microscope carriage **and** the bioreactor rack are both
-mounted on **one rigid reference beam**. Because both are referenced to the same
-structure, the **optical-axis-to-sample distance is fixed by construction** and
-cannot drift; the row of reactors stays coplanar and parallel to the rail.
+**Key principle:** the **rail (with the moving microscope)** and the **fixed
+reactor stand** both mount to **one rigid base plate (Grundplatte)**. Because
+both are referenced to the same foundation, the **optical-axis-to-sample distance
+is fixed by construction** and cannot drift; the stationary row of reactors stays
+coplanar and parallel to the rail. **Only the microscope travels**; the reactors
+stand still and the imaging head drives along them.
 
 ```
-        (side view, gravity ↓)
+        (side view, gravity ↓)         reactors are FIXED, microscope moves ►
 
    ┌───────────┐                         ┌──────────────────────────┐
-   │ Microscope│  optical axis  ───►     │  Bioreactor rack (series)│
-   │ (tilted)  │═══════════════════════► │  [R1][R2][R3] … [Rn]     │
+   │ Microscope│  optical axis  ───►     │  Fixed reactor row (stand)│
+   │ (tilted)  │═══════════════════════► │  [R1][R2][R3] … [Rn]      │
    └────┬──────┘                         └───────────┬──────────────┘
-        │ MGN12 carriage                             │ fixed to same beam
-   ═════╪══════════════════════════════════════════════════════════════  ← rail X
-   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓  aluminium extrusion (2040) = shared reference beam ▓▓▓▓▓▓▓▓
-                    ▲ NEMA17 + T8 leadscrew drives the carriage in X
+   ═════╪═══════ rail X (under microscope) ═══        │ fixed stand
+     ▲ MGN12 carriage + NEMA17/T8 drive               │
+   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  base plate (Grundplatte) = shared foundation ▓▓▓▓▓▓▓▓▓▓▓▓
 ```
 
-Two sub-assemblies of the printed mount:
-1. **Carriage adapter** — interfaces the tilted microscope body (Z-motor face +
-   an additional support) to the MGN12 carriage. Must resist the transverse
-   gravity moment (long lever arm of the Pi5 + AI HAT + camera + optics tower).
-2. **Bioreactor rack** — parametric frame that holds the reactors in series at
-   the correct height and spacing so each optical window lands on the optical axis.
+Sub-assemblies:
+1. **Rail + carriage adapter** — the linear rail is bound under the microscope;
+   the adapter interfaces the tilted microscope body (Z-motor face + an
+   additional support) to the MGN12 carriage. Must resist the transverse gravity
+   moment (long lever arm of the Pi5 + AI HAT + camera + optics tower).
+2. **Fixed reactor stand** — a stationary parametric holder rising from the
+   Grundplatte (back wall + shelf) that holds the reactors in series at the
+   correct height/spacing so each optical window lands on the optical axis. It is
+   **not** attached to the carriage or the rail beam.
 
 ---
 
@@ -105,7 +112,8 @@ Decision was left open ("Empfehlungen?"). Recommendation:
 
 | Element | Choice | Rationale |
 |---|---|---|
-| Structural beam | **2040 V-Slot aluminium extrusion** | Stiff, cheap, carries **both** carriage and reactor rack → common reference. |
+| Foundation | **Base plate (Grundplatte)** | Shared reference for the rail and the fixed reactor stand → fixed working distance. |
+| Structural beam | **2040 V-Slot aluminium extrusion** | Stiff, cheap; carries the rail under the microscope, mounted on the Grundplatte. |
 | Guide | **MGN12 profile rail + carriage** | Low play / high stiffness for the cantilevered microscope mass; clean mounting hole pattern. |
 | Drive | **NEMA17 + T8 leadscrew (anti-backlash nut)** | Self-locking → holds position at each stop without current; no backlash for step-and-image. |
 | Alt. drive | GT2 belt + NEMA17 | Faster, but slight backlash; only if scan speed matters more than repeatability. |
