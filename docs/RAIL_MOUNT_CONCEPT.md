@@ -1,8 +1,21 @@
 # Rail Mount Concept — Tilted Microscope on Linear X-Rail
 
-> **Status:** Concept / design capture (2026-08-24). No CAD yet.
+> **Status:** Concept + first schematic CAD draft (updated 2026-08-25).
 > Next milestone: the mount ("Halterung") that lays the mesoscope on its side
 > and carries it along a linear X-rail past a series of bioreactors.
+>
+> **Schematic massing draft:** `hardware/mount/openscad/rail_mount_mesoscope.scad`
+> (parametric block model — beam, MGN12 guide, tilted microscope, back-support
+> plate, NEMA17 + T8 leadscrew drive, and the reactor row). Previews:
+> `rail_mount_preview.png` (3/4) and `rail_mount_top.png` (elevation). This is a
+> massing model to make the layout discussable, **not** print-ready geometry.
+>
+> ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
+> Base plate (Bodenplatte) removed for the calculations per
+> instruction → chip body **70 × 40 × 16 mm**, optical window **18 × 8 mm**
+> centered on the microscope-facing face, flanked by 4 fluidic ports. Reactor
+> dims in the draft are now real; only the **series pitch** (reactor-to-reactor
+> spacing along X) is still an assumption (80 mm) to confirm.
 
 This document captures the geometry, the mechanical concept, open decisions, and
 the reasoning behind them, so the next session can start from a shared picture.
@@ -127,18 +140,32 @@ explicitly and should be validated on a test print early.
 
 ---
 
-## 6. Bioreactor rack — awaiting STL
+## 6. Bioreactor chip — real geometry (STL integrated)
 
-User can provide **STL files of the bioreactors** — very helpful. From them we need:
-- outer geometry & how a reactor seats/locates in the rack,
-- **optical window position and orientation** (where the objective looks in),
-- reactor-to-reactor spacing in series (defines the X pitch / stop positions).
+Source STL: `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl` (ASCII/binary
+STL, single chip). The file **includes a base plate (Bodenplatte)**; per
+instruction the plate is **removed for the calculations** — it is a
+mounting/handling feature, not part of the reactor envelope.
 
-**Expected drop path:** `hardware/bioreactors/` (create when STLs arrive).
+Measured (base plate excluded):
 
-Until dimensions are final, the rack SCAD will be **parametric** (reactor length,
-diameter, window offset, series pitch, count `n`) — same style as the existing
-mesoscope OpenSCAD entry points.
+| Feature | Value | Axis in mount |
+|---|---|---|
+| Chip body width | **70 mm** | X (along rail) |
+| Chip body depth | **40 mm** | Y (toward microscope; plate was the +Y face) |
+| Chip body height | **16 mm** | Z (vertical) |
+| Optical window | **18 × 8 mm**, centered on the microscope-facing (−Y) face, at mid-height | window on optical axis |
+| Fluidic ports | 4 × ⌀ ~4.5 mm, flanking the window on the same face | — |
+| Base plate (removed) | 140 × 100 mm thin panel | ignored for calculations |
+
+These values are now hard-wired as defaults in the SCAD reactor block. The rack
+stays **parametric** (`n_reactors`, `reactor_pitch`, `reactor_w/d/h`, window
+size) so the row length and stop spacing update automatically.
+
+**Still to confirm:** the **series pitch** (reactor-to-reactor center distance
+along X). The STL contains one chip only, so pitch is currently assumed
+`reactor_pitch = 80 mm` (70 mm chip + 10 mm gap). Set this to the real rack
+spacing once the multi-reactor frame is defined.
 
 ---
 
@@ -159,7 +186,9 @@ mesoscope OpenSCAD entry points.
 
 ## 8. Next steps
 
-- [ ] User drops bioreactor STL(s) into `hardware/bioreactors/`.
+- [x] Bioreactor STL integrated (`hardware/bioreactors/`), base plate removed,
+      real chip dims wired into the SCAD draft.
+- [ ] Confirm the **series pitch** (reactor-to-reactor spacing) for the rack.
 - [ ] Confirm the Z-motor resting face and measure the microscope's mass/CoG in
       the tilted orientation.
 - [ ] Decide stepper control path (§7.1).
