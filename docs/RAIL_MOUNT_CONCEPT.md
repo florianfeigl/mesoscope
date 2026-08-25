@@ -24,11 +24,29 @@
 > carriage: its resting face lands on the adapter (`oa_z ≈ 135 mm`) and the
 > reactor optical window is placed at the microscope's **sample plane**.
 >
-> ⚠ **Consequence to note:** with the reactor at the sample plane, the
-> **condenser / illumination arm is on the +Y side** of the chip (correct for
-> trans-illumination), so the arm shares the space just past each reactor.
-> Confirm condenser-to-chip clearance along the row (may need a shortened /
-> re-routed illumination arm for a dense reactor series).
+> ⚠ **Condenser conflict — now quantified:** the embedded model's illumination
+> assembly reaches down to **y = 77.5 mm**, i.e. only **~2.5 mm above the
+> sample plane** — that is slide clearance, not chip clearance. The hochkant
+> chip occupies y = 75…91 (16 mm thickness), so the **stock condenser
+> physically cannot coexist with the chip** at a station. The illumination
+> must be raised / shortened / re-routed (≥ 16 mm working gap) — this is the
+> single biggest required modification to the stock OpenFlexure geometry and
+> is visible as residual overlap in the renders at the docked station.
+>
+> ✅ **Sample clips removed from the model:** the microscope STL is now rendered
+> without sample clips (`hardware/mount/openscad/complete_microscope_rms_noclips.scad`,
+> a variant of upstream `rendering/complete_microscope.scad` omitting
+> `render_sample_clips()`; copy it into the upstream `rendering/` dir and
+> render it there to regenerate the STL) — the chip sits exactly where the
+> clips were, against the stage surface like a slide.
+>
+> ✅ **Bridge collision fixed by measurement:** at board height (world
+> z ≥ 155 mm) the microscope's largest reach past the sample plane is
+> **y = 78 mm** (measured from the STL). The traverse board is therefore slim
+> (24 mm) and starts at **y = 80 mm** (`bridge_y_clear = 5`), behind the
+> sample plane — the moving microscope passes under/before it without contact.
+> The station cutouts are **front-open notches**: chips slide in from the
+> objective side.
 >
 > ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
 > Base plate (Bodenplatte) removed for the calculations per

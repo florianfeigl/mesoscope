@@ -82,7 +82,11 @@ gp_t = 8;   // Grundplatte thickness (top face at z = 0)
 // The reactors HANG hochkant from above; the space below them stays free so
 // the moving mesoscope (incl. its illumination arm) reaches them from below.
 bridge_board_t    = 8;    // traverse board ("schmales Brett") thickness
-bridge_board_w    = 60;   // board width in Y (covers chip + flange seat)
+bridge_board_w    = 24;   // board width in Y — slim, sits BEHIND the sample
+                          // plane: at board height (z>=155) the microscope
+                          // reaches only y=78 (measured from the STL), so the
+                          // board starts at window_y + bridge_y_clear
+bridge_y_clear    = 5;    // board front edge offset behind the sample plane
 bridge_slot_clear = 1;    // cutout (Aussparung) clearance around each chip
 bridge_pillar     = 30;   // square end-pillar cross-section
 bridge_x_clear    = 120;  // pillar distance beyond the end stations —
@@ -210,8 +214,9 @@ module reactor_bridge() {
     board_z0 = oa_z + reactor_h/2;      // board underside = chip top edge
     x0 = -bridge_x_clear - bridge_pillar;
     x1 = span + bridge_x_clear + bridge_pillar;
-    y0 = window_y + reactor_t/2 - bridge_board_w/2;
-    // continuous traverse with cutouts
+    y0 = window_y + bridge_y_clear;  // clear of the microscope (max y=78 up here)
+    // continuous traverse with front-open notches: the chips (y 75..91) slide
+    // in from the objective side; the board holds their rear portion
     color([0.8,0.55,0.3])
     difference() {
         translate([x0, y0, board_z0]) cube([x1 - x0, bridge_board_w, bridge_board_t]);
