@@ -6,10 +6,11 @@
 >
 > **Schematic massing draft:** `hardware/mount/openscad/rail_mount_mesoscope.scad`
 > (parametric block model — shared **base plate (Grundplatte)**, the rail beam +
-> MGN12 guide under the moving microscope, back-support plate, NEMA17 + T8
-> leadscrew drive, and a **fixed reactor stand** carrying the stationary reactor
-> row). Previews:
-> `rail_mount_preview.png` (3/4) and `rail_mount_top.png` (elevation). This is a
+> MGN12 guide under the moving microscope, NEMA17 + T8 leadscrew drive, and a
+> **reactor bridge (Brücke)**: a continuous traverse board with per-station
+> cutouts from which the chips hang **hochkant**). Previews:
+> `rail_mount_preview.png` (3/4 from the objective side) and
+> `rail_mount_top.png` (3/4 from the light-source side, full row). This is a
 > massing model to make the layout discussable, **not** print-ready geometry.
 >
 > ✅ **Full mesoscope model embedded:** the placeholder envelope box is replaced by
@@ -31,10 +32,22 @@
 >
 > ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
 > Base plate (Bodenplatte) removed for the calculations per
-> instruction → chip body **70 × 40 × 16 mm**, optical window **18 × 8 mm**
-> centered on the microscope-facing face, flanked by 4 fluidic ports. Reactor
-> dims in the draft are now real; only the **series pitch** (reactor-to-reactor
-> spacing along X) is still an assumption (80 mm) to confirm.
+> instruction → chip body **70 × 40 × 16 mm**, optical window **18 × 8 mm**,
+> 4 fluidic ports. Only the **series pitch** (reactor-to-reactor spacing along
+> X) is still an assumption (80 mm) to confirm.
+>
+> ✅ **Hochkant + Brücke (2026-08-25):** the chips are now mounted **upright
+> (hochkant)** and **hang from a bridge** — a continuous traverse board
+> ("schmales Brett" in chip dimensions) with per-station cutouts
+> (Aussparungen), carried by two end pillars on the Grundplatte. Imaging goes
+> horizontally **through the 16 mm chip thickness**: light source on the +Y
+> side → chip → objective on the −Y side. The fluidic ports + tubes
+> (Schläuche) exit at the **top** — that is why top access is impossible and
+> the chips must hang, keeping the space **below** free for the moving
+> mesoscope incl. its illumination arm. Open: pillar clearance
+> (`bridge_x_clear = 120 mm` beyond the end stations) vs. microscope width at
+> the end stops, and the travel path of the microscope body under the hanging
+> row.
 
 This document captures the geometry, the mechanical concept, open decisions, and
 the reasoning behind them, so the next session can start from a shared picture.
@@ -50,7 +63,7 @@ imaging head** that scans a **row of bioreactors** arranged in series:
   face of the **Z-axis motor**, so the **optical axis becomes horizontal**.
 - Bind a **linear rail under the microscope** so it rides on a **carriage** in
   **X** (90° to the optical path) — **only the microscope moves.**
-- On the **same base plate (Grundplatte)**, a **fixed stand** holds the
+- On the **same base plate (Grundplatte)**, a **fixed bridge (Brücke)** holds the
   **bioreactors in a stationary row** at a working-distance offset along the
   optical axis. The reactors do **not** move with the carriage.
 - A **separate stepper drive** moves the microscope carriage in X so it travels
@@ -93,22 +106,31 @@ pre-tensioned for.
 ## 3. Mechanical concept — one shared base plate (Grundplatte)
 
 **Key principle:** the **rail (with the moving microscope)** and the **fixed
-reactor stand** both mount to **one rigid base plate (Grundplatte)**. Because
-both are referenced to the same foundation, the **optical-axis-to-sample distance
-is fixed by construction** and cannot drift; the stationary row of reactors stays
-coplanar and parallel to the rail. **Only the microscope travels**; the reactors
-stand still and the imaging head drives along them.
+reactor bridge (Brücke)** both mount to **one rigid base plate (Grundplatte)**.
+Because both are referenced to the same foundation, the **optical-axis-to-sample
+distance is fixed by construction** and cannot drift; the stationary row of
+reactors stays coplanar and parallel to the rail. **Only the microscope
+travels**; the reactors stand still and the imaging head drives along them.
+
+The reactors **hang hochkant from above**: a continuous traverse board
+("schmales Brett" in chip dimensions) spans the row on two end pillars, with a
+cutout (Aussparung) per station from which each chip hangs. The tubes
+(Schläuche) exit the chip tops through/above the board; the space **below** the
+chips stays completely free so the moving mesoscope — whose illumination arm
+sits below/beside the optical axis — can reach every station unobstructed.
 
 ```
-        (side view, gravity ↓)         reactors are FIXED, microscope moves ►
+   (view along the rail, gravity ↓)      reactors FIXED & HANGING, microscope moves ⊙
 
-   ┌───────────┐                         ┌──────────────────────────┐
-   │ Microscope│  optical axis  ───►     │  Fixed reactor row (stand)│
-   │ (tilted)  │═══════════════════════► │  [R1][R2][R3] … [Rn]      │
-   └────┬──────┘                         └───────────┬──────────────┘
-   ═════╪═══════ rail X (under microscope) ═══        │ fixed stand
-     ▲ MGN12 carriage + NEMA17/T8 drive               │
-   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  base plate (Grundplatte) = shared foundation ▓▓▓▓▓▓▓▓▓▓▓▓
+   pillar ─┐  ┌───────────── traverse board (cutouts per station) ─────┐┌─ pillar
+           ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+           ║        ║ tubes ↑↑            ║                             ║
+           ║      ┌─┴─┐  chip hochkant    ║   ┌───────────┐             ║
+           ║      │ R │◄── optical axis ──╫───│ Microscope│ (tilted)    ║
+           ║      └───┘  (through 16 mm)  ║   │ objective─┘◄─ light arm ║
+           ║   free space below ▼         ║   └────┬──────┘             ║
+           ║                              ║   ═════╪═════ rail X        ║
+   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  base plate (Grundplatte) = shared foundation ▓▓▓▓▓▓▓▓▓▓▓
 ```
 
 Sub-assemblies:
@@ -116,10 +138,12 @@ Sub-assemblies:
    the adapter interfaces the tilted microscope body (Z-motor face + an
    additional support) to the MGN12 carriage. Must resist the transverse gravity
    moment (long lever arm of the Pi5 + AI HAT + camera + optics tower).
-2. **Fixed reactor stand** — a stationary parametric holder rising from the
-   Grundplatte (back wall + shelf) that holds the reactors in series at the
-   correct height/spacing so each optical window lands on the optical axis. It is
-   **not** attached to the carriage or the rail beam.
+2. **Reactor bridge (Brücke)** — a stationary traverse board with per-station
+   cutouts, on two end pillars rising from the Grundplatte, holding the chips
+   hanging hochkant at the correct height/spacing so each optical window lands
+   on the optical axis. It is **not** attached to the carriage or the rail beam.
+   The pillars stand `bridge_x_clear` beyond the end stations so the microscope
+   body clears them at the end stops.
 
 ---
 
@@ -129,7 +153,7 @@ Decision was left open ("Empfehlungen?"). Recommendation:
 
 | Element | Choice | Rationale |
 |---|---|---|
-| Foundation | **Base plate (Grundplatte)** | Shared reference for the rail and the fixed reactor stand → fixed working distance. |
+| Foundation | **Base plate (Grundplatte)** | Shared reference for the rail and the fixed reactor bridge → fixed working distance. |
 | Structural beam | **2040 V-Slot aluminium extrusion** | Stiff, cheap; carries the rail under the microscope, mounted on the Grundplatte. |
 | Guide | **MGN12 profile rail + carriage** | Low play / high stiffness for the cantilevered microscope mass; clean mounting hole pattern. |
 | Drive | **NEMA17 + T8 leadscrew (anti-backlash nut)** | Self-locking → holds position at each stop without current; no backlash for step-and-image. |
@@ -174,14 +198,20 @@ mounting/handling feature, not part of the reactor envelope.
 
 Measured (base plate excluded):
 
-| Feature | Value | Axis in mount |
+| Feature | Value | Axis in mount (hochkant, hanging) |
 |---|---|---|
 | Chip body width | **70 mm** | X (along rail) |
-| Chip body depth | **40 mm** | Y (toward microscope; plate was the +Y face) |
-| Chip body height | **16 mm** | Z (vertical) |
-| Optical window | **18 × 8 mm**, centered on the microscope-facing (−Y) face, at mid-height | window on optical axis |
-| Fluidic ports | 4 × ⌀ ~4.5 mm, flanking the window on the same face | — |
+| Chip body thickness | **16 mm** | Y (**along the optical axis** — imaged through) |
+| Chip body height | **40 mm** | Z (vertical, hanging from the bridge) |
+| Optical window | **18 × 8 mm**, centered on the objective-facing (−Y) face, on the optical axis | window on optical axis |
+| Fluidic ports | 4 × ⌀ ~4.5 mm, exiting the **top** edge (tubes go up) | — |
 | Base plate (removed) | 140 × 100 mm thin panel | ignored for calculations |
+
+**Orientation rationale:** the chip is imaged in **trans-illumination through
+its 16 mm thickness** — light source on +Y, objective on −Y. The tubes leave
+the ports on the top edge, so the chip cannot be accessed or held from above
+by anything bulky and cannot rest on a shelf below (the mesoscope needs that
+space); hence it **hangs hochkant from the bridge cutout**.
 
 These values are now hard-wired as defaults in the SCAD reactor block. The rack
 stays **parametric** (`n_reactors`, `reactor_pitch`, `reactor_w/d/h`, window

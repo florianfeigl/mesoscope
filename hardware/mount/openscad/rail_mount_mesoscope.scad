@@ -44,17 +44,22 @@ objective_l  = 30;  // optics nose protrusion in +Y (placeholder box only)
 working_dist = 45;  // gap: optics nose -> reactor window (placeholder box only)
 
 // Bioreactor chip — REAL dims from hardware/bioreactors/
-//   chip_senkrecht_mit_bodenplatte.stl, base plate (Bodenplatte) removed
-//   for the calculations per instruction. Chip body bbox = 70 x 40 x 16 mm.
+//   chip_senkrecht_mit_bodenplatte.stl (chip body 70 x 40 x 16 mm; the
+//   Bodenplatte / mounting flange is excluded from the envelope).
+// Orientation: HOCHKANT (upright), hanging from the bridge:
+//   X = 70  chip width, along the rail
+//   Y = 16  chip THICKNESS, along the optical axis — imaged THROUGH this;
+//           light source (+Y side) -> chip -> objective (-Y side)
+//   Z = 40  chip height; fluidic ports + tubes (Schlaeuche) exit the TOP
 n_reactors    = 4;
 reactor_pitch = 80;  // center-to-center along X (= X stop spacing); 70 chip + 10 gap — CONFIRM series spacing
-reactor_w     = 70;  // X  (measured chip body width)
-reactor_d     = 40;  // Y  (depth toward microscope / plate; plate excluded)
-reactor_h     = 16;  // Z  (measured chip body height)
-// Optical window on the -Y (microscope-facing) face, centered:
+reactor_w     = 70;  // X  (chip width along the rail)
+reactor_t     = 16;  // Y  (chip thickness along the optical axis)
+reactor_h     = 40;  // Z  (chip height, hanging)
+// Optical window on the -Y (objective-facing) face, centered on the axis:
 window_w      = 18;  // X extent of window
 window_h      = 8;   // Z extent of window
-port_d        = 4.5; // 4 fluidic ports flanking the window
+port_d        = 4.5; // 4 fluidic ports on the TOP edge (tubes point up)
 port_dx       = 30;  // port pair X offset from center (approx from STL)
 
 // ===================== STRUCTURAL / GUIDE PARAMS =====================
@@ -73,10 +78,15 @@ adapter_t = 6;
 // row both mount to it. Only the microscope travels; the reactors stand still.
 gp_t = 8;   // Grundplatte thickness (top face at z = 0)
 
-// ---- Fixed reactor stand (stationary, rises from the Grundplatte) ----
-stand_wall_t = 6;   // back wall behind the reactor row (+Y side)
-shelf_t      = 6;   // ledge the reactors rest on
-stand_over   = 15;  // stand X overhang beyond the reactor row each side
+// ---- Reactor bridge (Bruecke): continuous traverse with cutouts ----
+// The reactors HANG hochkant from above; the space below them stays free so
+// the moving mesoscope (incl. its illumination arm) reaches them from below.
+bridge_board_t    = 8;    // traverse board ("schmales Brett") thickness
+bridge_board_w    = 60;   // board width in Y (covers chip + flange seat)
+bridge_slot_clear = 1;    // cutout (Aussparung) clearance around each chip
+bridge_pillar     = 30;   // square end-pillar cross-section
+bridge_x_clear    = 120;  // pillar distance beyond the end stations —
+                          // must clear the microscope body at the end stops
 
 // ---- X drive: NEMA17 + T8 leadscrew (separate stepper) ----
 nema_sz   = 42.3;   // NEMA17 body cross-section
@@ -162,46 +172,61 @@ module microscope(xpos) {
 }
 
 module optical_axis_line(xpos) {
-    // along +Y through the sample plane out to the reactor body
+    // along +Y through the sample plane and the chip thickness
     color([0.9,0.1,0.1])
-    translate([xpos, 0, oa_z]) rotate([-90,0,0]) cylinder(h=window_y+reactor_d, d=1.2);
+    translate([xpos, 0, oa_z]) rotate([-90,0,0]) cylinder(h=window_y+reactor_t+20, d=1.2);
 }
 
 module reactor(xpos) {
-    // real chip body (base plate removed); optical window + 4 ports on the
-    // -Y (microscope-facing) face, centered at optical-axis height.
+    // chip HOCHKANT, hanging from the bridge: imaged horizontally THROUGH its
+    // 16 mm thickness (objective -Y, light source +Y); tubes exit the top.
     color([0.75,0.85,0.9,0.9])
-    translate([xpos-reactor_w/2, window_y, oa_z-reactor_h/2]) cube([reactor_w, reactor_d, reactor_h]);
-    // rectangular optical window on the -Y face
+    translate([xpos-reactor_w/2, window_y, oa_z-reactor_h/2]) cube([reactor_w, reactor_t, reactor_h]);
+    // optical window on the -Y (objective-facing) face, centered on the axis
     color([0.1,0.6,0.9])
     translate([xpos-window_w/2, window_y-0.6, oa_z-window_h/2]) cube([window_w, 0.8, window_h]);
-    // 4 fluidic ports flanking the window
+    // 4 fluidic ports + tube stubs on the TOP edge
     color([0.15,0.15,0.15])
     for (dx=[-port_dx,-port_dx+12, port_dx-12, port_dx])
-        translate([xpos+dx, window_y+1, oa_z]) rotate([90,0,0]) cylinder(h=2, d=port_d);
+        translate([xpos+dx, window_y+reactor_t/2, oa_z+reactor_h/2]) cylinder(h=16, d=port_d);
 }
 
 module base_plate() {
-    // Grundplatte: the shared foundation. Spans the full rail length in X and,
-    // in Y, reaches from behind the rail out past the fixed reactor row.
+    // Grundplatte: the shared foundation. Long enough in X to also carry the
+    // bridge pillars; in Y it reaches from behind the rail past the microscope.
+    x0 = min(rail_x0, -bridge_x_clear - bridge_pillar) - 10;
+    x1 = max(rail_x0 + rail_len, span + bridge_x_clear + bridge_pillar) + 10;
     y0 = -(ext_w/2 + 30);
-    y1 = window_y + reactor_d + stand_wall_t + 20;
+    y1 = 205;
     color([0.55,0.55,0.58])
-    translate([rail_x0, y0, -gp_t]) cube([rail_len, y1 - y0, gp_t]);
+    translate([x0, y0, -gp_t]) cube([x1 - x0, y1 - y0, gp_t]);
 }
 
-module reactor_stand() {
-    // FIXED holder standing on the Grundplatte (NOT on the moving beam, NOT on
-    // the carriage). Carries the stationary reactor row at optical-axis height.
-    row_x0  = -reactor_w/2 - stand_over;
-    row_len = span + reactor_w + 2*stand_over;
-    shelf_z = oa_z - reactor_h/2;                 // top of shelf = reactor underside
-    // shelf the reactors rest on
+module reactor_bridge() {
+    // FIXED bridge (Bruecke) on the Grundplatte: a continuous traverse board
+    // ("schmales Brett") with per-station cutouts (Aussparungen) from which the
+    // chips hang hochkant. The space BELOW the chips stays free so the moving
+    // mesoscope reaches them from below as it travels the row.
+    board_z0 = oa_z + reactor_h/2;      // board underside = chip top edge
+    x0 = -bridge_x_clear - bridge_pillar;
+    x1 = span + bridge_x_clear + bridge_pillar;
+    y0 = window_y + reactor_t/2 - bridge_board_w/2;
+    // continuous traverse with cutouts
+    color([0.8,0.55,0.3])
+    difference() {
+        translate([x0, y0, board_z0]) cube([x1 - x0, bridge_board_w, bridge_board_t]);
+        for (i = [0 : n_reactors-1])
+            translate([i*reactor_pitch - reactor_w/2 - bridge_slot_clear,
+                       window_y - bridge_slot_clear, board_z0 - 1])
+                cube([reactor_w + 2*bridge_slot_clear,
+                      reactor_t + 2*bridge_slot_clear,
+                      bridge_board_t + 2]);
+    }
+    // end pillars down to the Grundplatte, OUTSIDE the microscope's travel
     color([0.8,0.45,0.25])
-    translate([row_x0, window_y-4, shelf_z - shelf_t]) cube([row_len, reactor_d+8, shelf_t]);
-    // back wall behind the row rises from the Grundplatte up to reactor top
-    color([0.8,0.4,0.2])
-    translate([row_x0, window_y+reactor_d, 0]) cube([row_len, stand_wall_t, oa_z + reactor_h/2]);
+    for (px = [x0, x1 - bridge_pillar])
+        translate([px, y0 + bridge_board_w/2 - bridge_pillar/2, 0])
+            cube([bridge_pillar, bridge_pillar, board_z0]);
 }
 
 module back_support(xpos) {
@@ -262,6 +287,6 @@ nema17(rail_x0+10);
 coupler(rail_x0+10);
 end_bearing(rail_x0+ls_len+10);
 nut_block(carriage_x);
-// FIXED reactor row on its own stand on the Grundplatte
-reactor_stand();
+// FIXED reactor row hanging hochkant from the bridge on the Grundplatte
+reactor_bridge();
 for (i = [0 : n_reactors-1]) reactor(i * reactor_pitch);
