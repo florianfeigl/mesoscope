@@ -12,6 +12,23 @@
 > `rail_mount_preview.png` (3/4) and `rail_mount_top.png` (elevation). This is a
 > massing model to make the layout discussable, **not** print-ready geometry.
 >
+> ✅ **Full mesoscope model embedded:** the placeholder envelope box is replaced by
+> the real assembled geometry, rendered from upstream
+> `rendering/complete_microscope_rms.scad` into
+> `hardware/stl/models/complete_microscope_rms.stl` and `import()`ed into the
+> draft (`real_model = true`). That upstream render applies `rotate([-90,0,0])`,
+> so in the STL the optical axis is the line `x=0, z=0` pointing **+Y**
+> (objective toward the reactors) and the sample plane sits at `y = sample_z = 75`.
+> The model therefore needs **no extra rotation** — only a translate onto the
+> carriage: its resting face lands on the adapter (`oa_z ≈ 135 mm`) and the
+> reactor optical window is placed at the microscope's **sample plane**.
+>
+> ⚠ **Consequence to note:** with the reactor at the sample plane, the
+> **condenser / illumination arm is on the +Y side** of the chip (correct for
+> trans-illumination), so the arm shares the space just past each reactor.
+> Confirm condenser-to-chip clearance along the row (may need a shortened /
+> re-routed illumination arm for a dense reactor series).
+>
 > ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
 > Base plate (Bodenplatte) removed for the calculations per
 > instruction → chip body **70 × 40 × 16 mm**, optical window **18 × 8 mm**

@@ -15,18 +15,33 @@
 
 $fn = 48;
 
-// ===================== OPEN / PLACEHOLDER PARAMS =====================
-// Microscope envelope, already in its 90°-tilted pose.
+// ===================== MICROSCOPE MODEL =====================
+// Real assembled OpenFlexure/mesoscope geometry, rendered from upstream
+// rendering/complete_microscope_rms.scad -> hardware/stl/models/.
+// That render applies rotate([-90,0,0]), so in the exported STL:
+//   * the optical axis is the line model x=0, z=0, pointing +Y (objective +Y);
+//   * the microscope rests on its side face at model z = model_base_dz;
+//   * the sample plane sits at model y = sample_z_model (OpenFlexure sample_z).
+// -> we only translate it into place; no extra rotation needed.
+real_model     = true;
+model_file     = "../../stl/models/complete_microscope_rms.stl";
+model_base_dz  = -90.78; // model min-Z (resting face) relative to optical axis
+sample_z_model = 75;     // OpenFlexure sample_z -> sample plane at model y = 75
+model_dy       = 0;      // shift along the optical axis (Y) if needed
+
+// Placeholder envelope (used only when real_model = false).
 // From main_body.stl bbox (151 x 121 x 85 mm). Former body-Z (optical) -> Y.
 ms_w = 151;   // along X (rail)
 ms_d = 85;    // along Y (optical axis)  = former body height/optical column
 ms_h = 121;   // along Z (vertical)
 
 // Optics / working distance
-oa_h         = 70;  // optical-axis height above the beam top surface
-objective_d  = 24;  // optics tube outer dia (placeholder)
-objective_l  = 30;  // optics nose protrusion in +Y
-working_dist = 45;  // gap: optics nose -> reactor window (PLACEHOLDER)
+// oa_h is chosen so the model's resting face lands on the carriage adapter top
+// (adapter_top ~= 44 mm; oa_z = adapter_top - model_base_dz ~= 135 mm).
+oa_h         = 115; // optical-axis height above the beam top surface
+objective_d  = 24;  // optics tube outer dia (placeholder box only)
+objective_l  = 30;  // optics nose protrusion in +Y (placeholder box only)
+working_dist = 45;  // gap: optics nose -> reactor window (placeholder box only)
 
 // Bioreactor chip — REAL dims from hardware/bioreactors/
 //   chip_senkrecht_mit_bodenplatte.stl, base plate (Bodenplatte) removed
@@ -86,10 +101,16 @@ carr_top   = beam_top + mgn_rail_h + mgn_car_h;
 adapter_top= carr_top + adapter_t;
 oa_z       = beam_top + oa_h;       // world z of the optical axis
 
-// Microscope placed centered in Y around 0; nose points +Y.
+// Microscope placement.
+// Real model: optical axis at x=carriage, z=oa_z; sample plane at world y.
+// Placeholder box: centered in Y around 0, nose points +Y.
 ms_y0      = -ms_d/2;
-nose_y     = ms_d/2 + objective_l;          // tip of optics in +Y
-window_y   = nose_y + working_dist;         // reactor window plane
+nose_y     = ms_d/2 + objective_l;          // tip of optics in +Y (box only)
+sample_y   = sample_z_model + model_dy;     // world Y of the sample plane (real model)
+// Reactor optical window plane. With the real model the reactor sits at the
+// microscope's sample plane (window on its -Y face, toward the objective; the
+// condenser/illumination arm is on the +Y side for trans-illumination).
+window_y   = real_model ? sample_y : (nose_y + working_dist);
 
 // X-drive geometry: leadscrew offset to the -Y side (opposite the reactors)
 ls_y = -(ext_w/2 + 14);
@@ -126,17 +147,24 @@ module carriage_adapter(xpos) {
 }
 
 module microscope(xpos) {
-    // envelope box (tilted pose) + optics nose on +Y face at optical axis height
-    color([0.30,0.55,0.85,0.85])
-    translate([xpos-ms_w/2, ms_y0, adapter_top]) cube([ms_w, ms_d, ms_h]);
-    // optics tube along +Y at optical axis height
-    color([0.15,0.15,0.15])
-    translate([xpos, ms_d/2, oa_z]) rotate([-90,0,0]) cylinder(h=objective_l, d=objective_d);
+    if (real_model) {
+        // Real assembled mesoscope. Its optical axis is model (x=0, z=0) -> map to
+        // world (xpos, *, oa_z); objective already points +Y. No rotation needed.
+        color([0.30,0.55,0.85,0.90])
+        translate([xpos, model_dy, oa_z]) import(model_file, convexity=8);
+    } else {
+        // envelope box (tilted pose) + optics nose on +Y face at optical axis height
+        color([0.30,0.55,0.85,0.85])
+        translate([xpos-ms_w/2, ms_y0, adapter_top]) cube([ms_w, ms_d, ms_h]);
+        color([0.15,0.15,0.15])
+        translate([xpos, ms_d/2, oa_z]) rotate([-90,0,0]) cylinder(h=objective_l, d=objective_d);
+    }
 }
 
 module optical_axis_line(xpos) {
+    // along +Y through the sample plane out to the reactor body
     color([0.9,0.1,0.1])
-    translate([xpos, ms_d/2, oa_z]) rotate([-90,0,0]) cylinder(h=working_dist+objective_l+reactor_d, d=1.2);
+    translate([xpos, 0, oa_z]) rotate([-90,0,0]) cylinder(h=window_y+reactor_d, d=1.2);
 }
 
 module reactor(xpos) {
@@ -225,7 +253,7 @@ beam();
 mgn12_rail();
 mgn12_carriage(carriage_x);
 carriage_adapter(carriage_x);
-back_support(carriage_x);
+if (!real_model) back_support(carriage_x);  // placeholder-only gravity plate
 microscope(carriage_x);
 optical_axis_line(carriage_x);
 // X drive (moves the microscope, not the reactors)
