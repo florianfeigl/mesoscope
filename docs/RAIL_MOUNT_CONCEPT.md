@@ -13,40 +13,49 @@
 > `rail_mount_top.png` (3/4 from the light-source side, full row). This is a
 > massing model to make the layout discussable, **not** print-ready geometry.
 >
-> ✅ **Full mesoscope model embedded:** the placeholder envelope box is replaced by
-> the real assembled geometry, rendered from upstream
-> `rendering/complete_microscope_rms.scad` into
-> `hardware/stl/models/complete_microscope_rms.stl` and `import()`ed into the
-> draft (`real_model = true`). That upstream render applies `rotate([-90,0,0])`,
-> so in the STL the optical axis is the line `x=0, z=0` pointing **+Y**
-> (objective toward the reactors) and the sample plane sits at `y = sample_z = 75`.
-> The model therefore needs **no extra rotation** — only a translate onto the
-> carriage: its resting face lands on the adapter (`oa_z ≈ 135 mm`) and the
-> reactor optical window is placed at the microscope's **sample plane**.
+> ✅ **Full mesoscope model embedded — registration CORRECTED (2026-08-25):**
+> the real assembled geometry is `import()`ed into the draft
+> (`real_model = true`) from `hardware/stl/models/complete_microscope_rms.stl`.
+> The upstream render applies `rotate([-90,0,0])`, so in the STL the optical
+> axis is the line `x=0, z=0` pointing **+Y** (objective toward the reactors).
+> **Important correction:** the render scene includes the **stand**, which
+> raises the microscope body frame by **75 mm** (`microscope_on_stand_pos`:
+> lug_z 55 + lug 20). The sample plane therefore sits at **model y = 150**,
+> *not* at `sample_z = 75` as previously assumed — that wrong registration
+> placed the chip 75 mm *inside* the microscope and caused both rounds of
+> visible clipping. Measured from the STL: **objective tip = y 146.65**
+> (global foremost point, working distance 3.35 mm), condenser tip = y 167.5
+> (17.5 mm above the sample plane — the earlier "2.5 mm" figure was an
+> artifact of the wrong registration).
 >
-> ⚠ **Condenser conflict — now quantified:** the embedded model's illumination
-> assembly reaches down to **y = 77.5 mm**, i.e. only **~2.5 mm above the
-> sample plane** — that is slide clearance, not chip clearance. The hochkant
-> chip occupies y = 75…91 (16 mm thickness), so the **stock condenser
-> physically cannot coexist with the chip** at a station. The illumination
-> must be raised / shortened / re-routed (≥ 16 mm working gap) — this is the
-> single biggest required modification to the stock OpenFlexure geometry and
-> is visible as residual overlap in the renders at the docked station.
+> ✅ **Illumination arm removed from the model (per decision):** the 16 mm chip
+> would leave only ~1.5 mm nominal clearance under the stock condenser, and
+> the illumination must be redesigned anyway for trans-illumination from
+> behind the chip row. The model is now rendered **without sample clips AND
+> without the illumination assembly** (dovetail, condenser, wiring):
+> `hardware/mount/openscad/complete_microscope_rms_noclips_noillum.scad`, a
+> variant of upstream `rendering/complete_microscope.scad` that re-composes
+> `assembled_microscope_without_electronics` as motors +
+> `mounted_microscope()` only. Copy into the upstream `rendering/` dir and
+> render there to regenerate the STL. The custom light source ("Halterung
+> unten") comes later as a separate part on the +Y side behind the chips.
 >
-> ✅ **Sample clips removed from the model:** the microscope STL is now rendered
-> without sample clips (`hardware/mount/openscad/complete_microscope_rms_noclips.scad`,
-> a variant of upstream `rendering/complete_microscope.scad` omitting
-> `render_sample_clips()`; copy it into the upstream `rendering/` dir and
-> render it there to regenerate the STL) — the chip sits exactly where the
-> clips were, against the stage surface like a slide.
+> ✅ **10 mm working gap established (per decision):** the microscope is shifted
+> back along the optical axis (`model_dy = (75 − 10) − 146.65 ≈ −81.7 mm`)
+> so the objective tip stops **10 mm** before the chip window (world y = 65
+> vs. window at y = 75). Since the tip is the model's foremost point, the
+> **entire microscope stays at world y ≤ 65 at every rail position** —
+> chips (y ≥ 75), traverse board (y ≥ 80) and pillars are cleared by
+> construction; no separate travel-path check needed. **Optics consequence:**
+> the stock focus plane lies 3.35 mm beyond the tip, so to focus at the chip
+> window inner face the objective must protrude **~8 mm beyond stock** —
+> more to reach deeper planes inside the 16 mm chip. This optics-module
+> adaptation (longer nose/extension tube) is an accepted follow-up task.
 >
-> ✅ **Bridge collision fixed by measurement:** at board height (world
-> z ≥ 155 mm) the microscope's largest reach past the sample plane is
-> **y = 78 mm** (measured from the STL). The traverse board is therefore slim
-> (24 mm) and starts at **y = 80 mm** (`bridge_y_clear = 5`), behind the
-> sample plane — the moving microscope passes under/before it without contact.
-> The station cutouts are **front-open notches**: chips slide in from the
-> objective side.
+> ✅ **Bridge clearance:** with the shifted microscope (everything ≤ y 65) the
+> slim traverse board (24 mm, starting at y = 80, `bridge_y_clear = 5`) is
+> trivially clear. The station cutouts are **front-open notches**: chips
+> slide in from the objective side.
 >
 > ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
 > Base plate (Bodenplatte) removed for the calculations per
@@ -62,10 +71,9 @@
 > side → chip → objective on the −Y side. The fluidic ports + tubes
 > (Schläuche) exit at the **top** — that is why top access is impossible and
 > the chips must hang, keeping the space **below** free for the moving
-> mesoscope incl. its illumination arm. Open: pillar clearance
-> (`bridge_x_clear = 120 mm` beyond the end stations) vs. microscope width at
-> the end stops, and the travel path of the microscope body under the hanging
-> row.
+> mesoscope. Pillar clearance at the end stops is confirmed: microscope
+> half-width 85 mm vs. `bridge_x_clear = 120 mm` → ≥ 35 mm margin; the
+> travel path under the hanging row is clear (microscope ≤ y 65 everywhere).
 
 This document captures the geometry, the mechanical concept, open decisions, and
 the reasoning behind them, so the next session can start from a shared picture.
@@ -134,8 +142,9 @@ The reactors **hang hochkant from above**: a continuous traverse board
 ("schmales Brett" in chip dimensions) spans the row on two end pillars, with a
 cutout (Aussparung) per station from which each chip hangs. The tubes
 (Schläuche) exit the chip tops through/above the board; the space **below** the
-chips stays completely free so the moving mesoscope — whose illumination arm
-sits below/beside the optical axis — can reach every station unobstructed.
+chips stays completely free so the moving mesoscope can reach every station
+unobstructed (the stock illumination arm is removed from the model; a custom
+light source behind the chips comes later as a separate part).
 
 ```
    (view along the rail, gravity ↓)      reactors FIXED & HANGING, microscope moves ⊙

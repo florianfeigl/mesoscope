@@ -17,17 +17,29 @@ $fn = 48;
 
 // ===================== MICROSCOPE MODEL =====================
 // Real assembled OpenFlexure/mesoscope geometry, rendered from upstream
-// rendering/complete_microscope_rms.scad -> hardware/stl/models/.
+// rendering/ via complete_microscope_rms_noclips_noillum.scad (sample clips
+// AND illumination arm removed) -> hardware/stl/models/.
 // That render applies rotate([-90,0,0]), so in the exported STL:
 //   * the optical axis is the line model x=0, z=0, pointing +Y (objective +Y);
 //   * the microscope rests on its side face at model z = model_base_dz;
-//   * the sample plane sits at model y = sample_z_model (OpenFlexure sample_z).
+//   * the render scene includes the STAND, which raises the microscope body
+//     frame by 75 mm -> the sample plane sits at model y = 150 (NOT 75!),
+//     and the objective tip (global foremost point) at model y = 146.65
+//     (working distance 3.35 mm). All measured from the STL.
 // -> we only translate it into place; no extra rotation needed.
 real_model     = true;
 model_file     = "../../stl/models/complete_microscope_rms.stl";
 model_base_dz  = -90.78; // model min-Z (resting face) relative to optical axis
-sample_z_model = 75;     // OpenFlexure sample_z -> sample plane at model y = 75
-model_dy       = 0;      // shift along the optical axis (Y) if needed
+model_front_y  = 146.65; // model y of the objective tip = foremost point
+travel_gap     = 10;     // free working gap: objective tip -> chip window
+// Shift along the optical axis so the tip sits travel_gap before the window.
+// With window_y = 75: model_dy = 65 - 146.65 = -81.65 -> the WHOLE microscope
+// stays at world y <= 65, clearing chips (y >= 75), bridge and pillars
+// (y >= 80) by construction, at every rail position.
+// Optics consequence: stock focus plane = tip + 3.35 mm; to focus at the chip
+// window inner face (~window_y + 0.8) the objective must protrude ~8 mm
+// beyond stock, more for deeper planes inside the 16 mm chip.
+model_dy       = (75 - travel_gap) - model_front_y;
 
 // Placeholder envelope (used only when real_model = false).
 // From main_body.stl bbox (151 x 121 x 85 mm). Former body-Z (optical) -> Y.
@@ -80,13 +92,12 @@ gp_t = 8;   // Grundplatte thickness (top face at z = 0)
 
 // ---- Reactor bridge (Bruecke): continuous traverse with cutouts ----
 // The reactors HANG hochkant from above; the space below them stays free so
-// the moving mesoscope (incl. its illumination arm) reaches them from below.
+// the moving mesoscope reaches them from below.
 bridge_board_t    = 8;    // traverse board ("schmales Brett") thickness
-bridge_board_w    = 24;   // board width in Y — slim, sits BEHIND the sample
-                          // plane: at board height (z>=155) the microscope
-                          // reaches only y=78 (measured from the STL), so the
-                          // board starts at window_y + bridge_y_clear
-bridge_y_clear    = 5;    // board front edge offset behind the sample plane
+bridge_board_w    = 24;   // board width in Y — behind the chip front plane;
+                          // the shifted microscope stays at world y <= 65
+                          // everywhere, so the board (from y = 80) is clear
+bridge_y_clear    = 5;    // board front edge offset behind the window plane
 bridge_slot_clear = 1;    // cutout (Aussparung) clearance around each chip
 bridge_pillar     = 30;   // square end-pillar cross-section
 bridge_x_clear    = 120;  // pillar distance beyond the end stations —
@@ -120,11 +131,11 @@ oa_z       = beam_top + oa_h;       // world z of the optical axis
 // Placeholder box: centered in Y around 0, nose points +Y.
 ms_y0      = -ms_d/2;
 nose_y     = ms_d/2 + objective_l;          // tip of optics in +Y (box only)
-sample_y   = sample_z_model + model_dy;     // world Y of the sample plane (real model)
-// Reactor optical window plane. With the real model the reactor sits at the
-// microscope's sample plane (window on its -Y face, toward the objective; the
-// condenser/illumination arm is on the +Y side for trans-illumination).
-window_y   = real_model ? sample_y : (nose_y + working_dist);
+// Reactor optical window plane — FIXED in world coords; the microscope is
+// shifted back (model_dy < 0) so its objective tip stops travel_gap short of
+// it. (Window on the chip's -Y face, toward the objective; the custom light
+// source comes later on the +Y side for trans-illumination.)
+window_y   = real_model ? 75 : (nose_y + working_dist);
 
 // X-drive geometry: leadscrew offset to the -Y side (opposite the reactors)
 ls_y = -(ext_w/2 + 14);
@@ -214,7 +225,7 @@ module reactor_bridge() {
     board_z0 = oa_z + reactor_h/2;      // board underside = chip top edge
     x0 = -bridge_x_clear - bridge_pillar;
     x1 = span + bridge_x_clear + bridge_pillar;
-    y0 = window_y + bridge_y_clear;  // clear of the microscope (max y=78 up here)
+    y0 = window_y + bridge_y_clear;  // microscope stays at y <= 65 -> clear
     // continuous traverse with front-open notches: the chips (y 75..91) slide
     // in from the objective side; the board holds their rear portion
     color([0.8,0.55,0.3])
