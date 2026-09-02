@@ -48,18 +48,21 @@ ansible vps -m ping -i inventory/hosts.yml           # connectivity check
 ```
 
 ### Build 3D-printed parts (OpenSCAD)
-Both build scripts require an upstream OpenFlexure clone and **copy custom `.scad` overrides
-into it** before rendering — they do not build standalone. Clone with:
+The optics and stand scripts require an upstream OpenFlexure clone and **copy custom `.scad`
+overrides into it** before rendering — they do not build standalone. Clone with:
 `git clone --branch hq_camera https://gitlab.com/openflexure/openflexure-microscope.git`.
 STLs are written to `hardware/stl/models/`.
 ```bash
-hardware/optics/openscad/build_optics.sh [125|150|all]   # tube-lens optics module
-hardware/stand/openscad/build_stand.sh                    # Pi5+AI-HAT+Sangaboard stand
+hardware/optics/openscad/build_optics.sh [125|150|all]   # tube-lens optics module (needs upstream clone)
+hardware/stand/openscad/build_stand.sh                    # Pi5+AI-HAT+Sangaboard stand (needs upstream clone)
+hardware/rails/openscad/build_rack.sh [N]                 # RAILS parametric bioreactor rack (STANDALONE)
 ```
-**Caveat:** the two scripts expect the upstream clone in **different locations** —
+**Caveat:** the two upstream-dependent scripts expect the clone in **different locations** —
 `build_optics.sh` looks in `${HOME}/repositories/openflexure-microscope`, while
 `build_stand.sh` looks in `../../../sources/openflexure-microscope` (relative to the script,
-gitignored). Both take an `OPENSCAD` env var to override the binary.
+gitignored). `build_rack.sh` is **standalone** — it needs no upstream clone and renders
+`bioreactor_rack.scad` directly to `hardware/stl/models/bioreactor_rack_n<N>.stl` (default N=3).
+All three take an `OPENSCAD` env var to override the binary.
 
 ### Post-deployment verification on the Pi
 The root `README.md` "Post-Deployment Verification" section has the canonical checklist

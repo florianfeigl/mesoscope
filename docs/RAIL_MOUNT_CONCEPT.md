@@ -282,6 +282,22 @@ along X). The STL contains one chip only, so pitch is currently assumed
 `reactor_pitch = 80 mm` (70 mm chip + 10 mm gap). Set this to the real rack
 spacing once the multi-reactor frame is defined.
 
+### 6.1 Standalone parametric rack (earlier drop-in concept)
+
+A standalone parametric rack already exists at
+`hardware/rails/openscad/bioreactor_rack.scad` (render:
+`hardware/rails/openscad/build_rack.sh [N]` → `hardware/stl/models/bioreactor_rack_n<N>.stl`;
+**no upstream OpenFlexure clone needed**). It was designed for the **earlier
+retention concept** — the chip held **with** its base plate via a vertical
+**drop-in slot + removable clamp**, plate **back face as the focus datum**,
+`PITCH ≈ 148 mm`, and an `OPTICAL_AXIS_H` placeholder (60 mm).
+
+The hochkant/bridge decision above (base plate **removed**, chips **hanging**,
+pitch ≈ 80 mm, imaged through the 16 mm thickness) **supersedes** that base-plate
+retention approach. This rack therefore still needs updating to the
+hanging-bridge geometry — but the parametric `build_rack.sh` stays the tooling
+entry point (and is documented as standalone in `CLAUDE.md`).
+
 ---
 
 ## 7. Open decisions / questions for next session
@@ -348,16 +364,20 @@ spacing once the multi-reactor frame is defined.
 
 - [x] Bioreactor STL integrated (`hardware/bioreactors/`), base plate removed,
       real chip dims wired into the SCAD draft.
+- [x] Parametric standalone rack — `hardware/rails/openscad/bioreactor_rack.scad`
+      (build: `hardware/rails/openscad/build_rack.sh [N]`). Embodies the earlier
+      drop-in-slot/clamp concept (§6.1); **to be updated** to the hochkant/bridge geometry.
 - [ ] Confirm the **series pitch** (reactor-to-reactor spacing) for the rack.
 - [ ] Confirm the Z-motor resting face and measure the microscope's mass/CoG in
-      the tilted orientation.
+      the tilted orientation → also fixes `OPTICAL_AXIS_H` in the rack.
 - [x] Decide stepper control path (§7.1, revised 2026-09-02): Sangaboard
       removed, all-Python GPIO stage — ULN2003 (focus) + TMC2209 (rail),
       vertical axis deferred (§7.1a).
-- [ ] Then: OpenSCAD design — (a) carriage adapter to MGN12 (**with bolt
-      pattern for the optional lift stage**, §7.1a), (b) parametric
-      bioreactor rack — as new entry points under `hardware/` analogous to
-      `hardware/stand/openscad/microscope_stand_mesoscope.scad`.
+- [ ] Update the standalone rack (`hardware/rails/openscad/bioreactor_rack.scad`,
+      §6.1) from the drop-in-slot/clamp concept to the hochkant/bridge geometry.
+- [ ] Carriage adapter to MGN12 (the other sub-assembly, §3.1) — still blocked on
+      the Z-motor resting face; new entry point under `hardware/rails/openscad/`,
+      **with a bolt pattern for the optional lift stage** (§7.1a).
 
 ### Handoff — fresh session starts here (2026-09-02)
 
