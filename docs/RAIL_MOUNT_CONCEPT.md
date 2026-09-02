@@ -1,6 +1,8 @@
 # Rail Mount Concept — Tilted Microscope on Linear X-Rail
 
-> **Status:** Concept + first schematic CAD draft (updated 2026-08-25).
+> **Status:** Concept + first schematic CAD draft (updated 2026-09-02 —
+> motor-control architecture revised: Sangaboard removed, all-Python GPIO
+> stage, see §7.1; handoff list for the next session at the end of §8).
 > Next milestone: the mount ("Halterung") that lays the mesoscope on its side
 > and carries it along a linear X-rail past a series of bioreactors.
 >
@@ -115,8 +117,23 @@ This matches the system architecture diagram in the root `README.md`
 | World **Z** | vertical (gravity) | now **perpendicular** to the optical axis |
 
 **Consequence for focus (good):** the old Flexure-Z (focus travel) is now
-horizontal and points at the reactor → **autofocus/focus still works via the
-stage.** Flexure X/Y provide fine framing within the field of view at each station.
+horizontal and points at the reactor → **autofocus/focus still works.**
+Flexure-Z moves the **optics module**, which is part of the microscope — it
+works regardless of where the sample sits.
+
+**Consequence for framing (important insight, 2026-09-02):** the Flexure
+**X/Y axes move the sample stage platform** — but the chips hang externally
+from the bridge, **not** on the microscope's stage. In the tilted setup the
+X/Y flexures are therefore **functionless** for framing. Fine positioning is
+instead:
+- **horizontal (world X):** the rail drive itself — Tr8×2 gives
+  0.01 mm/microstep, precise enough for fine framing, not just station hops;
+- **vertical (world Z):** open — baseline is a one-time manual height
+  adjustment; a motorized lift stage is a documented expansion option (§7.1a).
+
+> TODO (fresh session): verify against the upstream OpenFlexure CAD which
+> flexure axes move the stage platform vs. the optics module, to confirm this
+> mapping before mechanical design.
 
 **Consequence for gravity (risk — see §5):** gravity is now transverse to the
 optical axis and loads the flexure joints in a direction they were not
@@ -186,9 +203,25 @@ Decision was left open ("Empfehlungen?"). Recommendation:
 | Drive | **NEMA17 + T8 leadscrew (anti-backlash nut)** | Self-locking → holds position at each stop without current; no backlash for step-and-image. |
 | Alt. drive | GT2 belt + NEMA17 | Faster, but slight backlash; only if scan speed matters more than repeatability. |
 
-**Why absolute rail repeatability is not critical:** at every station the
-microscope re-centers optically (Flexure X/Y + autofocus in Z / CSM). The rail
-only has to be **stiff and get close**; final positioning is done optically.
+**Motor spec (decided 2026-09-02):** NEMA17 with **integrated Tr8×2 leadscrew**
+("linear stepper", 3D-printer-Z style — no coupler, no shaft misalignment;
+free spindle end gets a simple bearing in the 2040 profile end):
+- 1.8°, ~40 Ncm holding torque, **rated current ≤ 1.5 A** (TMC2209 sustains
+  ~1.2–1.4 A RMS; run at ~80 % of rated).
+- **Tr8×2 lead (2 mm/rev)**, not the common Tr8×8: strongly self-locking
+  (holds without current, guaranteed) and 0.01 mm/microstep — fine enough
+  that the rail doubles as the horizontal fine-framing axis (§2). Speed
+  ~5–10 mm/s is ample for 80 mm station hops.
+- **Spindle length = scan length + ~60 mm** (nut + motor flange + end
+  reserve); e.g. 5 reactors × 80 mm pitch → ~320 mm travel → 400 mm spindle.
+- 0.9° versions unnecessary — final positioning is optical anyway.
+
+**Why absolute rail repeatability is not critical:** the chip positions are
+fixed by construction (shared Grundplatte), horizontal fine positioning is
+done by the **rail drive itself** (Tr8×2, 0.01 mm/microstep — see §2), focus
+by flexure-Z autofocus, and the vertical alignment is set once manually
+(§7.1a). The rail only has to be **stiff** and repeat well enough to land
+within the Tr8×2 fine-stepping range — which it trivially does.
 
 **Alternatives considered:**
 - *Fully printed dovetail guide* — rejected: not stiff enough for this mass over
@@ -253,16 +286,61 @@ spacing once the multi-reactor frame is defined.
 
 ## 7. Open decisions / questions for next session
 
-1. **Stepper control integration** — how is the separate X-stepper driven?
-   - 4th axis on Sangaboard v0.5 (does it expose one?), or
-   - a separate driver (e.g. TMC2209 / A4988) off the Pi GPIO, or
-   - reuse a 28BYJ-48 + ULN2003 (already on hand, but weak for this mass).
-   Affects firmware/OpenFlexure stage abstraction.
+1. ✅ **Motor control architecture — REVISED (2026-09-02): Sangaboard removed,
+   all-Python GPIO stage.** Supersedes the earlier (2026-08-26) "TMC2209
+   Phase A/B with Sangaboard 4th axis" decision. Rationale: the DIY
+   Sangaboard's ULN2003 cannot drive a NEMA17 (unipolar Darlington,
+   ~500 mA/channel; NEMA17 is bipolar, ~1.2–1.5 A, needs a chopper driver);
+   the flexure X/Y axes are functionless in the tilted setup anyway (§2);
+   and dropping the Sangaboard HAT removes the 3-story HAT stack
+   (thermal/5 V-budget concerns) plus the Arduino firmware maintenance
+   entirely. **All remaining axes are driven directly from Pi 5 GPIOs by a
+   pure-Python OpenFlexure stage class** (no serial protocol, no firmware).
+
+   | Axis (world) | Function | Motor | Driver | GPIOs | Supply |
+   |---|---|---|---|---|---|
+   | Y (optical) | Focus (flexure Z → optics module) | 28BYJ-48 | ULN2003 | 4 | Pi 5 V |
+   | X (rail) | Scan + horizontal fine framing | NEMA17 Tr8×2 | TMC2209 (standalone STEP/DIR/EN) | 3 (+2 UART opt.) | **12–24 V external** (only external consumer) |
+   | Z (vertical) | deferred — see §7.1a | — | — | — | — |
+
+   GPIO budget: ~7–9 of 28 (plus 3 more if the lift stage comes). Electrical
+   notes: TMC2209 **VIO = 3.3 V** (never 5 V), common ground between Pi and
+   VMOT supply mandatory, 100 µF electrolytic across VMOT, standalone current
+   via poti (Vref ≈ 0.7 × I_RMS on common stepsticks), motor current ~80 %
+   of rated. **De-energize the 28BYJ-48 after every move** (all 4 ULN inputs
+   low; the flexure holds via O-ring pre-tension) so the 5 V budget stays
+   clean for the Hailo-8. **Pi 5 gotcha:** `RPi.GPIO` does not work (RP1 I/O
+   chip) — use `lgpio` / `gpiozero`. Python-side step timing is fully
+   sufficient for step-and-image; drive the NEMA17 with a soft ramp, and
+   generate the 28BYJ-48 half-step sequence in software (~30 lines).
+
+   Integration path: implement as a custom OpenFlexure-v3 stage class
+   (the stage is already selected via `ofm_config.json.j2`, Dummy vs.
+   Sangaboard today), deployed as a small package/patch by the `openflexure`
+   Ansible role (analogous to the pisp patch). The `motor-controller` role
+   is repurposed: arduino-cli/firmware/udev out, GPIO stage package +
+   config in.
+
+   1a. **Vertical axis (world Z) — deferred, keep on the radar.** Baseline:
+   **one-time manual height adjustment** at the carriage adapter (slotted
+   holes / fine-pitch adjustment screw, then clamped) — all chips hang at
+   the same height by construction. Motorization becomes necessary only if
+   the field of view turns out **smaller than the window height (8 mm)** and
+   vertical tiling is required → measure FOV at the chip window after the
+   X-axis works. Expansion option, documented for then: a **mini lift stage
+   (Hubtisch)** between MGN12 carriage and mesoscope adapter — two short
+   vertical guides (MGN7/9 or bushings on 8 mm rods), NEMA17 + vertical
+   Tr8×2 (3D-printer-Z principle), ~20 mm travel, self-locking → holds the
+   ~2 kg without current. Cost: ~40–50 mm build height, ~200 g on the
+   carriage, a second TMC2209 on the same VMOT supply, 3 more GPIOs.
+   **Provision now:** give the carriage adapter a bolt pattern so the lift
+   stage can be inserted later without reprinting the adapter.
 2. **Resting face** on the Z-motor (confirms gravity load direction — §2).
 3. **Scan length** = n × reactor pitch → beam length + leadscrew length.
 4. **Bioreactor STL** → fixes rack geometry (§6).
-5. Whether X becomes a **software-controlled OpenFlexure axis** (for smart-scan
-   automation) or an independent motion controller.
+5. ✅ **X as OpenFlexure axis — resolved by §7.1 (2026-09-02):** X becomes a
+   normal axis of the custom all-Python GPIO stage class, so OpenFlexure
+   scan/tiling/API features see it natively. No independent motion controller.
 
 ---
 
@@ -273,7 +351,26 @@ spacing once the multi-reactor frame is defined.
 - [ ] Confirm the **series pitch** (reactor-to-reactor spacing) for the rack.
 - [ ] Confirm the Z-motor resting face and measure the microscope's mass/CoG in
       the tilted orientation.
-- [ ] Decide stepper control path (§7.1).
-- [ ] Then: OpenSCAD design — (a) carriage adapter to MGN12, (b) parametric
+- [x] Decide stepper control path (§7.1, revised 2026-09-02): Sangaboard
+      removed, all-Python GPIO stage — ULN2003 (focus) + TMC2209 (rail),
+      vertical axis deferred (§7.1a).
+- [ ] Then: OpenSCAD design — (a) carriage adapter to MGN12 (**with bolt
+      pattern for the optional lift stage**, §7.1a), (b) parametric
       bioreactor rack — as new entry points under `hardware/` analogous to
       `hardware/stand/openscad/microscope_stand_mesoscope.scad`.
+
+### Handoff — fresh session starts here (2026-09-02)
+
+1. **Verify upstream flexure axis mapping** (which axes move the stage
+   platform vs. the optics module in the OpenFlexure CAD) — confirms the
+   §2 insight before any mechanical design.
+2. **Implement the Python GPIO stage** (`lgpio`: 28BYJ-48 half-step sequence
+   for focus, TMC2209 STEP/DIR with soft ramp for X) and bind it as an
+   OpenFlexure-v3 stage class (selected via `ofm_config.json.j2`).
+3. **Rework the `motor-controller` Ansible role:** drop arduino-cli /
+   Sangaboard firmware / udev; install GPIO stage package + wiring config.
+4. **Measure the field of view at the chip window** → decide lift stage
+   yes/no (§7.1a: needed only if FOV < 8 mm window height).
+5. **Parts check/order for the X axis:** NEMA17 Tr8×2 linear stepper
+   (≤1.5 A, spindle = scan + 60 mm), 2040 V-Slot, MGN12 rail + carriage,
+   12–24 V supply. TMC2209 stepsticks already on hand.
