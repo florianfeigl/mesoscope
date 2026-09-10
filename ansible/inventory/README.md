@@ -1,6 +1,6 @@
 # Ansible Inventory Configuration
 
-This directory contains the Ansible inventory for CELLAIR infrastructure.
+This directory contains the Ansible inventory for mesoscope infrastructure (formerly "CELLAIR").
 
 ## Host Groups
 

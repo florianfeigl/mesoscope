@@ -1,6 +1,7 @@
-# CELLAIR: CELL Analysis with Intelligent Recognition
+# Mesoscope
 
-## Working title: mesoscope
+Automated cell-imaging microscope (Raspberry Pi 5 + Hailo-8 NPU + HQ Camera,
+OpenFlexure stack). *Formerly "CELLAIR".*
 
 ## Roadmap
 
@@ -164,7 +165,7 @@
 ## System Architecture
 
 ```
-                          CELLAIR / MESOSCOPE SYSTEM
+                              MESOSCOPE SYSTEM
 ═══════════════════════════════════════════════════════════════════════════════
 
                     ┌─────────────────────────────────────┐

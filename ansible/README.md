@@ -1,6 +1,6 @@
-# CELLAIR Ansible Infrastructure
+# Mesoscope Ansible Infrastructure
 
-Automated deployment for the CELLAIR microscopy project.
+Automated deployment for the mesoscope microscopy project (formerly "CELLAIR").
 
 ## Components
 

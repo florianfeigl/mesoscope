@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-CELLAIR / "mesoscope" is a **hardware + infrastructure** project, not a conventional
+The **mesoscope** project (formerly "CELLAIR") is a **hardware + infrastructure** project, not a conventional
 software application. It builds an automated cell-imaging microscope from a Raspberry Pi 5
 (AI HAT+ / Hailo-8 NPU + HQ Camera IMX477) running the OpenFlexure microscope stack, plus
 a VPS-hosted CVAT annotation server. The repo contains **no application source of its own** —
@@ -55,12 +55,13 @@ STLs are written to `hardware/stl/models/`.
 ```bash
 hardware/optics/openscad/build_optics.sh [125|150|all]   # tube-lens optics module (needs upstream clone)
 hardware/stand/openscad/build_stand.sh                    # Pi5+AI-HAT+Sangaboard stand (needs upstream clone)
+hardware/body/openscad/build_body.sh [mesoscope|original|all]  # Z-focus-only main body, no XY stage (needs upstream clone)
 hardware/rails/openscad/build_rack.sh [N]                 # RAILS parametric bioreactor rack (STANDALONE)
 ```
-**Caveat:** the two upstream-dependent scripts expect the clone in **different locations** —
+**Caveat:** the upstream-dependent scripts expect the clone in **different locations** —
 `build_optics.sh` looks in `${HOME}/repositories/openflexure-microscope`, while
-`build_stand.sh` looks in `../../../sources/openflexure-microscope` (relative to the script,
-gitignored). `build_rack.sh` is **standalone** — it needs no upstream clone and renders
+`build_stand.sh` and `build_body.sh` look in `../../../sources/openflexure-microscope` (relative
+to the script, gitignored). `build_rack.sh` is **standalone** — it needs no upstream clone and renders
 `bioreactor_rack.scad` directly to `hardware/stl/models/bioreactor_rack_n<N>.stl` (default N=3).
 All three take an `OPENSCAD` env var to override the binary.
 
