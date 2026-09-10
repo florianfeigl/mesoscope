@@ -1,0 +1,54 @@
+\section{Requirements and System Concept}
+\label{sec:requirements}
+
+\subsection{Use case}
+A rack holds $N$ perfused bioreactor chips in series inside an incubator. One
+imaging head, tilted so its optical axis is horizontal, translates along a
+linear X-rail, stops at each chip, focuses through the chip's optical window,
+acquires an image (or Z-stack), and runs on-device inference before moving to
+the next chip. Acquisition repeats on a schedule over hours to days.
+
+\subsection{Functional requirements}
+\begin{itemize}
+\item FR1: image each of $N$ chips through its
+  $18\times\SI{8}{\milli\meter}$ window.
+\item FR2: autofocus per chip via the Z-focus axis.
+\item FR3: translate between chips and stop repeatably at each station.
+\item FR4: acquire and store time-stamped images with metadata.
+\item FR5: run cell detection on-device and log per-chip results.
+\item FR6: operate unattended inside an incubator on a fixed schedule.
+\end{itemize}
+
+\subsection{Non-functional requirements}
+\begin{itemize}
+\item NFR1: total parts cost $< \num{500}$~EUR (RQ1).
+\item NFR2: built from open hardware and 3D-printed parts; reproducible via
+  Ansible.
+\item NFR3: no external compute; inference on the Pi~5 + Hailo-8.
+\item NFR4: tolerant of the incubator environment (\SI{37}{\celsius}, high
+  humidity). \todo{define environmental qualification.}
+\end{itemize}
+
+\subsection{Architecture overview}
+The system comprises (i) the imaging head---HQ camera, C-mount optics module,
+ZEISS objective and Z-focus body; (ii) the motion system---horizontal tilt
+mount, V-slot rail, carriage and rail stepper; (iii) the compute stack---Pi~5,
+AI~HAT+ (Hailo-8), RTC; and (iv) the software---OpenFlexure Server~v3, the
+Ansible provisioning, the scan/time-lapse orchestration and the CVAT annotation
+server on a separate VPS. The high-level block diagram is given in the project
+\texttt{README.md}; Sections~\ref{sec:optical}--\ref{sec:software} detail each
+subsystem.
+
+\subsection{Key design decisions}
+\begin{itemize}
+\item \emph{Pi~5 + Hailo-8} rather than a Pi~3/4 without NPU: enables on-device
+  inference at the cost of an $\approx\num{150}$~EUR premium
+  (Section~\ref{sec:evaluation}, Table~\ref{tab:cost}).
+\item \emph{OpenFlexure v3} (FastAPI, Python~$\geq 3.11$) rather than the legacy
+  v2 server.
+\item \emph{Horizontal tilt + linear rail} rather than an XY flexure stage:
+  trades lateral flexure motion for multi-chip serial scanning.
+\item \emph{Z-focus-only body}: the XY flexure of the stock OpenFlexure body is
+  removed, simplifying the print and freeing the sample plane for the rail.
+\end{itemize}
+See \texttt{docs/RAIL\_MOUNT\_CONCEPT.md} for the rail concept rationale.

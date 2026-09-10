@@ -1,0 +1,52 @@
+\section{Optical Design}
+\label{sec:optical}
+
+\subsection{Imaging chain}
+The imaging chain is: bioreactor chip $\rightarrow$ ZEISS Plan-Neofluar
+$10\times/0.30$ objective $\rightarrow$ achromatic tube lens
+($f = \SI{125}{\milli\meter}$, $\varnothing\,\SI{12.7}{\milli\meter}$)
+$\rightarrow$ Raspberry~Pi HQ camera (Sony IMX477, C-mount). A
+\SI{150}{\milli\meter} tube lens is held as a spare for a longer effective focal
+length.
+
+\subsection{Objective}
+The objective is a ZEISS Plan-Neofluar $10\times/0.30$ (numerical aperture
+NA~$=0.30$). Its diffraction-limited (Rayleigh) lateral resolution at
+$\lambda = \SI{550}{\nano\meter}$ is
+\begin{equation}
+  d = \frac{0.61\,\lambda}{\mathrm{NA}}
+    = \frac{0.61 \times \SI{550}{\nano\meter}}{0.30}
+    \approx \SI{1.1}{\micro\meter}.
+  \label{eq:rayleigh}
+\end{equation}
+\todo{confirm the objective's tube-length marking ($160/-$ finite versus
+$\infty/0.17$ ICS) and thread (RMS versus M27); the current optics module
+assumes a \SI{160}{\milli\meter} finite objective with an RMS thread
+(open decision, milestone~M1).}
+
+\subsection{Sensor, magnification and sampling}
+The IMX477 sensor is $6.287 \times \SI{4.712}{\milli\meter}$ with
+\SI{1.55}{\micro\meter} pixels. With a nominal system magnification of
+$\approx 0.515$ from the $10\times$ objective de-rated by the finite tube lens,
+the object-space field of view and pixel sampling follow from the sensor
+dimensions divided by the magnification. The resulting sampling comfortably
+Nyquist-samples the $\approx\SI{1.1}{\micro\meter}$ optical resolution.
+\todo{tabulate the exact magnification, object-space FOV and object-space pixel
+pitch once the objective marking and tube-length are confirmed; the repo docs
+currently disagree on the sensor size
+($7.857\times\SI{5.893}{\milli\meter}$ versus
+$6.287\times\SI{4.712}{\milli\meter}$) and on magnification ($0.49$ vs.\ $0.515$)
+--- resolve before finalising (see \texttt{docs/THESIS\_PARAMETER\_GAPS.md}).}
+
+\subsection{C-mount optics module}
+The tube lens is held in a printed C-mount module
+(\texttt{optics\_hq\_125\_rms\_threaded.stl}) that mates the objective thread to
+the HQ camera C-mount and sets the tube-lens-to-sensor spacing. The module and
+its build script are documented in \texttt{hardware/optics/}.
+
+\subsection{Illumination}
+The stock OpenFlexure condenser arm cannot clear the \SI{16}{\milli\meter}-thick
+bioreactor chip, so trans-illumination is provided by a separate LED panel per
+station facing the imaging head through the chip window
+(\texttt{docs/RAIL\_MOUNT\_CONCEPT.md}). \todo{specify LED wavelength, diffuser
+and irradiance once the illumination hardware is finalised.}

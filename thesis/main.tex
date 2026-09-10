@@ -1,0 +1,109 @@
+%% ============================================================================
+%%  Mesoscope — Master's Thesis
+%%  A Low-Cost, Edge-AI Automated Microscope for Serial Monitoring of Cell
+%%  Cultures in Perfused Bioreactor Chips
+%%
+%%  IEEEtran journal class. Build:  make   (pdflatex + bibtex + pdflatex x2)
+%%  Content mirrors docs/THESIS_OUTLINE.md; figures live in ../hardware/assembly.
+%% ============================================================================
+\documentclass[journal,a4paper,10pt]{IEEEtran}
+
+% --- packages -----------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+
+% figures are rendered in hardware/assembly (not committed — run build_exploded.sh)
+\graphicspath{{figures/}{../hardware/assembly/}}
+
+% siunitx setup
+\sisetup{per-mode=symbol, range-phrase={--}, range-units=single}
+
+% placeholder helper for content still to be produced (experiments not yet run)
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+% Include a figure if present (searched in the \graphicspath dirs), otherwise
+% draw a framed placeholder. Keeps the build from hard-failing when the
+% exploded-view PNGs have not been regenerated (they are not committed to git;
+% run hardware/assembly/build_exploded.sh). #1 = file name, #2 = width.
+\newcommand{\figorplaceholder}[2]{%
+  \IfFileExists{../hardware/assembly/#1}{\includegraphics[width=#2]{#1}}{%
+  \IfFileExists{figures/#1}{\includegraphics[width=#2]{#1}}{%
+  \fbox{\parbox[c][0.5\columnwidth][c]{\dimexpr#2-2\fboxsep-2\fboxrule}{%
+    \centering\todo{missing figure \texttt{\detokenize{#1}} --- regenerate with
+    \texttt{hardware/assembly/build\_exploded.sh}}}}}}}
+
+% ------------------------------------------------------------------------------
+\begin{document}
+
+\title{Mesoscope: A Low-Cost, Edge-AI Automated Microscope for Serial\\
+Monitoring of Cell Cultures in Perfused Bioreactor Chips}
+
+\author{Florian~Feigl%
+\thanks{Master's thesis draft, compiled \today. Supervising faculty and formal
+requirements to be confirmed (see \texttt{docs/THESIS\_ROADMAP.md}, milestone~M0).}%
+\thanks{Project repository, cost data and CAD sources:
+\texttt{docs/BOM\_COSTS.md}, \texttt{hardware/assembly/}.}}
+
+\markboth{Master's Thesis --- Mesoscope}%
+{Feigl: A Low-Cost, Edge-AI Automated Microscope for Bioreactor Chip Imaging}
+
+\maketitle
+
+\begin{abstract}
+Continuous, non-destructive observation of adherent cell cultures inside
+perfused bioreactor chips currently requires either manual microscopy---which
+removes the chip from the incubator and is operator-dependent---or expensive,
+closed, single-vessel commercial live-cell imagers. This thesis designs, builds
+and validates a \emph{mesoscope}: an OpenFlexure-derived microscope on a
+Raspberry~Pi~5 with a Hailo-8 neural-processing unit, tilted onto its side and
+mounted on a linear rail so that a single imaging head scans a rack of
+bioreactor chips in series and analyses cell-level images on-device, without
+external compute infrastructure. The contribution spans three axes: a
+reproducible port of the OpenFlexure Server~v3 stack to the Pi~5 with a
+custom C-mount high-quality-camera optics module; a tilted, rail-mounted
+imaging form factor with a Z-focus-only body and a parametric bioreactor rack;
+and an edge-AI cell-detection pipeline trained on CVAT annotations and deployed
+on the Hailo-8. We evaluate the system against optical, mechanical, automation,
+machine-learning and cost criteria. \todo{final quantitative results once
+experiments in milestones M1--M6 are complete.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Open-source microscopy, OpenFlexure, edge AI, Hailo-8, Raspberry~Pi, live-cell
+imaging, bioreactor, cell detection, low-cost instrumentation.
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+% table of contents (not part of the IEEE paper style, kept for the thesis)
+{\small\tableofcontents}
+
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_requirements}
+\input{sections/04_optical_design}
+\input{sections/05_mechanical_design}
+\input{sections/06_electronics}
+\input{sections/07_software}
+\input{sections/08_edge_ai}
+\input{sections/09_evaluation}
+\input{sections/10_discussion}
+\input{sections/11_conclusion}
+
+\appendices
+\input{sections/A_appendix}
+
+% --- bibliography -------------------------------------------------------------
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,89 @@
+\section{Introduction}
+\label{sec:introduction}
+
+\IEEEPARstart{C}{ontinuous}, non-destructive observation of adherent cell
+cultures inside perfused bioreactor chips---for example hFOB~1.19 osteoblasts
+and hMEC~1 endothelial cells under pressure and flow test series---is a
+recurring need in tissue-engineering and mechanobiology experiments. Today it is
+served either by \emph{manual microscopy}, which removes the chip from the
+incubator, is operator-dependent and offers low temporal resolution, or by
+\emph{commercial live-cell imagers}, which are expensive, closed and typically
+observe a single vessel at a time.
+
+This thesis designs, builds and validates a \emph{mesoscope}: an
+OpenFlexure-derived microscope running on a Raspberry~Pi~5 with a Hailo-8
+neural-processing unit (NPU) and a Pi High-Quality (HQ) camera. The microscope
+is laid horizontally and mounted on a linear rail so that a single imaging head
+scans a rack of bioreactor chips in series, and it evaluates cell-level images
+on-device without external compute infrastructure.
+
+\subsection{Problem statement}
+The core problem is to observe several perfused bioreactor chips repeatedly,
+inside the incubator, through their small optical windows, at a spatial and
+temporal resolution adequate for automated cell analysis, at a cost far below
+commercial live-cell imaging systems.
+
+\subsection{Research questions}
+\begin{itemize}
+\item \textbf{RQ1 (System).} Can an open-source, sub-\num{500}~EUR
+  microscope built from OpenFlexure, a Pi HQ camera and 3D-printed parts deliver
+  image quality (resolution, field of view, focus stability) sufficient for
+  automated cell analysis in a bioreactor chip through its observation window?
+\item \textbf{RQ2 (Automation).} Can a single imaging head on a linear X-rail
+  revisit $N$ bioreactors autonomously with positioning repeatability and
+  autofocus reliability adequate for time-lapse monitoring over days inside an
+  incubator?
+\item \textbf{RQ3 (Edge AI).} Can a cell-detection/segmentation model trained on
+  data annotated in CVAT be deployed on the Hailo-8 NPU with accuracy
+  (mAP / IoU / count error) and throughput sufficient for on-device,
+  near-real-time analysis---and how does it compare to inference on the Pi CPU
+  and to manual counting?
+\end{itemize}
+
+\subsection{Hypotheses and success criteria}
+\label{sec:hypotheses}
+The following criteria are the current targets; they are finalised in
+milestone~M1 (see Section~\ref{sec:evaluation}).
+\begin{itemize}
+\item \textbf{H1.} Measured lateral resolution $\leq \SI{1.5}{\micro\meter}$
+  (USAF~1951 target; Rayleigh limit $\approx \SI{1.1}{\micro\meter}$ at
+  NA~$0.30$) and field of view $\geq \SI{0.5}{\milli\meter\squared}$ with the
+  ZEISS Plan-Neofluar $10\times/0.30$ objective and a \SI{125}{\milli\meter}
+  tube lens.
+\item \textbf{H2.} Rail positioning repeatability
+  $\leq \pm\SI{10}{\micro\meter}$; autofocus success rate $\geq \SI{95}{\percent}$
+  across $\geq 3$ chips over \SI{72}{\hour}.
+\item \textbf{H3.} Cell-detection mAP@0.5 $\geq 0.8$ on held-out chips; Hailo-8
+  inference $\geq 10\times$ faster than the Pi CPU at equal accuracy
+  ($\pm\SI{2}{\percent}$ mAP).
+\end{itemize}
+
+\subsection{Contributions}
+\label{sec:contributions}
+\begin{enumerate}
+\item A reproducible port of the OpenFlexure Server~v3 to Raspberry~Pi~5 /
+  Trixie via Ansible, including documented fixes for the Pi~5 image-signal
+  processor (ISP), camera stack and Hailo driver.
+\item A C-mount HQ-camera optics module with a \SI{125}{\milli\meter} (and
+  \SI{150}{\milli\meter}) tube lens for the IMX477 sensor, with full optical
+  derivation and printable CAD.
+\item A tilted, rail-mounted imaging head with a Z-focus-only body and a
+  parametric bioreactor rack---a new form factor for serial monitoring of
+  multiple chips.
+\item An all-Python GPIO stage driver (focus stepper + rail stepper) replacing
+  the Sangaboard microcontroller. \todo{confirm motor architecture, milestone
+  M2.}
+\item A CVAT-annotated cell dataset from bioreactor-chip images and a
+  Hailo-8-deployed detection model with a CPU-versus-NPU evaluation.
+\item Quantitative validation of the complete system against the stated
+  requirements.
+\end{enumerate}
+
+\subsection{Thesis structure}
+Section~\ref{sec:background} surveys live-cell imaging, open-hardware microscopy
+and edge AI. Section~\ref{sec:requirements} derives requirements and the system
+concept. Sections~\ref{sec:optical}--\ref{sec:software} present the optical,
+mechanical, electronic and software design. Section~\ref{sec:edgeai} describes
+the edge-AI pipeline. Section~\ref{sec:evaluation} evaluates the system,
+Section~\ref{sec:discussion} answers RQ1--RQ3, and
+Section~\ref{sec:conclusion} concludes.

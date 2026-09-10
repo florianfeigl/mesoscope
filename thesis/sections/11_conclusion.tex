@@ -1,0 +1,30 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+\subsection{Conclusion}
+This thesis presented the mesoscope, a low-cost automated microscope for
+imaging perfused bioreactor chips inside an incubator. It reuses the OpenFlexure
+optics and Z-focus mechanics but replaces the XY flexure stage with a horizontal
+tilt and an external linear rail, so that a single imaging head can serially
+visit $N$ chips. Compute and inference run on-device on a Raspberry~Pi~5 with a
+Hailo-8 NPU, and the whole software stack is reproducible via Ansible. The parts
+cost of the full head-plus-rail system is $\approx\num{443}$~EUR, meeting the
+sub-\num{500}~EUR target (RQ1). The optical design provides a
+diffraction-limited resolution of $\approx\SI{1.1}{\micro\meter}$ that is
+Nyquist-sampled by the HQ camera.
+
+\subsection{Future work}
+The immediate next steps follow the open milestones:
+\begin{itemize}
+\item \emph{M1}: fix the objective marking and the biological readout, align and
+  measure the optics, and train and compile the task-specific detector to HEF.
+\item \emph{M2}: bring up the all-Python GPIO stage (ULN2003 focus + TMC2209
+  rail), measure station-to-station repeatability and focus reproducibility, and
+  wire the acquisition orchestration to real hardware.
+\item \emph{M3}: confirm the chip pitch and rack geometry against the physical
+  chips.
+\end{itemize}
+Beyond these, the next hardware milestone is the tilting rail mount itself---
+laying the microscope on its side onto a carriage on a linear X-rail carrying a
+bioreactor rack---followed by an end-to-end unattended run inside the incubator
+as the full system validation.

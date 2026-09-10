@@ -1,0 +1,48 @@
+\section{Electronics and Motion Control}
+\label{sec:electronics}
+
+\subsection{Compute stack}
+The compute stack is a Raspberry~Pi~5 (\SI{8}{\giga\byte}) with the AI~HAT+
+(Hailo-8, \SI{26}{TOPS}) on the PCIe interface and a DS3231 real-time clock on
+the GPIO header for time-stamping unattended runs. The Hailo driver requires a
+DKMS rebuild and a reboot in a specific order (Section~\ref{sec:software}).
+The three boards stack inside the pull-out electronics drawer
+(Fig.~\ref{fig:drawer}).
+
+\begin{figure}[!t]
+  \centering
+  \figorplaceholder{exploded_drawer_nolabels.png}{0.8\columnwidth}
+  \caption{Exploded view of the electronics drawer and its compute stack: the
+  printed pull-out drawer carries, from bottom to top, the Raspberry~Pi~5, the
+  AI~HAT+ (Hailo-8) and the Sangaboard motor-controller. Rendered with OpenSCAD
+  from \texttt{hardware/assembly/openscad/exploded\_drawer.scad}; the boards are
+  simplified placeholder solids.}
+  \label{fig:drawer}
+\end{figure}
+
+\subsection{Focus axis}
+The Z-focus axis is driven by a 28BYJ-48 5\,V geared stepper through a ULN2003
+driver board, as in the stock OpenFlexure Z actuator. Two further 28BYJ-48
+motors from the original XYZ plan are on hand as spares.
+
+\subsection{Rail axis}
+The linear rail is driven by a NEMA17 stepper with an integrated Tr8$\times$2
+leadscrew via a TMC2209 stepstick, with an anti-backlash nut, a coupler and an
+end bearing. This axis carries the imaging head between chip stations.
+
+\subsection{Stage driver architecture}
+Motion is controlled from Python on the Pi~5 GPIO: the ULN2003 sequences the
+focus stepper and the TMC2209 (step/dir) drives the rail. This replaces the
+Sangaboard microcontroller used by stock OpenFlexure.
+\todo{confirm the all-Python GPIO stage versus a Sangaboard-hybrid architecture;
+the repository is currently contradictory on this point (milestone~M2).}
+
+\subsection{Power budget}
+The Pi~5 stack runs from a \SI{27}{\watt} USB-C supply; the rail axis needs a
+separate \SIrange{12}{24}{\volt}, $\geq\SI{2}{\ampere}$ supply for the NEMA17 /
+TMC2209. \todo{measure the full power budget (idle, imaging, inference,
+slewing).}
+
+\subsection{Wiring}
+\todo{provide the full wiring diagram (GPIO pin map, ULN2003 and TMC2209
+connections, end-stop switches, illumination) in Appendix~\ref{sec:appendix}.}

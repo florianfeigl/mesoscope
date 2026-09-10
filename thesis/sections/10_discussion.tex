@@ -1,0 +1,45 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Meeting the requirements}
+The design meets the cost target (RQ1/NFR1) with headroom: $\approx\num{443}$~EUR
+for the full head-plus-rail system against a \num{500}~EUR budget, and it is
+built entirely from open hardware and 3D-printed parts, reproducible via Ansible
+(NFR2). On-device inference on the Pi~5 + Hailo-8 keeps all compute on the
+instrument (NFR3). The remaining requirements---per-chip autofocus, repeatable
+translation, unattended incubator operation and the detection accuracy
+target---depend on hardware and model work that is not yet complete and are
+tracked as milestones M1--M3.
+
+\subsection{Design trade-offs}
+Replacing the OpenFlexure XY flexure stage with a horizontal tilt plus an
+external linear rail trades planar sample scanning for serial multi-chip
+scanning, which matches the perfused-bioreactor use case (one head visiting
+several chips) better than a single-sample XY stage. It also simplifies the
+printed body to a Z-focus-only part. The cost is a larger mechanical envelope
+(rail, carriage, NEMA17) and a new motion-control path that no longer uses the
+stock Sangaboard.
+
+\subsection{Open decisions}
+Several parameters are deliberately left open and marked in the text:
+\begin{itemize}
+\item the objective tube-length marking and thread (finite $160$ / RMS vs.\
+  $\infty$ ICS / M27), which sets the exact magnification and object-space
+  sampling (Section~\ref{sec:optical}, M1);
+\item the stage driver architecture---all-Python GPIO versus a Sangaboard-hybrid
+  (Section~\ref{sec:electronics}, M2);
+\item the biological readout and hence the detector family and CVAT label schema
+  (Section~\ref{sec:edgeai}, M1);
+\item the chip pitch and rack geometry against the physical chips
+  (Section~\ref{sec:mechanical}, M3).
+\end{itemize}
+The repository documentation is currently inconsistent on the IMX477 sensor size
+and the system magnification; these are reconciled in
+\texttt{docs/THESIS\_PARAMETER\_GAPS.md} and must be fixed before the optical
+budget is finalised.
+
+\subsection{Limitations}
+The evaluation is at present a design and cost evaluation; the biological
+validation (detection accuracy, unattended runs) is future work. The illumination
+per station is not yet characterised (wavelength, diffuser, irradiance), and the
+full power budget under imaging, inference and slewing has not been measured.

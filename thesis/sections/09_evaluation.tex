@@ -1,0 +1,57 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+\subsection{Cost}
+The primary non-functional requirement is a parts cost below \num{500}~EUR
+(NFR1, RQ1). Table~\ref{tab:cost} places the mesoscope against the open
+OpenFlexure reference builds and a commercial-vendor estimate. The imaging head
+as built (kit of parts, reusing an owned ZEISS objective) is
+$\approx\num{306}$~EUR; adding the linear-rail motion subsystem brings the full
+system to $\approx\num{443}$~EUR, still within the \num{500}~EUR budget. If the
+objective had to be bought new at market price the total would rise to
+$\approx\num{695}$~EUR, which is the main sensitivity in the budget.
+
+\begin{table}[!t]
+  \centering
+  \caption{Parts-cost comparison. Mesoscope figures are from
+  \texttt{docs/BOM\_COSTS.md}; the objective is reused (owned), so the
+  market-objective row is shown separately.}
+  \label{tab:cost}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Configuration & Cost \\
+    \midrule
+    OpenFlexure v7, low-cost        & $\approx\num{36}$~USD \\
+    OpenFlexure v7, high-res motorised & $\approx\num{251}$~USD \\
+    Commercial vendor kit (2026)    & $\approx\num{305}$--$\num{340}$~EUR \\
+    \midrule
+    Mesoscope, imaging head (objective owned) & $\approx\num{306}$~EUR \\
+    Mesoscope, head + rail (objective owned)  & $\approx\num{443}$~EUR \\
+    Mesoscope, head + rail + market objective & $\approx\num{695}$~EUR \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Optical resolution}
+The diffraction-limited lateral resolution of the $10\times/0.30$ objective is
+$\approx\SI{1.1}{\micro\meter}$ (Eq.~\ref{eq:rayleigh},
+Section~\ref{sec:optical}), and the IMX477 sampling Nyquist-samples this
+resolution. \todo{report the measured resolution (e.g.\ USAF~1951 target or a
+Siemens star) against the diffraction limit once the optics module is aligned
+(milestone~M1).}
+
+\subsection{Mechanical repeatability}
+FR3 requires repeatable stops at each chip station. \todo{measure the rail
+station-to-station repeatability and the focus reproducibility once the
+all-Python GPIO stage drives the hardware (milestone~M2).}
+
+\subsection{Detection accuracy and latency}
+\todo{report detection accuracy on a held-out set and end-to-end on-device
+latency per chip once the task-specific detector is trained and compiled to HEF
+(Section~\ref{sec:edgeai}, milestone~M1).}
+
+\subsection{Unattended operation}
+FR6/NFR4 require unattended operation inside the incubator
+(\SI{37}{\celsius}, high humidity). \todo{report a multi-hour or multi-day
+unattended run (uptime, thermal behaviour, image yield) as the end-to-end
+system validation.}

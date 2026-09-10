@@ -1,0 +1,43 @@
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{Live-cell and in-incubator imaging}
+Live-cell imaging observes cultures over time under controlled temperature,
+humidity and CO\textsubscript{2}. Commercial in-incubator systems (e.g.\ IncuCyte-class
+instruments) automate multi-well time-lapse acquisition but are closed and
+costly. This thesis targets the specific case of \emph{perfused bioreactor
+chips}, where the sample is a sealed microfluidic device observed through a
+small optical window rather than an open well plate.
+\todo{cite the specific commercial baseline and the bioreactor-chip platform
+used in the wet-lab experiments.}
+
+\subsection{Open-hardware microscopy}
+The OpenFlexure Microscope \cite{Collins2020,Sharkey2016} is a 3D-printed,
+flexure-based motorised microscope driven by a Raspberry~Pi and a Pi camera; it
+provides sub-micron mechanical stepping via a monolithic flexure stage and an
+established software stack (OpenFlexure Server). Related open platforms include
+UC2 \cite{Diederich2020} (modular cube-based optics) and the Squid/Octopi
+family \cite{Li2020Squid} (higher-performance automated imaging). The mesoscope
+reuses the OpenFlexure optics and Z-focus mechanics but departs from the XY
+flexure stage: it removes lateral flexure motion and instead tilts the whole
+body and translates it along an external linear rail
+(Section~\ref{sec:mechanical}).
+
+\subsection{Edge AI on neural-processing units}
+On-device inference avoids transferring images off the instrument and enables
+near-real-time analysis inside the incubator. The Raspberry~Pi AI~HAT+ carries a
+Hailo-8 NPU (\SI{26}{TOPS}); models must be compiled to the Hailo Executable
+Format (HEF) with the Hailo Dataflow Compiler and quantised to run on the NPU.
+\todo{cite Hailo-8 architecture / dataflow compiler documentation.}
+
+\subsection{Cell detection and segmentation}
+Candidate model families for counting and delineating cells include
+general-purpose detectors and instance segmenters (YOLOv8 and variants) and
+cell-specific segmentation models such as Cellpose \cite{Stringer2021Cellpose}
+and StarDist \cite{Schmidt2018StarDist}. The choice between bounding-box
+detection and instance segmentation---and thus the CVAT label schema---depends
+on the biological readout (confluence, count, morphology, migration), which is
+an open decision fixed in milestone~M1
+(Section~\ref{sec:requirements}). Only a foreign YOLOv8s-Pose benchmark
+currently exists in the project; the task-specific model is built in
+Section~\ref{sec:edgeai}.

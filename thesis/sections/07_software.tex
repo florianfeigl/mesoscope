@@ -1,0 +1,48 @@
+\section{Software and Provisioning}
+\label{sec:software}
+
+\subsection{OpenFlexure Server v3}
+The imaging head runs OpenFlexure Server~v3 (FastAPI, Python~$\geq 3.11$). The
+server is installed from the upstream \texttt{v3} branch into a
+\texttt{--system-site-packages} virtual environment so that it can reuse the
+apt-installed \texttt{picamera2} and \texttt{libcamera} stack; the web frontend
+is pulled as a prebuilt CI artifact rather than built locally. Camera and stage
+selection are driven by a configuration template
+(\texttt{ofm\_config.json.j2} $\rightarrow$
+\texttt{/var/openflexure/settings/ofm\_config.json}), which selects the HQ
+Camera and the stage backend without modifying the server itself.
+
+\subsection{Raspberry Pi 5 integration}
+Running the OpenFlexure stack on the Pi~5 required several platform-specific
+fixes that are encoded in the provisioning rather than applied by hand:
+\begin{itemize}
+\item the Hailo-8 driver needs a DKMS rebuild followed by a reboot in a fixed
+  order before the NPU enumerates on PCIe;
+\item the camera pipeline needs a pisp ISP tuning patch, PipeWire masking and
+  a systemd \texttt{SupplementaryGroups} entry so the service can access the
+  camera device;
+\item the HQ-camera image is vertically flipped on the Pi~5 to match the
+  physical orientation.
+\end{itemize}
+The tested camera white balance for the current illumination is an exposure of
+\SI{492}{\micro\second}, analogue gain \num{1.0} and colour gains
+$[0.9,\,2.9]$ (red, blue), which resolves the earlier red cast of the IMX477.
+
+\subsection{Ansible provisioning}
+The whole system is reproducible via Ansible from two entry points with
+separate inventories. \texttt{site.yml} targets the Pi~5 and runs the roles
+\texttt{base} $\rightarrow$ \texttt{ai-hat} $\rightarrow$ \texttt{openflexure}
+$\rightarrow$ \texttt{motor-controller} in order; the motor-controller role is
+skipped until the stage hardware is connected. \texttt{cvat.yml} and
+\texttt{users.yml} target a separate VPS and deploy the CVAT annotation server
+(Docker) behind a Caddy reverse proxy with automatic HTTPS. This satisfies the
+reproducibility requirement NFR2 (Section~\ref{sec:requirements}).
+
+\subsection{Acquisition orchestration}
+Unattended operation is scheduled scan/time-lapse orchestration on top of the
+OpenFlexure API: for each chip the head slews to the station, autofocuses on the
+Z-axis, acquires an image or Z-stack, runs on-device inference
+(Section~\ref{sec:edgeai}) and writes time-stamped images with metadata using
+the DS3231 RTC for a reliable clock. \todo{document the orchestration script and
+its schedule format once the rail stage is driving real hardware
+(milestone~M2).}

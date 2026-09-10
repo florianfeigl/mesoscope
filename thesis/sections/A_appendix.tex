@@ -1,0 +1,44 @@
+\section{Printed Parts and Print Settings}
+\label{sec:appendix}
+
+All parts print in PLA (optical parts in black to suppress stray light) at
+\SI{0.2}{\milli\meter} layer height (\SI{0.15}{\milli\meter} for the optics
+module), \SI{0.4}{\milli\meter} nozzle, three perimeters and
+\SIrange{20}{30}{\percent} infill. A brim is recommended for the main body. The
+canonical, per-part checklist is \texttt{hardware/PRINT\_CHECKLIST.md};
+Table~\ref{tab:printed} lists the custom and must-print parts.
+
+\begin{table}[!t]
+  \centering
+  \caption{Key printed parts (custom mesoscope parts and must-print OpenFlexure
+  parts). Masses and print times are per-part; the main body mass is measured,
+  the remainder are to be filled from the slicer.}
+  \label{tab:printed}
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    Part & Role & Mass \\
+    \midrule
+    \texttt{main\_body\_mesoscope.stl}        & Z-focus-only body & $\approx\SI{65}{\gram}$ \\
+    \texttt{optics\_hq\_125\_rms.stl}         & C-mount optics (125\,mm) & \todo{} \\
+    \texttt{optics\_hq\_150\_rms.stl}         & C-mount optics (150\,mm) & \todo{} \\
+    \texttt{microscope\_stand\_mesoscope.stl} & Stand & \todo{} \\
+    \texttt{electronics\_drawer\_mesoscope.stl} & Pi5/AI-HAT drawer & \todo{} \\
+    \texttt{bioreactor\_rack\_n\textit{N}.stl} & $N$-chip rack & \todo{} \\
+    \texttt{large\_gears.stl}                 & Z actuation & \todo{} \\
+    \texttt{condenser.stl}                    & Illumination housing & \todo{} \\
+    \texttt{feet.stl}                         & Feet & \todo{} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\todo{fill in the per-part masses, volumes and print times from the slicer for
+all parts, and add the rail-mount and carriage parts once
+\texttt{rail\_mount\_mesoscope.scad} is finalised.}
+
+\section{Wiring and Pin Map}
+\label{sec:wiring}
+\todo{provide the full wiring diagram: Raspberry~Pi~5 GPIO pin map, ULN2003
+(focus 28BYJ-48) and TMC2209 (rail NEMA17, step/dir) connections, end-stop
+switches and per-station illumination, plus the two power supplies
+(\SI{27}{\watt} USB-C for the Pi stack; \SIrange{12}{24}{\volt},
+$\geq\SI{2}{\ampere}$ for the rail).}

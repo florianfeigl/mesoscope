@@ -1,0 +1,34 @@
+\section{On-Device Cell Detection}
+\label{sec:edgeai}
+
+\subsection{Inference target}
+On-device inference keeps images on the instrument and enables near-real-time
+analysis inside the incubator (NFR3). The target accelerator is the Hailo-8 NPU
+(\SI{26}{TOPS}) on the AI~HAT+; models must be compiled to the Hailo Executable
+Format (HEF) with the Hailo Dataflow Compiler and quantised to integer
+precision to run on the device.
+
+\subsection{Model choice}
+The biological readout---confluence, count, morphology or migration---fixes both
+the model family and the CVAT label schema, and is an open decision (milestone
+M1, Section~\ref{sec:requirements}). Bounding-box detection (YOLOv8 and
+variants) suffices for counting and confluence, whereas instance segmentation
+(Cellpose~\cite{Stringer2021Cellpose}, StarDist~\cite{Schmidt2018StarDist})
+is required for per-cell morphology. Only a foreign YOLOv8s-Pose benchmark
+currently exists in the project; the task-specific model is future work.
+\todo{fix the readout and label schema (M1), then train and compile the
+task-specific detector to HEF; report accuracy and on-device latency.}
+
+\subsection{Annotation pipeline}
+Training data are annotated in a CVAT server deployed on a separate VPS
+(Section~\ref{sec:software}). Acquired chip images are uploaded, labelled
+according to the chosen schema, exported and used to train the detector, which
+is then quantised and compiled for the Hailo-8. \todo{describe the dataset size,
+train/val split and augmentation once acquisition on real chips has started.}
+
+\subsection{Evaluation plan}
+The detector will be evaluated both offline (detection metrics on a held-out
+set) and on-device (end-to-end latency and throughput per chip on the Pi~5 +
+Hailo-8), so that the imaging schedule can be sized against the per-chip
+inference time. Results are reported in Section~\ref{sec:evaluation} once the
+model exists.
