@@ -330,12 +330,56 @@ entry point (and is documented as standalone in `CLAUDE.md`).
    sufficient for step-and-image; drive the NEMA17 with a soft ramp, and
    generate the 28BYJ-48 half-step sequence in software (~30 lines).
 
+   **TMC2209 wiring — two separate power domains (never mix them):**
+   the high current (12–24 V, ~1.2–1.4 A) enters at the driver's **VM/VMOT
+   screw terminal only** and flows out through **A1/A2/B1/B2** into the
+   NEMA17 — it **never touches the Pi**. The Pi supplies only 3.3 V logic +
+   three signal wires + a shared ground. The breakout is **not** plugged onto
+   the Pi; it sits beside it, jumpered to the 40-pin header.
+
+   ```
+        ┌──────────── LOGIC SIDE (weak, 3.3 V) ────────────┐
+   Pi 5 ── 3.3 V ─────────────► VIO   (never 5 V)          │
+   40pin ── GND  ──────┬──────► GND (logic)                │
+        ── GPIO ───────│──────► STEP  (1 pulse = 1 µstep)  │
+        ── GPIO ───────│──────► DIR   (high/low)           │
+        ── GPIO ───────│──────► EN    (enable)             │
+        (opt) GPIO ────│──────► UART  (1 wire + resistor)  │
+                       │        TMC2209 breakout           │
+        ┌──────────────┴──── MOTOR SIDE (STRONG, 12–24 V) ─┤
+   12–24 V PSU ─ + ──► VM/VMOT ┐  (screw terminal)         │
+              ─ − ──► GND(mot) ┘                           │
+                       └─ common ground with Pi GND ◄──────┘
+        VM ══ 100 µF electrolytic ══ GND  (close to board)
+        A1 A2 B1 B2 (screw terminal) ──► NEMA17 coils
+   ```
+
+   Mandatory: **both grounds joined** (Pi GND + PSU minus at the breakout GND)
+   or STEP/DIR floats; **100 µF across VM/GND before first power-on**;
+   set **Vref (≈ 0.7 × I_RMS)** at the poti *before* connecting the motor.
+
    Integration path: implement as a custom OpenFlexure-v3 stage class
    (the stage is already selected via `ofm_config.json.j2`, Dummy vs.
    Sangaboard today), deployed as a small package/patch by the `openflexure`
    Ansible role (analogous to the pisp patch). The `motor-controller` role
    is repurposed: arduino-cli/firmware/udev out, GPIO stage package +
    config in.
+
+   > **Decision 2026-09-03: the Sangaboard stays for now** ("Sangaboard bleibt
+   > vorerst implementiert") as a
+   > **hybrid** — Sangaboard drives **focus (28BYJ-48) + illumination LED**
+   > (both natively supported: the firmware has a PWM LED output and
+   > OpenFlexure already controls Sangaboard illumination + axes out of the
+   > box), while the **rail NEMA17** runs on a **standalone TMC2209 at GPIO**
+   > (the Sangaboard's ULN can't drive it, so the TMC2209 is needed either
+   > way). Trade-off: this removes the bare-GPIO focus + LED-PWM work
+   > entirely, at the cost of keeping the HAT stack (5 V/thermal budget next
+   > to the Hailo) and the Arduino firmware. Motivation: wiring the focus
+   > motor and a dimmable illumination LED directly to GPIO turned out fiddly,
+   > and the Sangaboard already solves exactly those two. Consequence: §7.1's
+   > "all-Python GPIO stage" narrows to just the TMC2209 rail axis; the
+   > Sangaboard's X/Y outputs stay unused. The X/Y motors + stage have been
+   > removed from the body model (§8, `hardware/body/openscad/`).
 
    1a. **Vertical axis (world Z) — deferred, keep on the radar.** Baseline:
    **one-time manual height adjustment** at the carriage adapter (slotted
@@ -378,6 +422,14 @@ entry point (and is documented as standalone in `CLAUDE.md`).
 - [ ] Carriage adapter to MGN12 (the other sub-assembly, §3.1) — still blocked on
       the Z-motor resting face; new entry point under `hardware/rails/openscad/`,
       **with a bolt pattern for the optional lift stage** (§7.1a).
+- [x] **Simplify the OpenFlexure model:** the X/Y flexure legs, actuator
+      columns, motor lugs/cable housings and the **sample stage platform
+      (Tisch)** are removed from the body — `hardware/body/openscad/`
+      (`build_body.sh` → `main_body_mesoscope.stl`; upstream originals backed
+      up alongside). Only the Z focus actuator + casing, inner wall/base with
+      optics cut-out, outer walls and the four base lugs remain. Done
+      2026-09-03; test print pending. Config (`ofm_config.json.j2`) still
+      declares 3 axes — X/Y just have no motor attached.
 
 ### Handoff — fresh session starts here (2026-09-02)
 
