@@ -1,7 +1,8 @@
-# Mesoscope
+# Mesoscope — IDANA
 
-Automated cell-imaging microscope (Raspberry Pi 5 + Hailo-8 NPU + HQ Camera,
-OpenFlexure stack). *Formerly "CELLAIR".*
+**IDANA** is the mesoscope model built in this project: an automated cell-imaging
+microscope (Raspberry Pi 5 + Hailo-8 NPU + HQ Camera, OpenFlexure stack).
+*Formerly "CELLAIR".*
 
 ## Roadmap
 

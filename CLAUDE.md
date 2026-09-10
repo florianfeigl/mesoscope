@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-The **mesoscope** project (formerly "CELLAIR") is a **hardware + infrastructure** project, not a conventional
+The **mesoscope** project (formerly "CELLAIR"; the instrument model is named **IDANA**) is a **hardware + infrastructure** project, not a conventional
 software application. It builds an automated cell-imaging microscope from a Raspberry Pi 5
 (AI HAT+ / Hailo-8 NPU + HQ Camera IMX477) running the OpenFlexure microscope stack, plus
 a VPS-hosted CVAT annotation server. The repo contains **no application source of its own** —
