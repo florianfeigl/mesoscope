@@ -2,12 +2,12 @@
 //
 // == Changes vs. upstream lib_microscope_stand.scad ==
 // - default_stand_params: supports pi_version=5 and sanga "ai_hat_stack"
-// - pi_front_connectors: added Pi5 connector layout (USB+Ethernet same Y as Pi4, micro-HDMI near edge)
+// - pi_front_connectors: added Pi5 connector layout (Ethernet/USB swapped vs Pi4, i.e. Pi3-like)
 // - pi_side_connectors: Pi5 has no headphone jack, adds PCIe FPC cutout
 // - electronics_drawer_walls: for "ai_hat_stack" calls sanga_lugs twice (AI-HAT
 //   bottom at stock stack_11mm height, Sangaboard at +13.7mm)
 // - sanga_connector_holes: for "ai_hat_stack" creates cutouts at both levels
-// - mesoscope_branding: embosses "MESOSCOPE" (bold, 5mm) on the drawer front
+// - mesoscope_branding: embosses "MESOSCOPE" / "IDANA" (bold, 5mm, two lines) on the drawer front
 //   wall — the visible front face of the assembled stand
 //
 // This file replaces the upstream lib_microscope_stand.scad when building
@@ -482,17 +482,22 @@ module electronics_drawer_base(stand_params){
 }
 
 
-// Mesoscope branding — embossed "MESOSCOPE" on the outer face of the
-// drawer front wall (the visible front of the assembled stand).
+// Mesoscope branding — embossed "MESOSCOPE" / "IDANA" (two lines) on the
+// outer face of the drawer front wall (the visible front of the assembled stand).
 // Text runs horizontally when viewed from the front (+x), letters upright.
 module mesoscope_branding(drawer_h){
     text_h = 5;
+    line_gap = 2.5;
     emboss_d = 0.8;
     translate([electronics_drawer_wall_t(), electronics_drawer_front_width()/2, drawer_h - 15]){
         rotate([0,90,0]){
             rotate_z(90){
                 linear_extrude(emboss_d){
                     text("MESOSCOPE", size=text_h, font="Noto Sans:style=Bold", halign="center", valign="center");
+                    // second line below (2D +y == world +z after the rotations above)
+                    translate([0, -(text_h + line_gap)]){
+                        text("IDANA", size=text_h, font="Noto Sans:style=Bold", halign="center", valign="center");
+                    }
                 }
             }
         }
@@ -720,19 +725,19 @@ module pi_front_connectors(pi_version){
         }
     }
     else if (pi_version==5){
-        // Pi5 front edge connector Y-centres from official mechanical drawing
-        // (datasheets.raspberrypi.com/rpi5/raspberry-pi-5-mechanical-drawing.pdf)
-        // Board width 58 mm, Y measured from GPIO-header edge.
-        // Ethernet: 47 mm, USB 2.0: 29.1 mm, USB 3.0: 10.2 mm
-        // (Pi4 values were 45.75 / 27 / 9 — shifted ~1-2 mm)
-        translate_y(47-17/2){
+        // Pi5 swapped the Ethernet and USB positions back to the Pi3 layout:
+        // Ethernet sits at the far end (Y~10), the two USB stacks at Y~29 / Y~47
+        // (Pi4 had Ethernet at Y~46 and USB at Y~27 / Y~9).
+        // Using the Pi4 layout here put the low 14.5 mm Ethernet cutout in front
+        // of the 17 mm USB stack (USB "too low") and vice versa (Ethernet "too high").
+        translate_y(10.2-17/2){
             cube([200, 17, 14.5]);  // Gigabit Ethernet
         }
         translate_y(29.1-15.5/2){
-            cube([200, 15.5, 17]);  // USB 2.0
+            cube([200, 15.5, 17]);  // USB stack (2x)
         }
-        translate_y(10.2-15.5/2){
-            cube([200, 15.5, 17]);  // USB 3.0 (+ 2x micro-HDMI within cutout)
+        translate_y(47-15.5/2){
+            cube([200, 15.5, 17]);  // USB stack (2x)
         }
     }
     else{

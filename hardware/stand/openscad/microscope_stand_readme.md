@@ -86,20 +86,20 @@ For `sanga_version == "ai_hat_stack"`:
    connector at that wall position).
 
 ### `pi_front_connectors` (Pi5)
-Pi5 uses the **same Y positions as Pi4** for the three front-edge
-cutouts:
+Pi5 **swapped Ethernet and USB back to the Pi3 layout** (Ethernet at the
+far end, USB stacks next to the GPIO edge). The three front-edge cutouts
+are therefore the Pi3 pattern with Pi5 magnitudes:
 
-| Cutout | Y centre | Width | Height | Covers |
-|--------|:--------:|:-----:|:------:|--------|
-| 45.75 mm | 17 mm | 14.5 mm | Gigabit Ethernet |
-| 27 mm | 15.5 mm | 17 mm | USB 2.0 |
-| 9 mm | 15.5 mm | 17 mm | USB 3.0 + 2× micro-HDMI |
+| Y centre | Width | Height | Covers |
+|:--------:|:-----:|:------:|--------|
+| 10.2 mm | 17 mm | 14.5 mm | Gigabit Ethernet |
+| 29.1 mm | 15.5 mm | 17 mm | USB stack (2×) |
+| 47 mm | 15.5 mm | 17 mm | USB stack (2×) |
 
-> **⚠ Open issue:** The user confirmed USB-C and micro-HDMI fit as-is,
-> but **Ethernet and USB-A positions differ from Pi4** and may need
-> adjustment. Physical Y measurements for Pi5 Ethernet and USB-A are not
-> yet available. The current cutouts may need to be widened or repositioned
-> after a test print.
+History: the first Pi5 print used the Pi4 layout (Ethernet at 47, USB at
+29.1/10.2). Result: the low 14.5 mm Ethernet cutout sat in front of a USB
+stack ("USB openings too low") and a tall USB cutout sat in front of the
+RJ45 ("Ethernet too high"). Fixed 2026-09-03; awaiting a test print.
 
 ### `pi_side_connectors` (Pi5)
 - SD card at X = 11.2 mm (same as Pi4)
@@ -131,9 +131,9 @@ Reference (upstream Pi4 + stack_11mm):
 
 ## Open issues
 
-1. **Pi5 Ethernet + USB-A cutout positions** — current values copied
-   from Pi4 and are known to deviate. Requires physical measurement or
-   test print to determine correct Y values.
+1. **Pi5 Ethernet + USB-A cutout positions** — swapped to the Pi5 layout
+   on 2026-09-03 (see `pi_front_connectors`). Verify with a test print;
+   the USB 3.0 stack may sit ~2 mm off and need a wider cutout.
 2. **AI HAT+ connector cutout** — not needed (confirmed).
 3. **Sangaboard USB-C cutout Z** — uses `sanga_stand_height + 15.2 mm`
    as offset. Verify against physical assembly.
