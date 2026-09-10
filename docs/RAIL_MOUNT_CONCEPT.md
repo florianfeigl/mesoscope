@@ -1,8 +1,10 @@
 # Rail Mount Concept — Tilted Microscope on Linear X-Rail
 
-> **Status:** Concept + first schematic CAD draft (updated 2026-09-02 —
-> motor-control architecture revised: Sangaboard removed, all-Python GPIO
-> stage, see §7.1; handoff list for the next session at the end of §8).
+> **Status:** Concept + first schematic CAD draft (updated 2026-09-03 —
+> motor-control architecture is now a **hybrid**: the Sangaboard stays for
+> focus + illumination LED, the linear rail runs on a standalone TMC2209 at
+> GPIO; this narrows the earlier 2026-09-02 "all-Python GPIO stage" to just the
+> rail axis. See the decision box in §7.1; handoff list at the end of §8).
 > Next milestone: the mount ("Halterung") that lays the mesoscope on its side
 > and carries it along a linear X-rail past a series of bioreactors.
 >
@@ -414,9 +416,9 @@ entry point (and is documented as standalone in `CLAUDE.md`).
 - [ ] Confirm the **series pitch** (reactor-to-reactor spacing) for the rack.
 - [ ] Confirm the Z-motor resting face and measure the microscope's mass/CoG in
       the tilted orientation → also fixes `OPTICAL_AXIS_H` in the rack.
-- [x] Decide stepper control path (§7.1, revised 2026-09-02): Sangaboard
-      removed, all-Python GPIO stage — ULN2003 (focus) + TMC2209 (rail),
-      vertical axis deferred (§7.1a).
+- [x] Decide stepper control path (§7.1, revised 2026-09-03): **hybrid** —
+      Sangaboard keeps focus (28BYJ-48/ULN2003) + illumination LED, standalone
+      TMC2209 at GPIO drives the rail; vertical axis deferred (§7.1a).
 - [ ] Update the standalone rack (`hardware/rails/openscad/bioreactor_rack.scad`,
       §6.1) from the drop-in-slot/clamp concept to the hochkant/bridge geometry.
 - [ ] Carriage adapter to MGN12 (the other sub-assembly, §3.1) — still blocked on
@@ -436,11 +438,13 @@ entry point (and is documented as standalone in `CLAUDE.md`).
 1. **Verify upstream flexure axis mapping** (which axes move the stage
    platform vs. the optics module in the OpenFlexure CAD) — confirms the
    §2 insight before any mechanical design.
-2. **Implement the Python GPIO stage** (`lgpio`: 28BYJ-48 half-step sequence
-   for focus, TMC2209 STEP/DIR with soft ramp for X) and bind it as an
-   OpenFlexure-v3 stage class (selected via `ofm_config.json.j2`).
-3. **Rework the `motor-controller` Ansible role:** drop arduino-cli /
-   Sangaboard firmware / udev; install GPIO stage package + wiring config.
+2. **Implement the rail axis** (`lgpio`: TMC2209 STEP/DIR with soft ramp for
+   X) and bind it alongside the Sangaboard focus + illumination as an
+   OpenFlexure-v3 stage class (selected via `ofm_config.json.j2`). Focus + LED
+   stay on the Sangaboard; only the rail is new GPIO code.
+3. **Rework the `motor-controller` Ansible role:** keep the Sangaboard path
+   (arduino-cli / firmware / udev) for focus + LED; add the standalone TMC2209
+   rail driver (GPIO stage package + wiring config).
 4. **Measure the field of view at the chip window** → decide lift stage
    yes/no (§7.1a: needed only if FOV < 8 mm window height).
 5. **Parts check/order for the X axis:** NEMA17 Tr8×2 linear stepper

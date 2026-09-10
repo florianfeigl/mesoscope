@@ -21,9 +21,9 @@ The three boards stack inside the pull-out electronics drawer
 \end{figure}
 
 \subsection{Focus axis}
-The Z-focus axis is driven by a 28BYJ-48 5\,V geared stepper through a ULN2003
-driver board, as in the stock OpenFlexure Z actuator. Two further 28BYJ-48
-motors from the original XYZ plan are on hand as spares.
+The Z-focus axis is driven by a 28BYJ-48 5\,V geared stepper through the
+Sangaboard's on-board ULN2003 channel, as in the stock OpenFlexure Z actuator.
+Two further 28BYJ-48 motors from the original XYZ plan are on hand as spares.
 
 \subsection{Rail axis}
 The linear rail is driven by a NEMA17 stepper with an integrated Tr8$\times$2
@@ -31,11 +31,15 @@ leadscrew via a TMC2209 stepstick, with an anti-backlash nut, a coupler and an
 end bearing. This axis carries the imaging head between chip stations.
 
 \subsection{Stage driver architecture}
-Motion is controlled from Python on the Pi~5 GPIO: the ULN2003 sequences the
-focus stepper and the TMC2209 (step/dir) drives the rail. This replaces the
-Sangaboard microcontroller used by stock OpenFlexure.
-\todo{confirm the all-Python GPIO stage versus a Sangaboard-hybrid architecture;
-the repository is currently contradictory on this point (milestone~M2).}
+Motion control follows a \emph{hybrid} architecture, decided on
+2026-09-03. The Sangaboard is retained for the two tasks it already supports
+natively out of the box, namely the focus stepper and the illumination LED (PWM
+dimming), so no bare-GPIO focus or LED driver has to be written. The new linear
+rail, which the Sangaboard's ULN2003 channels cannot drive, runs on a
+standalone TMC2209 stepstick wired to the Pi~5 GPIO (step/dir/enable) and
+sequenced from Python. The Sangaboard's now-unused X/Y outputs are left
+unconnected, since the tilted geometry makes the original sample-stage axes
+functionless (Section~\ref{sec:mechanical}).
 
 \subsection{Power budget}
 The Pi~5 stack runs from a \SI{27}{\watt} USB-C supply; the rail axis needs a
