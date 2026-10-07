@@ -300,6 +300,68 @@ retention approach. This rack therefore still needs updating to the
 hanging-bridge geometry — but the parametric `build_rack.sh` stays the tooling
 entry point (and is documented as standalone in `CLAUDE.md`).
 
+### 6.2 Illumination — custom trans-illumination source ("Halterung unten")
+
+The stock OpenFlexure illumination arm (dovetail + condenser) is **removed from
+the model** (§3, title block): the 16 mm chip leaves only ~1.5 mm under the stock
+condenser, and light must come **from behind the chip row (+Y side)** for
+trans-illumination through the 16 mm thickness → objective on −Y. A **custom
+light source** on the +Y side is therefore an accepted follow-up part, not yet
+designed.
+
+**Reference candidate: ModLight** (Gibson et al. 2023, *HardwareX* 13, e00385;
+DOI [10.5281/zenodo.7385903](https://doi.org/10.5281/zenodo.7385903); article
+CC BY-4.0, design files CC BY-SA-4.0; PDF in `resources/Gibson_etal_2023 ModLight.pdf`).
+Modular 3D-printed LED light sources (R/G/B/W + NIR) that deliver a **collimated
+beam through a fibre/light guide**; demonstrated **directly on OpenFlexure**
+(Delta stage) with modified `Condenser_Holder` and `Fibre_Holder` parts, and
+provided as **OpenSCAD + STL + STEP** (fits our `hardware/*/openscad/` override
+workflow).
+
+Why it fits the rail mount specifically:
+- **Fibre-coupled output decouples the LED/driver from the optics** — on the
+  tilted/horizontal setup the light can be led to the +Y side behind the chips
+  without mounting the (hot, heavy) source on the moving carriage or kipping it
+  with the microscope. The collimated fibre tip is the only part that needs to
+  sit behind each chip window.
+- Multi-wavelength (R/G/B/W, NIR via the mirror variant) → multi-channel
+  contrast for the NPU cell-classification pipeline.
+
+### ✅ Decision (2026-10-07) — mirror variant, fibre on the moving head
+
+The earlier open question ("multi-channel/NIR vs. monochrome; fixed per station
+vs. fibre on the head") is **resolved**, driven by the target application:
+**calcification imaging**.
+
+- **Variant: mirror-based (MLight Box), NOT the X-Cube prism.** We image one
+  channel at a time (step-and-image per station), so the X-Cube's *simultaneous*
+  wavelength mixing is unnecessary, and only the **mirror variant reaches NIR**.
+- **Topology: a single fibre-coupled source on the moving head** (+Y side) —
+  not N fixed per-station sources. One LED set, heat/weight off the carriage and
+  off the Pi-5/Hailo thermal budget; the collimator tip rides behind the chip in
+  view.
+- **Channels: Green (~525–530 nm) + White + NIR** (Red/Blue optional). Rationale:
+  - **Green** maximises brightfield contrast of **Alizarin-Red-S**-stained
+    calcium (the red Ca complex absorbs ~528–560 nm → complementary green).
+  - **White** for overview and von-Kossa (dark) deposits.
+  - **NIR** penetrates the thick, turbid 16 mm chip with less scattering and
+    gives a label-free scattering signal from the birefringent hydroxyapatite
+    nodules.
+- **Caveat:** the mirror is magnet-held / **manually switched** in the published
+  design → one channel per full scan pass in the prototype; motorising the
+  mirror is a documented later option.
+
+Design files are mirrored under `sources/modlight/` (gitignored): mirror source
+`ModLight_Mirror/.../OpenSCAD/MSource File_OpenSCAD.scad`, common fibre parts
+(collimator/holder/mount, PMMA mount, heatsink), the LED driver Gerber +
+schematic under `Electronics/`, and the OpenFlexure-adapted
+`Condenser_Holder_Modified` / `Fibre_Holder_Modified` (**STL only** — no SCAD
+source, so any parametric override must be re-authored). See the build-script
+caveats in `CLAUDE.md` for how overrides layer onto the upstream clone.
+
+Thesis: captured in §4.3 (optical), §6 illumination driver, and the appendix BOM
+(`thesis/`), with citation `Gibson2023`.
+
 ---
 
 ## 7. Open decisions / questions for next session

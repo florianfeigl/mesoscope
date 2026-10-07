@@ -46,7 +46,30 @@ its build script are documented in \texttt{hardware/optics/}.
 
 \subsection{Illumination}
 The stock OpenFlexure condenser arm cannot clear the \SI{16}{\milli\meter}-thick
-bioreactor chip, so trans-illumination is provided by a separate LED panel per
-station facing the imaging head through the chip window
-(\texttt{docs/RAIL\_MOUNT\_CONCEPT.md}). \todo{specify LED wavelength, diffuser
-and irradiance once the illumination hardware is finalised.}
+bioreactor chip, so it is removed from the model and trans-illumination is
+provided from behind the chip row (the $+Y$ side), passing through the
+\SI{16}{\milli\meter} chip thickness to the objective on $-Y$
+(\texttt{docs/RAIL\_MOUNT\_CONCEPT.md}, \S6.2). Rather than a fixed source per
+station, a single collimated source is fibre-coupled and carried on the moving
+imaging head, which keeps the hot, heavy LED assembly off the carriage and away
+from the Pi~5 / Hailo-8 thermal budget; only the collimator tip travels behind
+the chip currently in view.
+
+The source is adapted from the mirror-based ModLight design~\cite{Gibson2023},
+an open-hardware (CC~BY-SA-4.0) modular LED light source that delivers a
+collimated beam through a light guide and has been demonstrated directly on
+OpenFlexure. The mirror variant is chosen over the X-Cube-prism variant because
+it reaches the near-infrared and because the step-and-image acquisition images
+one channel at a time, so the prism's simultaneous wavelength mixing is not
+needed. The target application---monitoring \emph{calcification} in the cultured
+cells---drives the channel selection: calcium deposits stained with Alizarin
+Red~S form a red complex absorbing around \SIrange{528}{560}{\nano\meter}, so a
+green channel (\SIrange{525}{530}{\nano\meter}) maximises their brightfield
+contrast; a white channel serves overview and von-Kossa-stained (dark) deposits;
+and a near-infrared channel penetrates the thick, turbid chip with less
+scattering and provides a label-free scattering signal from the birefringent
+hydroxyapatite nodules. Switching the mirror between channels is manual
+(magnet-held) in the published design, which is acceptable for per-scan channel
+selection in the prototype; motorising it is a later option. \todo{specify the
+final per-channel centre wavelengths, diffuser and irradiance once the
+illumination hardware is built and measured.}

@@ -41,6 +41,15 @@ sequenced from Python. The Sangaboard's now-unused X/Y outputs are left
 unconnected, since the tilted geometry makes the original sample-stage axes
 functionless (Section~\ref{sec:mechanical}).
 
+\subsection{Illumination driver}
+Illumination uses the fibre-coupled mirror-based ModLight source
+(Section~\ref{sec:optical}). Because that variant drives one LED channel at a
+time, the existing Sangaboard PWM illumination output is retained to power and
+dim the active channel---no dedicated driver board is required. The dedicated
+ModLight LED controller (Gerber and schematic in
+\texttt{sources/modlight/Electronics}) becomes necessary only if simultaneous
+multi-channel operation is later adopted; it is kept as a documented fallback.
+
 \subsection{Power budget}
 The Pi~5 stack runs from a \SI{27}{\watt} USB-C supply; the rail axis needs a
 separate \SIrange{12}{24}{\volt}, $\geq\SI{2}{\ampere}$ supply for the NEMA17 /

@@ -25,11 +25,19 @@ Table~\ref{tab:printed} lists the custom and must-print parts.
     \texttt{electronics\_drawer\_mesoscope.stl} & Pi5/AI-HAT drawer & \todo{} \\
     \texttt{bioreactor\_rack\_n\textit{N}.stl} & $N$-chip rack & \todo{} \\
     \texttt{large\_gears.stl}                 & Z actuation & \todo{} \\
-    \texttt{condenser.stl}                    & Illumination housing & \todo{} \\
+    ModLight fibre source                     & Trans-illumination (\S\ref{sec:optical}) & \todo{} \\
     \texttt{feet.stl}                         & Feet & \todo{} \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+The stock OpenFlexure illumination housing (\texttt{condenser.stl} and the
+dovetail arm) is no longer used: it cannot clear the \SI{16}{\milli\meter} chip
+and is replaced by the fibre-coupled ModLight source~\cite{Gibson2023}
+(\S\ref{sec:optical}), whose design files are mirrored under
+\texttt{sources/modlight/} (the OpenFlexure-adapted \texttt{Condenser\_Holder}
+and \texttt{Fibre\_Holder} are provided as STL only; the mirror source housing
+and common fibre parts also ship as OpenSCAD and STEP).
 
 \todo{fill in the per-part masses, volumes and print times from the slicer for
 all parts, and add the rail-mount and carriage parts once
@@ -39,6 +47,6 @@ all parts, and add the rail-mount and carriage parts once
 \label{sec:wiring}
 \todo{provide the full wiring diagram: Raspberry~Pi~5 GPIO pin map, ULN2003
 (focus 28BYJ-48) and TMC2209 (rail NEMA17, step/dir) connections, end-stop
-switches and per-station illumination, plus the two power supplies
+switches and the Sangaboard-PWM illumination channel, plus the two power supplies
 (\SI{27}{\watt} USB-C for the Pi stack; \SIrange{12}{24}{\volt},
 $\geq\SI{2}{\ampere}$ for the rail).}
