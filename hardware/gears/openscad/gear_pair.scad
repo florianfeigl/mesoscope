@@ -38,7 +38,10 @@ H      = 8.0;       // gear thickness / height in Z (mm)
 BORE_TIP  = 8.975;  // existing gear tooth tips (Aussenradius; measured Ø17.95)
 BORE_ROOT = 8.25;   // existing gear valley bottoms (Innenradius; measured Ø16.5)
 Z_BORE    = 13;     // teeth on the existing gear (hugged by Rad 1's bore)
-BORE_VR   = 0.40;   // valley rounding of the existing-gear profile (small teeth)
+BORE_VR   = 1.30;   // valley notch width of the existing-gear profile; large
+                    //   enough that the 13 bore teeth are actually cut (matches
+                    //   the real ~2.1 mm tooth gaps). Too small (<~1.0) and the
+                    //   notches vanish -> the bore loses its internal teeth.
 BORE_FIT  = 0.25;   // radial clearance so Rad 1 slips over the existing gear (mm)
 
 // --- Outer mesh (Rad 1 outer teeth <-> Rad 2) ---
@@ -47,7 +50,7 @@ Z2     = 15;        // Rad 2 teeth (max that fits at a 30 mm centre)
 ADD_K  = 0.55;      // addendum  = ADD_K * module
 DED_K  = 0.70;      // dedendum  = DED_K * module  (DED_K>ADD_K builds in clearance)
 OUT_VR = 1.00;      // outer valley rounding radius (mm); need 2*OUT_VR > tooth depth
-BACKLASH = 0.00;    // extra flank gap per tooth for print fit (mm; try 0.1-0.2)
+BACKLASH = 0.15;    // extra flank gap per tooth for print fit (mm; try 0.1-0.2)
 
 // --- Rad 2 mounting: 5 mm D-shaft (one flat) + grub-screw hub ---
 SHAFT_D    = 5.0;   // shaft diameter (mm)
