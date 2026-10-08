@@ -5,14 +5,16 @@
 //            over the existing gear and is rotationally locked to it
 //            ("schmiegt sich um ein vorhandenes Zahnrad"). NEW teeth sit on the
 //            OUTSIDE and drive Rad 2.
-//              bore profile (= existing gear): tip R18 / root R16.5, Z=24,
-//              tooth ~2.0 mm, valley ~2.5 mm, rounded valleys, + fit clearance.
+//              bore profile (= existing gear, MEASURED): tip R8.975 / root R8.25,
+//              Z=13 (tip Ø17.95 / root Ø16.5, radial tooth depth ~0.725 mm),
+//              rounded valleys, + fit clearance.
 //
 //   RAD 2  — the solid mate on a 5 mm motor shaft with ONE flat (D-shaft, "Nase").
 //
 // Sizing decision (user): centre distance = 30 mm FIXED, Rad 2 as large as
-// possible. Rad 1 must enclose the Ø36 existing gear, so it is the larger wheel;
-// equal diameters are geometrically impossible at a 30 mm centre.
+// possible. Rad 1 must enclose the Ø17.95 existing gear; the outer mesh
+// (Z1/Z2 below) is an independent choice and currently makes Rad 1 the larger
+// wheel with a thick ring wall over the small bore.
 //
 // Outer mesh math (same module both gears, centre = sum of pitch radii):
 //   m (module) = 2*CENTER/(Z1+Z2)    pitch_r = CENTER*Z/(Z1+Z2)
@@ -33,10 +35,10 @@ CENTER = 30.0;      // centre-to-centre distance (mm) — FIXED
 H      = 8.0;       // gear thickness / height in Z (mm)
 
 // --- Rad 1 bore = the described existing gear (negative, keyed form-fit) ---
-BORE_TIP  = 18.0;   // existing gear tooth tips (Aussenradius)
-BORE_ROOT = 16.5;   // existing gear valley bottoms (Innenradius)
-Z_BORE    = 24;     // teeth on the existing gear (hugged by Rad 1's bore)
-BORE_VR   = 1.30;   // valley rounding of the existing-gear profile
+BORE_TIP  = 8.975;  // existing gear tooth tips (Aussenradius; measured Ø17.95)
+BORE_ROOT = 8.25;   // existing gear valley bottoms (Innenradius; measured Ø16.5)
+Z_BORE    = 13;     // teeth on the existing gear (hugged by Rad 1's bore)
+BORE_VR   = 0.40;   // valley rounding of the existing-gear profile (small teeth)
 BORE_FIT  = 0.25;   // radial clearance so Rad 1 slips over the existing gear (mm)
 
 // --- Outer mesh (Rad 1 outer teeth <-> Rad 2) ---
