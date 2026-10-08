@@ -30,6 +30,6 @@ binary with `OPENSCAD=…` and the image size with `IMGSIZE=…`.
 `exploded_view.scad` imports the real STLs for stand, drawer, main body and optics module, and
 uses upstream library models for feet, gears, lead screw and the 28BYJ-48 motor. **Simplified
 boxes/cylinders** stand in for: the Pi 5 / AI HAT+ / Sangaboard PCBs, the HQ camera (C-mount
-barrel + PCB, from the mechanical drawing), the bioreactor chip (70×40×16 mm, 18×8 mm window),
+barrel + PCB, from the mechanical drawing), the bioreactor chip (70×40×16 mm, 18×8 mm body cutout / Ø5 mm sample ROI),
 and the LED light source. The objective is the upstream generic RMS model, not ZEISS geometry.
 Explosion offsets are hand-set (see the `ex_*` constants); they are illustrative, not to scale.

@@ -37,7 +37,7 @@ Goal: RQ1 answerable. Ch. 4 draftable.
 
 - [ ] Objective is a ZEISS Plan-Neofluar 10×/0.30: verify tube-length marking (160 mm finite vs. ∞) and thread (RMS vs. M27 → adapter or optics-module change), update `OPTICS_MODULE.md` (NA 0.30 → 1.12 µm Rayleigh).
 - [ ] Print and assemble 125 mm optics module (`build_optics.sh 125`); assemble Z-only body (`build_body.sh mesoscope`), stand and drawer.
-- [ ] Measure: lateral resolution (USAF 1951 target), FOV (stage micrometer), sensor fill, working distance at the chip window, focus repeatability (Z stepper).
+- [ ] Measure: lateral resolution (USAF 1951 target), FOV (stage micrometer), sensor fill, working distance at the chip window, focus repeatability (Z stepper). **Protocol + calculated FOV:** `hardware/optics/OPTICS_MODULE.md` §1a (calc. 1.34 × 1.00 / 1.22 × 0.92 mm; must cover the Ø5 mm sample ROI).
 - [ ] Flat-field / lens-shading calibration; document illumination (LED type, wavelength, power, condenser).
 - [ ] Image a real bioreactor chip through its window (fixed cells) — first "hero" images for ch. 4/9.
 - [ ] Decide 125 vs. 150 mm tube lens on measured data.

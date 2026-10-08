@@ -14,7 +14,7 @@ Audit of the repository documentation (state: 2026-09-08) against what a master'
 | C-mount flange distance | documented | 17.526 mm | OPTICS_MODULE.md |
 | Objective | known, **not yet in repo docs** | ZEISS Plan-Neofluar 10×/0.30 (stated 2026-09-08). Confirm marking `160/-` vs `∞/0.17` and thread RMS vs M27; parfocal 45 mm. README/OPTICS_MODULE.md still say "scraped ≤10×, NA 0.25" | — |
 | Resolution | calculated only, **stale NA** | docs: Rayleigh 1.3 µm at NA 0.25 → with NA 0.30: 1.12 µm (λ 550 nm); sampling 0.32 µm/px unchanged | OPTICS_MODULE.md |
-| Field of view | **missing** (TODO) | "measure FOV at chip window" | RAIL_MOUNT_CONCEPT.md |
+| Field of view | calculated, **measurement TODO** | calc. 1.34 × 1.00 mm (125) / 1.22 × 0.92 mm (150); measure at chip window | `hardware/optics/OPTICS_MODULE.md` §1a |
 | Working distance | measured from STL | 3.35 mm | RAIL_MOUNT_CONCEPT.md |
 | Illumination | partial | PMMA condenser 13 mm / f 5 mm; LED type, wavelength, power **missing** | — |
 | Flat-field / lens shading | **missing** | roadmap item only | README |
@@ -38,7 +38,7 @@ Audit of the repository documentation (state: 2026-09-08) against what a master'
 | Print settings | documented | PLA black, 0.15/0.2 mm layer, 3 walls, 20–30 % infill | `hardware/PRINT_CHECKLIST.md` |
 | C-mount seat | documented | Ø32.6 mm, 0.3 mm clearance | optics README |
 | Drawer stack heights | documented | 5.5 / 18.4 / 34.2 mm | `microscope_stand_readme.md` |
-| Bioreactor chip | documented | 70 × 40 × 16 mm, window 18 × 8 mm, 4 ports Ø4.5 | RAIL_MOUNT_CONCEPT.md §6 |
+| Bioreactor chip | documented | 70 × 40 × 16 mm, chip-body cutout 18 × 8 mm, **sample ROI round Ø5 mm**, 4 ports Ø4.5 | RAIL_MOUNT_CONCEPT.md §6 |
 | Rail | documented | 2040 V-slot, MGN12, NEMA17 Tr8×2 (2 mm/rev, 0.01 mm/µstep) | RAIL_MOUNT_CONCEPT.md |
 | Working gap | documented | 10 mm | RAIL_MOUNT_CONCEPT.md |
 | Reactor pitch | **assumed** | 80 mm, unconfirmed; `bioreactor_rack.scad` still PITCH=148 | rails/openscad |
@@ -91,7 +91,7 @@ Audit of the repository documentation (state: 2026-09-08) against what a master'
 |-----------|--------|--------------|--------|
 | CSM ground-truth check | documented | +500/1000/2000 steps → 12.7/24.6/48.7 px | CSM_CALIBRATION_RPI5.md |
 | Example images | documented | 4 images, 2026-08-04 … 08-17 | `resources/`, `docs/presentation.tex` |
-| Resolution / FOV measurement (USAF, stage micrometer) | **missing** | — | — |
+| Resolution / FOV measurement (USAF, stage micrometer) | **missing** (protocol documented) | measure per protocol | `hardware/optics/OPTICS_MODULE.md` §1a |
 | Focus drift / repeatability (tilted) | **missing** | — | — |
 | Rail positioning repeatability | **missing** | — | — |
 | Image-quality metrics, flat-field residual | **missing** | — | — |

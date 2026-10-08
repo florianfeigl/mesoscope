@@ -63,9 +63,10 @@
 >
 > ✅ **Bioreactor STL integrated:** `hardware/bioreactors/chip_senkrecht_mit_bodenplatte.stl`.
 > Base plate (Bodenplatte) removed for the calculations per
-> instruction → chip body **70 × 40 × 16 mm**, optical window **18 × 8 mm**,
-> 4 fluidic ports. Only the **series pitch** (reactor-to-reactor spacing along
-> X) is still an assumption (80 mm) to confirm.
+> instruction → chip body **70 × 40 × 16 mm**, optical cutout (chip body)
+> **18 × 8 mm**, with the actual **sample/culture window (imaging ROI) a round
+> Ø5 mm** centred inside that cutout, 4 fluidic ports. Only the **series pitch**
+> (reactor-to-reactor spacing along X) is still an assumption (80 mm) to confirm.
 >
 > ✅ **Hochkant + Brücke (2026-08-25):** the chips are now mounted **upright
 > (hochkant)** and **hang from a bridge** — a continuous traverse board
@@ -265,7 +266,8 @@ Measured (base plate excluded):
 | Chip body width | **70 mm** | X (along rail) |
 | Chip body thickness | **16 mm** | Y (**along the optical axis** — imaged through) |
 | Chip body height | **40 mm** | Z (vertical, hanging from the bridge) |
-| Optical window | **18 × 8 mm**, centered on the objective-facing (−Y) face, on the optical axis | window on optical axis |
+| Optical cutout (chip body) | **18 × 8 mm**, centered on the objective-facing (−Y) face, on the optical axis | cutout on optical axis |
+| Sample/culture window (imaging ROI) | **round Ø5 mm**, centred inside the 18 × 8 mm cutout — this is the area to be imaged | ROI on optical axis |
 | Fluidic ports | 4 × ⌀ ~4.5 mm, exiting the **top** edge (tubes go up) | — |
 | Base plate (removed) | 140 × 100 mm thin panel | ignored for calculations |
 
@@ -449,9 +451,14 @@ Thesis: captured in §4.3 (optical), §6 illumination driver, and the appendix B
    **one-time manual height adjustment** at the carriage adapter (slotted
    holes / fine-pitch adjustment screw, then clamped) — all chips hang at
    the same height by construction. Motorization becomes necessary only if
-   the field of view turns out **smaller than the window height (8 mm)** and
-   vertical tiling is required → measure FOV at the chip window after the
-   X-axis works. Expansion option, documented for then: a **mini lift stage
+   the field-of-view **height turns out smaller than the Ø5 mm sample ROI**
+   and vertical tiling is required → measure FOV at the chip window after the
+   X-axis works. (The 8 mm is the chip-body cutout, **not** the imaged area;
+   the area to cover is the round Ø5 mm culture window — see §6.) Note the
+   computed FOV height (~0.92 mm at 10×/150, ~1.00 mm at 10×/125) is already
+   **≪ 5 mm**, so vertical tiling — and thus a moving vertical axis — is
+   expected to be needed *unless* a single horizontal strip / partial ROI
+   suffices; the measurement settles it. Expansion option, documented for then: a **mini lift stage
    (Hubtisch)** between MGN12 carriage and mesoscope adapter — two short
    vertical guides (MGN7/9 or bushings on 8 mm rods), NEMA17 + vertical
    Tr8×2 (3D-printer-Z principle), ~20 mm travel, self-locking → holds the
@@ -508,7 +515,9 @@ Thesis: captured in §4.3 (optical), §6 illumination driver, and the appendix B
    (arduino-cli / firmware / udev) for focus + LED; add the standalone TMC2209
    rail driver (GPIO stage package + wiring config).
 4. **Measure the field of view at the chip window** → decide lift stage
-   yes/no (§7.1a: needed only if FOV < 8 mm window height).
+   yes/no (§7.1a: needed if the FOV height < 5 mm, i.e. it cannot cover the
+   Ø5 mm sample ROI in one frame — see the FOV protocol in
+   `hardware/optics/OPTICS_MODULE.md`).
 5. **Parts check/order for the X axis:** NEMA17 Tr8×2 linear stepper
    (≤1.5 A, spindle = scan + 60 mm), 2040 V-Slot, MGN12 rail + carriage,
    12–24 V supply. TMC2209 stepsticks already on hand.

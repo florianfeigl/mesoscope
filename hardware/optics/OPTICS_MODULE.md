@@ -70,6 +70,75 @@ M = 4.6 / 17 = 0.27   (FN = 17 mm, standard)
 
 ---
 
+## Step 1a — Field of view: calculation & measurement protocol
+
+> `THESIS_ROADMAP.md` and `THESIS_PARAMETER_GAPS.md` link here instead of
+> duplicating the FOV numbers.
+
+The **M** above is the tube-lens demagnification. The **total system
+magnification** that sets the field of view is
+`M_total = M_objective × M_tube` (objective = ZEISS Plan-Neofluar **10×**/0.30).
+The IMX477 active area is **6.287 × 4.712 mm** (4056 × 3040 px, 1.55 µm pitch).
+
+```
+FOV = sensor_active / M_total          sampling = pixel_pitch / M_total
+```
+
+### Calculated (documentation value — measurement still TODO)
+
+| Tube | M_tube | M_total | FOV (H × V) | Sampling |
+|---|---|---|---|---|
+| 125 mm | 0.469 | **4.69** | **1.34 × 1.00 mm** | ~0.33 µm/px |
+| 150 mm | 0.515 | **5.15** | **1.22 × 0.92 mm** | ~0.30 µm/px |
+
+### Coverage of the Ø5 mm sample ROI
+
+The imaged area is the **round Ø5 mm culture window** (inside the 18 × 8 mm
+chip-body cutout, see `RAIL_MOUNT_CONCEPT.md` §6). A single frame does **not**
+cover it — the FOV (~1.2–1.3 mm wide, ~0.9–1.0 mm high) is several times
+smaller than 5 mm, so the stage must physically move and OpenFlexure stitches
+overlapping tiles (needs the CSM matrix, `docs/CSM_CALIBRATION_RPI5.md`). There
+is no single high-res "whole-sample" exposure to crop from.
+
+Tile estimate at ~20 % overlap (effective step = 0.8 × FOV):
+
+| Tube | step (H × V) | bounding grid for Ø5 mm | circular ROI |
+|---|---|---|---|
+| 125 mm | 1.07 × 0.80 mm | ≈ 5 × 7 | ~28 frames |
+| 150 mm | 0.98 × 0.73 mm | ≈ 6 × 7 | ~33 frames |
+
+A single frame would only span Ø5 mm once `M_total < ~0.94×` (sensor short side
+4.712 mm ÷ 5 mm) — i.e. below 1×, which is no longer microscopy. So **vertical
+tiling (FOV height ≈ 0.9–1.0 mm ≪ 5 mm) is expected** unless a horizontal strip
+or partial ROI is acceptable; the measurement below decides whether a moving
+vertical axis / lift stage (`RAIL_MOUNT_CONCEPT.md` §7.1a) is required.
+
+### Measurement protocol (to be executed on the current inverted rig)
+
+FOV is a pure optics/sensor property (objective × tube × sensor), independent of
+the tilt/rail mechanics, so it can be measured now with the final optics.
+
+1. Place an **object micrometer** (e.g. 1 mm / 100 div = 10 µm/div) **or** a
+   **USAF-1951 target** in the sample plane; final optics (ZEISS Plan-Neofluar
+   10×/0.30 + the tube actually used, 125 **or** 150 mm).
+2. Capture the **full 4056 × 3040 frame** via OpenFlexure; **AE/AWB off**, using
+   the tested camera values (492 µs, AnalogueGain 1.0, ColourGains [0.9, 2.9] —
+   team memory `camera-red-tint…`).
+3. Count a known graticule distance over N pixels **horizontally and
+   vertically** → mm/px → `FOV = mm/px × 4056 (H)` and `× 3040 (V)`. Measure
+   both tubes if both are built.
+4. Read **lateral resolution** from the USAF target (smallest resolved group) →
+   check against H1 (`THESIS_OUTLINE.md`, ≤ 1.5 µm).
+5. Cross-check via CSM: `image_to_stage_displacement` (steps/px) × flexure
+   mm/step gives an independent mm/px — plausibility only.
+
+**After measuring (follow-up, not now):** compare the measured FOV height to
+5 mm → record the lift-stage decision in `RAIL_MOUNT_CONCEPT.md` §7.1a; fill the
+measured values into the placeholders here, in `THESIS_PARAMETER_GAPS.md` and
+`THESIS_ROADMAP.md`.
+
+---
+
 ## Step 2 — Required tube lens focal length
 
 From the OpenFlexure thin-lens formula:
