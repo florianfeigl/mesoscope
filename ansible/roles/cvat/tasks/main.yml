@@ -1,4 +1,14 @@
 ---
+- name: Assert required CVAT secrets are provided (via Ansible Vault)
+  assert:
+    that:
+      - cvat_admin_password | length > 0
+      - cvat_db_password | length > 0
+      - cvat_redis_password | length > 0
+    fail_msg: >-
+      cvat_admin_password, cvat_db_password and cvat_redis_password must be set
+      (e.g. in group_vars/vault.yml). They have no default value on purpose.
+
 - name: Install Docker prerequisites
   apt:
     name:
