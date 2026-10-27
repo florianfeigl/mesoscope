@@ -616,60 +616,24 @@ module mesoscope_walls_and_z_casing(params){
     }
 }
 
-// Captive-nut pockets for the two Z-motor cover screws.
-//
-// The Z-motor cover is the upstream `front_cable_tidy` (part of cable_tidies.stl);
-// it bolts on with the two motor screws (motor_screw_separation()=35). The genuine
-// upstream main_body cuts a captive M3 nut trap at each motor screw inside the lug;
-// the mesoscope strips the XY stage but must keep these pockets so the cover screws
-// can be fastened with nuts. We reuse the real upstream `m3_nut_trap_with_shaft`
-// (libs/compact_nut_seat.scad) and reproduce the exact motor_lugs placement chain
-// (z_actuator_housing -> screw_seat -> motor_lugs):
-//   translate_y(z_nut_y) -> rotate(180) -> rotate_x(-tilt) -> rotate(180) -> reflect_x
-// so each trap lands coaxial with the lug's own screw hole (motor_screw_pos). The
-// trap module places its hex at local z=1..7.5; the lug material sits at local
-// z=-12..0, so we shift the trap down by translate_z(-9) (matching the genuine
-// upstream placement) to carve the captive-nut cavity into the lug (local z=-8..-1.5).
-// slot_angle=90 opens the nut-insertion slot toward the outer face, as upstream.
-module z_motor_cover_nut_traps(params){
-    h = key_lookup("actuator_h", params) + z_actuator_travel(params);
-    translate_y(z_nut_y(params)){
-        rotate(180){                             // screw_seat wraps motor_lugs in rotate(180)
-            rotate_x(-z_actuator_tilt(params)){  // motor_lugs tilt = -screw_seat tilt
-                rotate(180){                     // motor_lugs angle = lug_angle = 180
-                    reflect_x(){                 // both motor screws
-                        translate(motor_screw_pos(h)){
-                            translate_z(-9){     // shift hex into lug material
-                                m3_nut_trap_with_shaft(slot_angle=90, tilt=0);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 module main_body(params, version_string){
     // Mesoscope main body: Z focus actuator + casing only, no XY stage.
-    // The captive-nut pockets for the Z-motor cover screws are cut from the
-    // WHOLE assembled body: cutting them only from complete_z_actuator lets the
-    // z-casing walls (unioned afterwards) fill them back in.
-    difference(){
-        union(){
-            difference(){
-                internal_xy_structure(params);
-                z_axis_casing_cutouts(params);
-            }
-
-            //z axis - Only the actuator column is housed at this point.
-            complete_z_actuator(params);
-
-            difference(){
-                mesoscope_walls_and_z_casing(params);
-                body_logos(params, version_string);
-            }
+    // The Z-motor cover screws use the stock upstream cylindrical motor_lugs
+    // seat (round m4_selftap_hole), identical to the original body — no extra
+    // captive-nut pocket is cut.
+    union(){
+        difference(){
+            internal_xy_structure(params);
+            z_axis_casing_cutouts(params);
         }
-        z_motor_cover_nut_traps(params);
+
+        //z axis - Only the actuator column is housed at this point.
+        complete_z_actuator(params);
+
+        difference(){
+            mesoscope_walls_and_z_casing(params);
+            body_logos(params, version_string);
+        }
     }
 }
