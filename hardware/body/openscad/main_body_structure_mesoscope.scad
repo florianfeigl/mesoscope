@@ -617,23 +617,95 @@ module mesoscope_walls_and_z_casing(params){
 }
 
 
+// Captive M3 nut traps for the two Z-motor mounting screws.
+//
+// The stock upstream motor_lugs (reached via complete_z_actuator ->
+// z_actuator_housing -> screw_seat(include_motor_lugs, lug_angle=180)) only cut an
+// m4_selftap_hole at each motor screw: a trylinder(r=1.3, flat=1.73) with an outer
+// radius of ~2.3 mm (triangular cross-section). The genuine downloaded original
+// body instead carries a captive M3 nut at each motor screw so the stepper can be
+// bolted on with nuts rather than self-tapping into plastic.
+//
+// We reproduce the exact motor_lugs placement chain so each trap lands coaxial with
+// its screw hole (motor_screw_pos):
+//   translate_y(z_nut_y) -> rotate(180) -> rotate_x(-z_actuator_tilt)
+//                        -> rotate(180) -> reflect_x -> translate(motor_screw_pos)
+// At that local frame (screw axis = +z) we cut:
+//   * the captive M3 nut pocket (m3_nut_trap_with_shaft), shifted down by -9 so the
+//     hex seats inside the lug material and the slot opens toward the outer face;
+//   * the M3 screw clearance it carries, actuator_shaft_radius()=1.725 -> Ø3.45,
+//     the correct through-hole for an M3 screw.
+// The upstream motor_lugs already cut a self-tap trylinder (Ø4.6) at each screw,
+// which is WIDER than the M3 clearance; on its own it would leave soft triangular
+// lobes around the hole (the defect that got the first attempt, 5d4f0b1, reverted).
+// We therefore first plug that trylinder solid (z_motor_lug_plugs) and then re-cut
+// the clean Ø3.45 clearance, rather than widening the hole to swallow the trylinder.
+module z_motor_cover_nut_traps(params){
+    h = key_lookup("actuator_h", params) + z_actuator_travel(params);
+    translate_y(z_nut_y(params)){
+        rotate(180){                             // screw_seat wraps motor_lugs in rotate(180)
+            rotate_x(-z_actuator_tilt(params)){  // motor_lugs tilt = -screw_seat tilt
+                rotate(180){                     // motor_lugs angle = lug_angle = 180
+                    reflect_x(){                 // both motor screws
+                        translate(motor_screw_pos(h)){
+                            translate_z(-9){     // seat the hex inside the lug
+                                m3_nut_trap_with_shaft(slot_angle=90, tilt=0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Solid plugs that refill the upstream Ø4.6 self-tap trylinder at each motor screw
+// so the subsequent M3 clearance re-cut leaves a clean round hole (no triangular
+// lobes). r=2.6 fully covers the trylinder (outer r~2.3) and stays inside the lug
+// boss (r=4); z in [-11,0] spans the lug thickness (motor_lug_h) and sits flush
+// with the outer face, so nothing protrudes.
+module z_motor_lug_plugs(params){
+    h = key_lookup("actuator_h", params) + z_actuator_travel(params);
+    translate_y(z_nut_y(params)){
+        rotate(180){
+            rotate_x(-z_actuator_tilt(params)){
+                rotate(180){
+                    reflect_x(){
+                        translate(motor_screw_pos(h)){
+                            translate_z(-motor_lug_h()){
+                                cylinder(r=2.6, h=motor_lug_h(), $fn=32);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 module main_body(params, version_string){
     // Mesoscope main body: Z focus actuator + casing only, no XY stage.
-    // The Z-motor cover screws use the stock upstream cylindrical motor_lugs
-    // seat (round m4_selftap_hole), identical to the original body — no extra
-    // captive-nut pocket is cut.
-    union(){
-        difference(){
-            internal_xy_structure(params);
-            z_axis_casing_cutouts(params);
-        }
+    // The captive-nut pockets for the Z-motor mounting screws are cut from the
+    // WHOLE assembled body: cutting them only from complete_z_actuator would let
+    // the z-casing walls (unioned afterwards) fill them back in.
+    difference(){
+        union(){
+            difference(){
+                internal_xy_structure(params);
+                z_axis_casing_cutouts(params);
+            }
 
-        //z axis - Only the actuator column is housed at this point.
-        complete_z_actuator(params);
+            //z axis - Only the actuator column is housed at this point.
+            complete_z_actuator(params);
 
-        difference(){
-            mesoscope_walls_and_z_casing(params);
-            body_logos(params, version_string);
+            difference(){
+                mesoscope_walls_and_z_casing(params);
+                body_logos(params, version_string);
+            }
+
+            // Plug the wide self-tap trylinders before re-cutting the M3 clearance.
+            z_motor_lug_plugs(params);
         }
+        z_motor_cover_nut_traps(params);
     }
 }
