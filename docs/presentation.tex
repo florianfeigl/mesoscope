@@ -1,70 +1,188 @@
 \documentclass[aspectratio=169,10pt]{beamer}
 
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{embedfile}
 \usepackage{tikz}
 \usepackage{animate}
 
-% Theme
-\usetheme{Madrid}
+% Theme — clean, light, modern
+\usetheme{default}
 \usecolortheme{default}
+\usefonttheme{professionalfonts}
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamerfont{title}{series=\bfseries}
 
-% Custom colors
-\definecolor{mesobg}{RGB}{10,10,10}
-\definecolor{mesopurple}{RGB}{136,136,255}
-\definecolor{mesogray}{RGB}{136,136,136}
+% Custom colors — light modern palette, blue IDANA accent
+\definecolor{mesobgtop}{RGB}{255,255,255}  % white (top)
+\definecolor{mesobgbot}{RGB}{242,245,249}   % faint cool-gray (bottom)
+\definecolor{mesopurple}{RGB}{37,99,210}    % IDANA blue accent
+\definecolor{mesoblue}{RGB}{90,140,220}     % lighter blue (sub-accents)
+\definecolor{mesogray}{RGB}{108,116,130}    % muted slate-gray (secondary text)
+\definecolor{mesotext}{RGB}{33,40,52}       % dark slate body text (not harsh black)
 
 \setbeamertemplate{background canvas}{
   \begin{tikzpicture}
-    \fill[mesobg] (0,0) rectangle (\paperwidth,\paperheight);
+    \shade[top color=mesobgtop, bottom color=mesobgbot]
+      (0,0) rectangle (\paperwidth,\paperheight);
   \end{tikzpicture}
 }
-\setbeamercolor{title}{fg=white}
+\setbeamercolor{title}{fg=mesopurple}
 \setbeamercolor{subtitle}{fg=mesogray}
-\setbeamercolor{frametitle}{fg=white}
-\setbeamercolor{normal text}{fg=white}
+\setbeamercolor{frametitle}{fg=mesopurple}
+\setbeamercolor{normal text}{fg=mesotext}
+\setbeamercolor{itemize item}{fg=mesopurple}
+\setbeamercolor{itemize subitem}{fg=mesoblue}
+\setbeamercolor{structure}{fg=mesopurple}
+
+% Modern frame title: bold blue heading with a thin accent rule beneath
+\setbeamertemplate{frametitle}{%
+  \vspace{0.6em}%
+  {\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par}%
+  \vspace{0.15em}%
+  {\color{mesopurple}\rule{\textwidth}{1.1pt}}%
+  \vspace{0.2em}%
+}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}[frame number]{}
+\setbeamercolor{page number in head/foot}{fg=mesogray}
 
 % Title info
-\title{\textcolor{mesopurple}{Mesoscope}}
-\subtitle{Imaging Sessions}
+\title{\textcolor{mesopurple}{IDANA}}
+\subtitle{Automated Cell-Imaging Mesoscope}
 \author{}
 \date{}
 
 \begin{document}
 
+% ------------------------------------------------------------------ Title
 \begin{frame}
   \centering
   \vspace{2cm}
-  {\Huge \bfseries \textcolor{mesopurple}{Mesoscope}\\[1cm]}
-  {\Large \textcolor{mesogray}{Imaging Sessions}\\[3cm]}
+  {\Huge \bfseries \textcolor{mesopurple}{IDANA}\\[0.8cm]}
+  {\Large \textcolor{mesogray}{Automated Cell-Imaging Mesoscope}\\[0.4cm]}
+  {\normalsize \textcolor{mesogray}{Raspberry Pi 5 $\cdot$ Hailo-8 NPU $\cdot$ OpenFlexure}\\[2.6cm]}
   {\small \textcolor{mesogray}{\today}}
 \end{frame}
 
-\begin{frame}[t]{04. August 2026}
-  \begin{center}
-    \includegraphics[height=0.8\textheight, width=0.85\textwidth] {../resources/OFM_2026-08-04T13_39_33.251Z.jpeg}
-  \end{center}
+% ------------------------------------------------------------------ Hallmarks
+\begin{frame}[t]{Hallmarks}
+  \begin{itemize}
+    \item \textbf{Raspberry Pi 5 + AI HAT+} — Hailo-8 NPU (26 TOPS) for on-device
+          cell classification
+    \item \textbf{HQ Camera (Sony IMX477)} — C-mount, ZEISS 10$\times$/0.30,
+          125~mm tube-lens optics module
+    \item \textbf{OpenFlexure v3 stack} (FastAPI) deployed via custom Ansible roles
+          with hard-won Pi~5 fixes (Hailo DKMS, pisp ISP patch)
+    \item \textbf{Custom Z-focus-only body} — the X/Y flexure stage is removed; the
+          linear rail provides the X scan instead
+    \item \textbf{CVAT annotation server} (VPS, \texttt{cvat.feigl.dev}) feeding the
+          NPU training pipeline
+    \item \textbf{Tilted-microscope linear-rail concept} — IDANA becomes a
+          \emph{moving imaging head} scanning a row of bioreactors
+  \end{itemize}
 \end{frame}
 
-\begin{frame}[t]{17. August 2026 — 13:33}
-  \begin{center}
-    \includegraphics[height=0.8\textheight, width=0.85\textwidth] {../resources/OFM_2026-08-17T13_33_07.449Z.jpeg}
-  \end{center}
+% ------------------------------------------------------------------ Current build
+\begin{frame}[t]{Current build — exploded view}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}
+      \centering
+      \includegraphics[height=0.80\textheight]{../hardware/assembly/exploded_view.png}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \small
+      Upright stack, pulled apart along the optical axis:
+      \begin{itemize}\footnotesize
+        \item electronics drawer (Pi~5 / AI~HAT+ / Sangaboard)
+        \item Z-focus-only main body
+        \item Z drive: gear pair + lead screw + 28BYJ-48
+        \item HQ-camera C-mount optics module
+        \item bioreactor chip + trans-illumination source
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}[t]{17. August 2026 — 14:42}
-  \begin{center}
-    \includegraphics[height=0.8\textheight, width=0.85\textwidth] {../resources/OFM_2026-08-17T14_42_57.477Z.jpeg}
-  \end{center}
+% ------------------------------------------------------------------ Electronics stack
+\begin{frame}[t]{Electronics stack}
+  \begin{columns}[c]
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[height=0.78\textheight]{../hardware/assembly/exploded_drawer.png}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      Three boards in the sliding drawer:
+      \begin{itemize}\footnotesize
+        \item \textbf{Raspberry Pi 5} — host
+        \item \textbf{AI HAT+} — Hailo-8 NPU
+        \item \textbf{Sangaboard} — focus + illumination (hybrid motor control)
+      \end{itemize}
+      The rail stepper runs on a separate TMC2209 driven from the Pi GPIO.
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}[t]{17. August 2026 — 14:51}
-  \begin{center}
-    \includegraphics[height=0.8\textheight, width=0.85\textwidth] {../resources/OFM_2026-08-17T14_51_24.609Z.jpeg}
-  \end{center}
+% ------------------------------------------------------------------ Bioreactor suspension
+\begin{frame}[t]{Bioreactor suspension (Aufh\"angung)}
+  \begin{columns}[c]
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[height=0.78\textheight]{../hardware/assembly/exploded_rail.png}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      Chips hang \textbf{hochkant} from a fixed bridge:
+      \begin{itemize}\footnotesize
+        \item imaged \emph{through} the 16~mm chip thickness
+        \item trans-illumination from behind (+Y), objective in front ($-$Y)
+        \item fluidic tubes exit the top $\Rightarrow$ chips must hang
+        \item space \emph{below} stays free for the moving imaging head
+        \item bridge + rail share one base plate $\Rightarrow$ fixed working distance
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ printable bridge + towers
+\begin{frame}[t]{Printable bridge — 1 bridge + 2 towers}
+  \begin{columns}[c]
+    \begin{column}{0.60\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{../hardware/rails/bridge_split_exploded.png}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \small
+      $N=3$ stations $\Rightarrow$ bridge $\approx$\,280~mm $<$ 300~mm bed:
+      \begin{itemize}\footnotesize
+        \item \textbf{3 printed parts}: one-piece bridge + 2 separate towers
+        \item bridge spans only the station row (no long overhang)
+        \item each bridge end bolts onto a tower top (2$\times$ M3)
+        \item slim 20~mm towers sit just outside the end chips
+        \item towers bolt to the base plate (M5); parametric in $N$ / pitch
+      \end{itemize}
+      \scriptsize\textcolor{mesogray}{build: \texttt{hardware/rails/openscad/build\_bridge\_split.sh}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ Upcoming challenges
+\begin{frame}[t]{Upcoming challenges}
+  \begin{itemize}
+    \item \textbf{Transverse gravity on the flexure} — tilting 90$^\circ$ loads the
+          stage in a direction it was not pre-tensioned for (sag / focus drift)
+    \item \textbf{FOV $\ll$ ROI} — computed FOV $\approx$0.9~mm vs.\ the
+          \O5~mm culture window $\Rightarrow$ vertical tiling / mini lift stage
+    \item \textbf{Custom trans-illumination} — ModLight (mirror variant, NIR), a
+          single fibre-coupled source riding on the moving head
+    \item \textbf{Open geometry} — confirm the series pitch, the Z-motor resting
+          face, and the carriage adapter to the MGN12 rail
+    \item \textbf{Motor / gear packaging} — a 45$^\circ$ gear redirect only helps
+          \emph{space / centre-of-gravity}, \emph{not} efficiency: parallel spur
+          gears stay the most efficient mesh
+  \end{itemize}
 \end{frame}
 
 \end{document}

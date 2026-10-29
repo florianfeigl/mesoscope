@@ -65,10 +65,10 @@ render_png exploded_view_mesoscope.scad "${EXPLODE}" "${OUT_DIR}/exploded_view_b
 render_png exploded_view_mesoscope.scad 0            "${OUT_DIR}/exploded_view_assembled.png"     "${FRONT_CAM/900/600}"
 
 # electronics drawer + tech stack only (Pi 5 / AI HAT+ / Sangaboard)
-DRAWER_CAM="0,0,0,60,0,35,400"
-render_png exploded_drawer_mesoscope.scad "${EXPLODE}" "${OUT_DIR}/exploded_drawer.png"          "${DRAWER_CAM}"
+DRAWER_CAM="0,0,0,60,0,215,400"   # rot_z 35+180 = opposite side (turned 180°)
+render_png exploded_drawer_mesoscope.scad "${EXPLODE}" "${OUT_DIR}/exploded_drawer.png"          "${DRAWER_CAM}" "label_back=1"
 render_png exploded_drawer_mesoscope.scad "${EXPLODE}" "${OUT_DIR}/exploded_drawer_nolabels.png" "${DRAWER_CAM}" "show_labels=0"
-render_png exploded_drawer_mesoscope.scad 0            "${OUT_DIR}/exploded_drawer_assembled.png" "${DRAWER_CAM/400/300}"
+render_png exploded_drawer_mesoscope.scad 0            "${OUT_DIR}/exploded_drawer_assembled.png" "${DRAWER_CAM/400/300}" "label_back=1"
 
 if [ "${1:-}" = "rail" ]; then
     render_png exploded_rail_mesoscope.scad "${EXPLODE}" "${OUT_DIR}/exploded_rail.png" "0,0,0,60,0,25,1600"

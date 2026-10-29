@@ -28,6 +28,10 @@ explode = 1;
 // 1 = draw the text labels; 0 = geometry + guide line only.
 show_labels = 1;
 
+// 1 = labels face the OPPOSITE (back) camera so they read correctly when the
+// scene is turned 180° about z (build_exploded.sh DRAWER_CAM rot_z + 180).
+label_back = 0;
+
 // ---- part sources (relative to upstream rendering/) ----
 STL = "../../../hardware/stl/models/";
 DRAWER_STL = str(STL, "electronics_drawer_mesoscope.stl");
@@ -80,8 +84,11 @@ module guide_line(inset, labels=true){
                       [ "Raspberry Pi 5",    inset.z + pi5_z   + ez(ex_board)[2]],
                       [ "AI HAT+ (Hailo-8)", inset.z + aihat_z + ez(2 * ex_board)[2]],
                       [ "Sangaboard",        inset.z + sanga_z + ez(3 * ex_board)[2]]])
-                color("DimGray") translate([inset.x + 120, inset.y, t[1]]) rotate([90, 0, 0])
-                    linear_extrude(0.5) text(t[0], size=7, halign="left");
+                color("DimGray")
+                    translate([inset.x + (label_back ? -120 : 120), inset.y, t[1]])
+                    rotate([90, 0, label_back ? 180 : 0])
+                    linear_extrude(0.5)
+                        text(t[0], size=7, halign = label_back ? "right" : "left");
     }
 }
 
