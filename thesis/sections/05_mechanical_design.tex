@@ -23,11 +23,41 @@ on the same structure. A separate rail stepper moves the carriage from chip to
 chip (Section~\ref{sec:electronics}). The rail-mount geometry is parametric in
 \texttt{hardware/mount/openscad/rail\_mount\_mesoscope.scad}.
 
-\subsection{Bioreactor rack}
-A parametric, standalone rack (\texttt{bioreactor\_rack.scad}; renders to
-\texttt{bioreactor\_rack\_n\textit{N}.stl}) holds $N$ chips at a fixed pitch.
-\todo{confirm the chip pitch (\SI{80}{\milli\meter} assumed) and the rack
+\subsection{Bioreactor suspension}
+\label{sec:bioreactor}
+The chips hang \emph{hochkant} (edge-on) from a fixed suspension so that each is
+imaged horizontally through its \SI{16}{\milli\meter} thickness: the
+trans-illumination source sits behind the chip row ($+Y$) and the objective in
+front ($-Y$). The chips drop into the suspension from above and rest on a
+\SI{2}{\milli\meter} rim (\emph{Kranz}); their fluidic tubes exit upward, and the
+space \emph{below} the chips stays clear so the tilted imaging head reaches every
+station. Suspension and rail share one base plate, fixing the working distance.
+
+Two interchangeable suspension variants exist in the CAD sources. A
+metal-spine segmented rack (\texttt{bioreactor\_rack.scad}; renders to
+\texttt{bioreactor\_rack\_n\textit{N}.stl}) carries $N$ chips on a stiff
+aluminium extrusion. The printable alternative
+(\texttt{bioreactor\_bridge\_split.scad}) splits the suspension into three
+printed parts: one continuous bridge board plus two separate end towers
+(Fig.~\ref{fig:bridge}). At $N=3$ stations the bridge spans only the station row
+plus a short end margin ($\approx\SI{280}{\milli\meter}$), keeping it under the
+\SI{300}{\milli\meter} print-bed limit so it prints as a single piece with no
+splice. Each bridge end bolts onto a tower top ($2\times$~M3); the slim
+\SI{20}{\milli\meter} towers sit just outside the end chips and bolt to the base
+plate (M5). Both variants are parametric in the station count $N$ and the pitch.
+\todo{confirm the chip pitch (\SI{80}{\milli\meter} assumed) and the suspension
 geometry against the physical chips, milestone~M3.}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{bridge_split_exploded.png}
+  \caption{Exploded view of the printable bioreactor bridge at $N=3$: one
+  one-piece bridge board lifted off its two end towers (three printed parts).
+  The chips (semi-transparent reference solids) hang edge-on through the bridge
+  and are imaged horizontally. Rendered with OpenSCAD from
+  \texttt{hardware/rails/openscad/bioreactor\_bridge\_split.scad}.}
+  \label{fig:bridge}
+\end{figure}
 
 \subsection{Exploded view}
 Fig.~\ref{fig:exploded} shows the exploded upright stack, rendered from the CAD
