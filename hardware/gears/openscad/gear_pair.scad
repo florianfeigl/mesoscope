@@ -11,14 +11,16 @@
 //
 //   RAD 2  — the solid mate on a 5 mm motor shaft with ONE flat (D-shaft, "Nase").
 //
-// Sizing decision (user): centre distance = 30 mm FIXED, Rad 2 as large as
-// possible. Rad 1 must enclose the Ø17.95 existing gear; the outer mesh
-// (Z1/Z2 below) is an independent choice and currently makes Rad 1 the larger
-// wheel with a thick ring wall over the small bore.
+// Sizing decision (user): Rad 2 as large as possible, Rad 1 must enclose the
+// Ø17.95 existing gear. Ratio Z1/Z2 = 33/15 is FIXED; the centre distance was
+// trimmed from 30 -> 28.6 mm to take ~1 mm off Rad 1's outer radius (tip radius
+// scales linearly with CENTER: tip1 = 0.7104*CENTER). Rad 2 moves in by the same
+// amount; the physical motor-to-existing-gear axis spacing is now 28.6 mm.
 //
 // Outer mesh math (same module both gears, centre = sum of pitch radii):
 //   m (module) = 2*CENTER/(Z1+Z2)    pitch_r = CENTER*Z/(Z1+Z2)
-//   Z1=33, Z2=15 -> m=1.25, pr1=20.625, pr2=9.375 (sum=30.000)
+//   Z1=33, Z2=15, CENTER=28.6 -> m=1.1917, pr1=19.6625, pr2=8.9375 (sum=28.600)
+//   Rad 1 outer tip radius 20.32 (was 21.31 at CENTER=30; ~1 mm trimmed)
 //
 // STANDALONE: no upstream OpenFlexure clone needed.
 //   ./build_gears.sh                 # both gears -> two STLs
@@ -31,7 +33,8 @@
 // ---------------------------------------------------------------------------
 part   = "demo";    // "rad1" | "rad2" | "demo"
 
-CENTER = 30.0;      // centre-to-centre distance (mm) — FIXED
+CENTER = 28.6;      // centre-to-centre distance (mm); trimmed 30->28.6 to take
+                    //   ~1 mm off Rad 1's outer radius (ratio 33:15 kept fixed)
 H      = 8.0;       // gear thickness / height in Z (mm)
 
 // --- Rad 1 bore = the described existing gear (negative, keyed form-fit) ---
