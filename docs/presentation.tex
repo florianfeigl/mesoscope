@@ -89,7 +89,7 @@
   \begin{columns}[c]
     \begin{column}{0.56\textwidth}
       \centering
-      \includegraphics[height=0.80\textheight]{../hardware/assembly/exploded_view.png}
+      \includegraphics[height=0.78\textheight]{../hardware/assembly/exploded_view_trim.png}
     \end{column}
     \begin{column}{0.44\textwidth}
       \small
@@ -171,17 +171,18 @@
 % ------------------------------------------------------------------ Upcoming challenges
 \begin{frame}[t]{Upcoming challenges}
   \begin{itemize}
-    \item \textbf{Transverse gravity on the flexure} — tilting 90$^\circ$ loads the
-          stage in a direction it was not pre-tensioned for (sag / focus drift)
-    \item \textbf{FOV $\ll$ ROI} — computed FOV $\approx$0.9~mm vs.\ the
-          \O5~mm culture window $\Rightarrow$ vertical tiling / mini lift stage
-    \item \textbf{Custom trans-illumination} — ModLight (mirror variant, NIR), a
-          single fibre-coupled source riding on the moving head
-    \item \textbf{Open geometry} — confirm the series pitch, the Z-motor resting
-          face, and the carriage adapter to the MGN12 rail
-    \item \textbf{Motor / gear packaging} — a 45$^\circ$ gear redirect only helps
-          \emph{space / centre-of-gravity}, \emph{not} efficiency: parallel spur
-          gears stay the most efficient mesh
+    \item \textbf{Tilting the device 90$^\circ$} — the stage is held by a bending
+          plastic spring (flexure) built for gravity pulling straight down. On its
+          side, gravity pulls sideways instead: will the stage sag and drift out of
+          focus?
+    \item \textbf{Camera sees less than we want to image} — one photo covers only
+          $\approx$0.9~mm, but the \O5~mm culture window is much larger, so we must
+          take many images and stitch them (needs a small vertical lift stage)
+    \item \textbf{Custom back-lighting} — one near-infrared light source, fed by an
+          optical fibre, riding along on the moving head (ModLight mirror variant)
+    \item \textbf{Open mechanical details} — still to fix: spacing between
+          bioreactors, which face the Z-motor rests on, and the adapter joining the
+          carriage to the MGN12 linear rail
   \end{itemize}
 \end{frame}
 
