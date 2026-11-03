@@ -19,9 +19,9 @@
 //     SINGLE piece — no splice needed. (At N>=4 the bare chip row already
 //     exceeds the bed; reduce N or re-introduce a splice.)
 //   * Two separate end TOWERS rise from the shared base plate (Grundplatte) and
-//     sit just OUTSIDE the end chips; the bridge ends bolt down onto the tower
-//     tops with 2x M3 each. The space BELOW the chips stays free so the moving
-//     mesoscope reaches every station.
+//     sit just OUTSIDE the end chips; the bridge ends drop onto the tower tops
+//     over 2x press-fit locating pins each (no screws). The space BELOW the chips
+//     stays free so the moving mesoscope reaches every station.
 //
 // The chip itself exists only as a mesh STL (no SCAD source), so the chip+Kranz
 // here is a NON-PRINT reference block (show_chip_ref) for visualising the fit.
@@ -63,7 +63,7 @@ reactor_pitch = 80;    // centre-to-centre along X (70 chip + 10 gap)
 // centre (= optical window) lands here, measured from the Grundplatte top (z=0).
 OPTICAL_AXIS_H = 115;  // PLACEHOLDER (matches oa_h in the massing model)
 
-board_t = 8;                        // bridge board thickness (Z)
+board_t = 4;                        // bridge board thickness (Z) — halved from 8
 board_w = chip_t + 2*kranz_w + 4;   // board width in Y (24): chip hole + margin
 fit     = 0.4;                      // chip through-hole clearance per side
 
@@ -73,11 +73,20 @@ fit     = 0.4;                      // chip through-hole clearance per side
 end_ext = 25;
 
 // ---------------------------------------------------------------------------
-// Board -> tower bolts (2x M3 per end, top-down into the tower top)
+// Bridge <-> tower connection: locating pins ON THE M3 PATTERN
 // ---------------------------------------------------------------------------
-m3_clear   = 3.4;     // M3 screw through-hole in the board
-screw_dy   = 7;       // screw offset from board centre in Y (two per end)
-MAX_BED    = 300;     // print-bed limit (X); the one-piece bridge must stay under this
+// The BRIDGE is unchanged from the original screwed design: 2x M3 clearance
+// through-holes per end at +/- screw_dy. This keeps an already-printed first
+// bridge piece reusable. Only the TOWERS change: where the M3 blind holes used
+// to be, solid pins now stand up and slip into those same M3 holes. The holes
+// stay M3, so an M3 screw remains an option for extra retention. Two pins per
+// end give anti-rotation. pin_d is the tuning knob: raise toward m3_clear for a
+// snugger fit, lower for an easier slip.
+m3_clear = 3.4;  // bridge through-hole (M3 clearance) — UNCHANGED, keeps old bridge usable
+screw_dy = 7;    // Y offset of the pin/hole pair per end (the original M3 pattern)
+pin_d    = 3.2;  // tower locating pin: slips into the M3 clearance hole (~0.2 play)
+pin_h    = 5;    // pin height (Z); >= board_t -> full engagement, tip stands slightly proud
+MAX_BED  = 300;  // print-bed limit (X); the one-piece bridge must stay under this
 
 // ---------------------------------------------------------------------------
 // Towers (slim end supports: bolt to the Grundplatte, carry the bridge ends)
@@ -86,7 +95,6 @@ pillar        = 20;    // square tower cross-section (slim so the bridge end cle
 foot_h = 6;            // tower foot slab thickness (Z), bolts to Grundplatte
 M5 = 5.3;              // M5 clearance (tower-foot bolt holes)
 BEAM_SLOT_PITCH = 20;  // Grundplatte T-nut hole pattern along X in each foot
-pillar_m3 = 3.4;       // board-to-tower bolt holes on the tower top
 
 // Preview / render switches
 part          = "all"; // "all" | "bridge" | "pillarL" | "pillarR"
@@ -131,7 +139,8 @@ assert(pillar_r_inner >= span + kranz_half_x,
        "right tower overlaps the last chip/Kranz in X — increase end_ext or slim the tower.");
 assert(board_bottom >= 0, "OPTICAL_AXIS_H too small: board_bottom below the Grundplatte.");
 assert(screw_dy + m3_clear/2 < board_w/2, "screw_dy too large: M3 holes break out of the board width.");
-assert(screw_dy + pillar_m3/2 < pillar/2, "screw_dy too large for the tower top.");
+assert(screw_dy + pin_d/2 < pillar/2 - 1, "screw_dy too large: pin wall on the tower top too thin.");
+assert(pin_h <= board_t + 3, "pin_h too long: pin protrudes too far above the board top.");
 echo(str("Bridge (1-piece): N=", N, "  board=", board_len, " x ", board_w, " x ", board_t,
          "mm (bed ", MAX_BED, ")  towers @ X=", pillar_l_cx, ",", pillar_r_cx,
          "  board_top z=", board_top));
@@ -155,7 +164,8 @@ module bridge() {
     difference() {
         translate([bx0, y0, board_bottom]) cube([board_len, board_w, board_t]);
         board_holes();
-        // board -> tower bolts: 2x M3 through-holes at each end over the tower
+        // M3 clearance through-holes: 2x per end over each tower (UNCHANGED from
+        // the original screwed bridge, so an already-printed bridge still fits).
         for (px = [pillar_l_cx, pillar_r_cx])
             for (sy = [screw_dy, -screw_dy])
                 translate([px, sy, board_bottom - EPS])
@@ -168,21 +178,23 @@ module bridge() {
 // ---------------------------------------------------------------------------
 module tower_with_foot(px) {
     foot_x = pillar + 2*BEAM_SLOT_PITCH;
-    color([0.8, 0.45, 0.25])
-    difference() {
-        union() {
-            translate([px - pillar/2, -pillar/2, -foot_h])
-                cube([pillar, pillar, board_bottom + foot_h]);
-            translate([px - foot_x/2, -foot_x/2, -foot_h])
-                cube([foot_x, foot_x, foot_h]);
+    color([0.8, 0.45, 0.25]) {
+        difference() {
+            union() {
+                translate([px - pillar/2, -pillar/2, -foot_h])
+                    cube([pillar, pillar, board_bottom + foot_h]);
+                translate([px - foot_x/2, -foot_x/2, -foot_h])
+                    cube([foot_x, foot_x, foot_h]);
+            }
+            // M5 Grundplatte bolts straddling the tower along X
+            for (hx = [px - BEAM_SLOT_PITCH, px + BEAM_SLOT_PITCH])
+                translate([hx, 0, -foot_h - EPS]) cylinder(d = M5, h = foot_h + 2*EPS);
         }
-        // M5 Grundplatte bolts straddling the tower along X
-        for (hx = [px - BEAM_SLOT_PITCH, px + BEAM_SLOT_PITCH])
-            translate([hx, 0, -foot_h - EPS]) cylinder(d = M5, h = foot_h + 2*EPS);
-        // 2x M3 blind holes in the tower top (bridge end bolts down into these;
-        // self-tap or heat-set M3 insert). Drilled DOWN from the tower top.
+        // 2x solid locating pins on the tower top, on the M3 pattern (replacing
+        // the old M3 blind holes). They slip into the bridge's M3 holes. Printed
+        // standing up from the tower top at z = board_bottom.
         for (sy = [screw_dy, -screw_dy])
-            translate([px, sy, board_bottom - 16]) cylinder(d = pillar_m3, h = 16 + EPS);
+            translate([px, sy, board_bottom]) cylinder(d = pin_d, h = pin_h);
     }
 }
 
