@@ -383,3 +383,17 @@ Captured Frame --> Hailo-8 NPU (PCIe, 26 TOPS) --> Output tensors
 ### Suppliers
 - Praxisdienst: [https://www.praxisdienst.com/de-de]
 - FluidControl: [https://www.fluidcontrolproducts.com/]
+
+## License
+
+This repository is multi-licensed per component type, declared machine-readably
+via [REUSE](https://reuse.software/) in `REUSE.toml`; full texts live in `LICENSES/`:
+
+| Component | License | Scope |
+|---|---|---|
+| Hardware design & manufacturing (`hardware/**` `.scad` `.stl` `.gcode` `.bgcode` `.png`) | **CERN-OHL-S-2.0** | Reciprocal; required as these derive from the OpenFlexure project (CERN-OHL-S). |
+| Software (Ansible, templates, scripts, CI, repo config) | **GPL-3.0-only** | Copyleft, with an explicit patent grant. |
+| Documentation, thesis & media (`*.md` `*.tex` `*.bib` `*.html`, `thesis/**`, `resources/**`) | **CC-BY-4.0** | Attribution. |
+
+The gitignored upstream clone under `sources/` is not part of this repo and keeps
+its own upstream license. See `NOTICE.md` for attribution details.

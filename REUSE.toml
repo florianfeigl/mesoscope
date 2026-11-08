@@ -1,0 +1,53 @@
+# REUSE.toml — SPDX licensing for the mesoscope / IDANA project.
+# See https://reuse.software/spec-3.3/. The LAST matching [[annotations]]
+# table wins, so the catch-all comes first and specific rules override it.
+#
+# Licensing model (three parts):
+#   - Hardware design/manufacturing files  -> CERN-OHL-S-2.0  (reciprocal; required
+#     because these are derived from the OpenFlexure project, which is CERN-OHL-S)
+#   - Software (Ansible, scripts, CI, config) -> GPL-3.0-only (copyleft, incl. patent grant)
+#   - Documentation, thesis and media       -> CC-BY-4.0
+#
+# The gitignored upstream clone under sources/ is excluded via .gitignore and is
+# NOT relicensed here; it keeps its own upstream license.
+
+version = 1
+
+# --- Default: documentation, text and media ---------------------------------
+[[annotations]]
+path = "**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Florian Feigl"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# --- Hardware: OpenFlexure-derived design & manufacturing output ------------
+[[annotations]]
+path = [
+  "hardware/**/*.scad",
+  "hardware/**/*.stl",
+  "hardware/**/*.gcode",
+  "hardware/**/*.bgcode",
+  "hardware/**/*.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Florian Feigl"
+SPDX-License-Identifier = "CERN-OHL-S-2.0"
+
+# --- Software: Ansible, templates, scripts, CI and repo config --------------
+# Listed after hardware so that *.sh / *.py living under hardware/ are GPL.
+[[annotations]]
+path = [
+  "**/*.yml",
+  "**/*.yaml",
+  "**/*.j2",
+  "**/*.cfg",
+  "**/*.sh",
+  "**/*.py",
+  "**/Makefile",
+  ".github/CODEOWNERS",
+  ".gitattributes",
+  "**/.gitignore",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Florian Feigl"
+SPDX-License-Identifier = "GPL-3.0-only"
