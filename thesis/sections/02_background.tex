@@ -15,6 +15,56 @@ Section~\ref{sec:optical}.
 \todo{cite the specific commercial baseline and the bioreactor-chip platform
 used in the wet-lab experiments.}
 
+\subsection{Cell models and calcification biochemistry}
+\label{sec:biology}
+The biological application combines two established, immortalized human cell
+lines that model the osteoblastic and the vascular-endothelial compartments of
+bone.
+
+\emph{hFOB~1.19} is a conditionally immortalized human fetal osteoblastic cell
+line \cite{Harris1995hFOB} (ATCC~CRL-3602, formerly CRL-11372; Cellosaurus
+CVCL\_3708). It was obtained by transfection of fetal limb tissue with a
+temperature-sensitive SV40 large-T-antigen vector (pUCSVtsA58) and a
+neomycin-resistance vector, with G418 selection. At the permissive temperature
+(\SI{33.5}{\celsius}) the cells proliferate rapidly; at the restrictive
+temperature (\SI{39.5}{\celsius}) proliferation stops and the cells undergo
+osteoblastic differentiation, forming mineralized nodules (von~Kossa positive)
+and expressing osteopontin, osteonectin, bone sialoprotein and type-I collagen
+\cite{Harris1995hFOB}. hFOB~1.19 therefore provides a homogeneous, controllable
+model of human osteoblast differentiation and matrix mineralization.
+
+\emph{HMEC-1} is the first immortalized human (dermal) microvascular endothelial
+cell line \cite{Ades1992HMEC} (ATCC~CRL-3243), derived from human foreskin and
+immortalized with SV40 large~T antigen; it retains the morphological,
+phenotypic and functional properties of normal microvascular endothelium and
+serves here as the endothelial counterpart to the osteoblastic hFOB~1.19.
+\todo{state the exact experimental design: mono- vs.\ co-culture, which cell
+line is imaged in which chip, seeding density, passage range, and the ethical
+provenance of the lines (both are established, consented, commercially
+distributed lines).}
+
+The target readout is \emph{calcification}---the deposition of calcium-phosphate
+(hydroxyapatite) mineral in the extracellular matrix. In vitro, osteoblastic
+mineralization is driven by osteogenic supplementation of the culture medium
+with ascorbic acid (collagen-matrix maturation), $\beta$-glycerophosphate
+(organic phosphate donor) and dexamethasone (transcriptional regulation via
+Runx2), whose complementary roles are reviewed in
+\cite{Langenbach2013Osteogenic}; for hFOB~1.19 the temperature shift to
+\SI{39.5}{\celsius} additionally triggers differentiation
+\cite{Harris1995hFOB}. Mineral deposits are visualized and quantified by
+\emph{Alizarin Red~S} (binds Ca\textsuperscript{2+}, giving a strong red stain
+amenable to colorimetric quantification \cite{Gregory2004AlizarinRed}) or
+\emph{von~Kossa} staining (silver reduction on phosphate). Both produce
+high-absorbance, stain-based contrast under trans-illumination, which motivates
+the multi-channel (green / white / near-infrared) illumination chosen in
+Section~\ref{sec:optical}; staining is performed on
+paraformaldehyde-fixed endpoint cultures, so live time-lapse tracks confluence
+and morphology while the calcification endpoint is read on fixed, stained chips.
+\todo{fix the wet-lab parameters: base medium and serum, exact osteogenic cocktail
+concentrations, culture duration, perfusion flow/pressure regime, imaging
+interval, number of chips/positions, controls and replicates. These are listed
+as missing in \texttt{docs/THESIS\_PARAMETER\_GAPS.md} \S6.}
+
 \subsection{Open-hardware microscopy}
 The OpenFlexure Microscope \cite{Collins2020,Sharkey2016} is a 3D-printed,
 flexure-based motorised microscope driven by a Raspberry~Pi and a Pi camera; it
