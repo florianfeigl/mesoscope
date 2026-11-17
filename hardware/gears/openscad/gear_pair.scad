@@ -47,6 +47,17 @@ BORE_VR   = 1.30;   // valley notch width of the existing-gear profile; large
                     //   notches vanish -> the bore loses its internal teeth.
 BORE_FIT  = 0.25;   // radial clearance so Rad 1 slips over the existing gear (mm)
 
+// --- Rad 1 bore: blind pocket (closed on one side) vs. original through-hole ---
+BORE_BLIND    = true;  // true: the keyed bore is a BLIND pocket, closed on one
+                       //   face so the Sockel seats INSIDE it; false: original
+                       //   through-hole (bore passes all the way through).
+BORE_FLOOR    = 1.6;   // thickness of the closed side / floor (mm). Carved out of
+                       //   H, so Sockel engagement depth = H - BORE_FLOOR.
+BORE_OPEN_TOP = true;  // true: pocket opens at the TOP face -> floor sits on the
+                       //   print bed (no bridging), seat the Sockel from the top.
+                       //   false: floor becomes a CAP on top, pocket opens at the
+                       //   bottom (needs a bridged roof when printing).
+
 // --- Outer mesh (Rad 1 outer teeth <-> Rad 2) ---
 Z1     = 33;        // Rad 1 outer teeth (big wheel, must clear the bore)
 Z2     = 15;        // Rad 2 teeth (max that fits at a 30 mm centre)
@@ -89,6 +100,8 @@ assert(root1 >= BORE_TIP + BORE_FIT + MIN_WALL,
 assert(root2 > SHAFT_D/2 + 1.5,
        "Rad 2 too small for the shaft: reduce Z1 or check CENTER.");
 assert(FLAT_DEPTH < SHAFT_D/2, "FLAT_DEPTH must be < shaft radius.");
+assert(!BORE_BLIND || BORE_FLOOR < H,
+       "BORE_FLOOR must be < H (the floor is carved out of the gear height).");
 
 // ---------------------------------------------------------------------------
 // Generic rounded-valley tooth profile (2D)
@@ -119,12 +132,19 @@ module dshaft2d() {
 // Rad 1 — outer teeth, keyed bore = negative of the existing gear
 // ---------------------------------------------------------------------------
 module rad1() {
+    // keyed bore = negative of the existing gear, enlarged by BORE_FIT so Rad 1
+    // slips on. Through-hole (original) or a blind pocket closed on one face.
+    //   z0 = lower face of the cut, z1 = upper face.
+    //   open-top (floor on the bed): cut runs BORE_FLOOR -> top.
+    //   open-bottom (cap on top):     cut runs bottom     -> H-BORE_FLOOR.
+    //   through-hole:                 cut runs -EPS       -> H+EPS.
+    z0 = (BORE_BLIND && BORE_OPEN_TOP)  ?  BORE_FLOOR       : -EPS;
+    z1 = (BORE_BLIND && !BORE_OPEN_TOP) ? (H - BORE_FLOOR)  :  H + EPS;
     difference() {
         linear_extrude(height = H)
             gear2d(Z1, tip1, root1, OUT_VR, BACKLASH);
-        // keyed bore: described gear profile, enlarged by BORE_FIT so it slips on
-        translate([0,0,-EPS])
-            linear_extrude(height = H + 2*EPS)
+        translate([0,0,z0])
+            linear_extrude(height = z1 - z0)
                 offset(delta = BORE_FIT)
                     gear2d(Z_BORE, BORE_TIP, BORE_ROOT, BORE_VR);
     }
@@ -158,8 +178,12 @@ if (part == "rad1") {
 } else {
     // demo: Rad 1 with the existing gear (ghost) seated in its bore + Rad 2 meshed
     rad1();
+    // ghost Sockel: only engages the open depth of the (blind) pocket
+    ghost_h = BORE_BLIND ? (H - BORE_FLOOR) : H;
+    ghost_z = (BORE_BLIND && BORE_OPEN_TOP) ? BORE_FLOOR : 0;
     color("tomato")                      // the existing gear that Rad 1 hugs
-        linear_extrude(height = H)
-            gear2d(Z_BORE, BORE_TIP, BORE_ROOT, BORE_VR);
+        translate([0,0,ghost_z])
+            linear_extrude(height = ghost_h)
+                gear2d(Z_BORE, BORE_TIP, BORE_ROOT, BORE_VR);
     translate([CENTER,0,0]) rotate([0,0,180/Z2]) rad2();
 }
